@@ -19,11 +19,25 @@ class StatusCommand {
   }
 
   async showOverallStatus(stddDir, options) {
-    console.log(chalk.bold('\n📊 STDD Copilot Status\n'));
-
     // Check initialization
     const configPath = path.join(stddDir, 'config.yaml');
     const isInitialized = await this.exists(configPath);
+
+    if (options.json) {
+      if (!isInitialized) {
+        console.log(JSON.stringify({
+          initialized: false,
+          message: 'STDD not initialized in this directory.'
+        }, null, 2));
+        return;
+      }
+
+      const payload = await this.buildOverallStatusPayload(stddDir, { silent: true });
+      console.log(JSON.stringify(payload, null, 2));
+      return;
+    }
+
+    console.log(chalk.bold('\n📊 STDD Copilot Status\n'));
 
     if (!isInitialized) {
       console.log(chalk.yellow('⚠️  STDD not initialized in this directory.'));
@@ -31,49 +45,34 @@ class StatusCommand {
       return;
     }
 
+    const payload = await this.buildOverallStatusPayload(stddDir, { silent: false });
+
     console.log(chalk.green('✅ STDD initialized'));
 
-    // Count specs
-    const specsDir = path.join(stddDir, 'specs');
-    const specCount = await this.countItems(specsDir);
-    console.log(`📚 Specs: ${chalk.cyan(specCount)} domains`);
-
-    // Count changes
-    const changesDir = path.join(stddDir, 'changes');
-    const changes = await this.getActiveChanges(changesDir);
-    console.log(`🔄 Active changes: ${chalk.cyan(changes.length)}`);
+    console.log(`📚 Specs: ${chalk.cyan(payload.specs)} domains`);
+    console.log(`🔄 Active changes: ${chalk.cyan(payload.changes)}`);
 
     // Show current work
-    if (changes.length > 0) {
+    if (payload.currentChanges.length > 0) {
       console.log(chalk.bold('\n  Current Changes:\n'));
-      for (const change of changes.slice(0, 5)) {
-        const status = await this.getDetailedStatus(path.join(changesDir, change));
-        console.log(`    ${status.icon} ${chalk.cyan(change)}`);
-        if (status.tasksProgress) {
-          console.log(`       Tasks: ${status.tasksProgress}`);
+      for (const change of payload.currentChanges.slice(0, 5)) {
+        console.log(`    ${change.icon} ${chalk.cyan(change.name)}`);
+        if (change.title) {
+          console.log(`       ${chalk.dim(change.title)}`);
         }
-        if (status.phase) {
-          console.log(`       Phase: ${status.phase}`);
+        if (change.tasksProgress) {
+          console.log(`       Tasks: ${change.tasksProgress}`);
+        }
+        if (change.phase) {
+          console.log(`       Phase: ${change.phase}`);
         }
       }
-      if (changes.length > 5) {
-        console.log(chalk.dim(`    ... and ${changes.length - 5} more`));
+      if (payload.currentChanges.length > 5) {
+        console.log(chalk.dim(`    ... and ${payload.currentChanges.length - 5} more`));
       }
     }
 
-    // Memory status
-    const memoryDir = path.join(stddDir, 'memory');
-    const memoryFiles = await this.countItems(memoryDir);
-    console.log(`\n🧠 Memory: ${chalk.cyan(memoryFiles)} files`);
-
-    if (options.json) {
-      console.log('\n' + JSON.stringify({
-        initialized: true,
-        specs: specCount,
-        changes: changes.length,
-        memory: memoryFiles
-      }, null, 2));
-    }
+    console.log(`\n🧠 Memory: ${chalk.cyan(payload.memory)} files`);
   }
 
   async showChangeStatus(stddDir, changeName, options) {
@@ -83,7 +82,15 @@ class StatusCommand {
       throw new Error(`Change '${changeName}' not found.`);
     }
 
-    const status = await this.getDetailedStatus(changeDir);
+    const status = await this.getDetailedStatus(changeDir, { silent: options.json });
+
+    if (options.json) {
+      console.log(JSON.stringify({
+        change: changeName,
+        ...status
+      }, null, 2));
+      return;
+    }
 
     console.log(chalk.bold(`\n📋 Change: ${changeName}\n`));
 
@@ -105,10 +112,6 @@ class StatusCommand {
     if (status.phase) {
       console.log(chalk.bold('\n  Current Phase:'));
       console.log(`    ${status.phase}`);
-    }
-
-    if (options.json) {
-      console.log('\n' + JSON.stringify(status, null, 2));
     }
   }
 
@@ -142,12 +145,41 @@ class StatusCommand {
     }
   }
 
-  async getDetailedStatus(changeDir) {
+  async buildOverallStatusPayload(stddDir, options = {}) {
+    const specsDir = path.join(stddDir, 'specs');
+    const specCount = await this.countItems(specsDir);
+
+    const changesDir = path.join(stddDir, 'changes');
+    const changes = await this.getActiveChanges(changesDir);
+    const changeStatuses = [];
+    for (const change of changes) {
+      const status = await this.getDetailedStatus(path.join(changesDir, change), options);
+      changeStatuses.push({
+        name: change,
+        ...status
+      });
+    }
+
+    const memoryDir = path.join(stddDir, 'memory');
+    const memoryFiles = await this.countItems(memoryDir);
+
+    return {
+      initialized: true,
+      specs: specCount,
+      changes: changes.length,
+      memory: memoryFiles,
+      currentChanges: changeStatuses
+    };
+  }
+
+  async getDetailedStatus(changeDir, options = {}) {
+    const { silent = false } = options;
     const status = {
       hasProposal: false,
       hasSpecs: false,
       hasDesign: false,
       hasTasks: false,
+      title: null,
       tasksCompleted: 0,
       totalTasks: 0,
       tasksProgress: null,
@@ -157,10 +189,17 @@ class StatusCommand {
 
     // Check proposal
     try {
-      await fs.access(path.join(changeDir, 'proposal.md'));
+      const proposalPath = path.join(changeDir, 'proposal.md');
+      await fs.access(proposalPath);
       status.hasProposal = true;
+
+      const content = await fs.readFile(proposalPath, 'utf-8');
+      const titleMatch = content.match(/^#\s+(.+)$/m);
+      if (titleMatch) {
+        status.title = titleMatch[1].replace('Proposal:', '').trim();
+      }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
+      if (!silent && error.code !== 'ENOENT') {
         console.error(chalk.dim(`Warning: could not check proposal.md - ${error.message}`));
       }
     }
@@ -171,7 +210,7 @@ class StatusCommand {
       const files = await fs.readdir(specsDir);
       status.hasSpecs = files.some(f => f.endsWith('.md'));
     } catch (error) {
-      if (error.code !== 'ENOENT') {
+      if (!silent && error.code !== 'ENOENT') {
         console.error(chalk.dim(`Warning: could not read specs/ - ${error.message}`));
       }
     }
@@ -181,7 +220,7 @@ class StatusCommand {
       await fs.access(path.join(changeDir, 'design.md'));
       status.hasDesign = true;
     } catch (error) {
-      if (error.code !== 'ENOENT') {
+      if (!silent && error.code !== 'ENOENT') {
         console.error(chalk.dim(`Warning: could not check design.md - ${error.message}`));
       }
     }
@@ -197,7 +236,7 @@ class StatusCommand {
         status.tasksProgress = `${status.tasksCompleted}/${status.totalTasks}`;
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
+      if (!silent && error.code !== 'ENOENT') {
         console.error(chalk.dim(`Warning: could not read tasks.md - ${error.message}`));
       }
     }

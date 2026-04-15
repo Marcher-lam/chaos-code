@@ -21,39 +21,67 @@ class ListCommand {
 
   async listChanges(stddDir, options) {
     const changesDir = path.join(stddDir, 'changes');
+    const archiveDir = path.join(changesDir, 'archive');
 
     try {
       const entries = await fs.readdir(changesDir, { withFileTypes: true });
-      const changes = entries
+      const activeChanges = entries
         .filter(e => e.isDirectory() && !e.name.startsWith('.'))
         .filter(e => e.name !== 'archive')
         .sort();
+      const archivedChanges = options.archived
+        ? await this.getArchivedChanges(archiveDir)
+        : [];
 
-      if (changes.length === 0) {
+      const hasAnyChanges = activeChanges.length > 0 || archivedChanges.length > 0;
+
+      if (!hasAnyChanges) {
         console.log(chalk.yellow('No active changes found.'));
         console.log(chalk.dim('Create one with: /stdd:new <description>'));
         return;
       }
 
       if (options.json) {
-        console.log(JSON.stringify(changes.map(c => c.name), null, 2));
+        if (options.archived) {
+          console.log(JSON.stringify({
+            active: activeChanges.map(c => c.name),
+            archived: archivedChanges.map(c => c.name)
+          }, null, 2));
+        } else {
+          console.log(JSON.stringify(activeChanges.map(c => c.name), null, 2));
+        }
         return;
       }
 
-      console.log(chalk.bold('\n📋 Active Changes\n'));
+      if (activeChanges.length > 0) {
+        console.log(chalk.bold('\n📋 Active Changes\n'));
 
-      for (const change of changes) {
-        const changeDir = path.join(changesDir, change.name);
-        const status = await this.getChangeStatus(changeDir);
-        const statusIcon = status.hasProposal ? '📝' : '❓';
-        const tasksProgress = status.tasksCompleted
-          ? ` ${status.tasksCompleted}/${status.totalTasks}`
-          : '';
+        for (const change of activeChanges) {
+          const changeDir = path.join(changesDir, change.name);
+          const status = await this.getChangeStatus(changeDir);
+          const statusIcon = status.hasProposal ? '📝' : '❓';
+          const tasksProgress = status.tasksCompleted
+            ? ` ${status.tasksCompleted}/${status.totalTasks}`
+            : '';
 
-        console.log(`  ${statusIcon} ${chalk.cyan(change.name)}${tasksProgress}`);
+          console.log(`  ${statusIcon} ${chalk.cyan(change.name)}${tasksProgress}`);
 
-        if (status.title) {
-          console.log(`     ${chalk.dim(status.title)}`);
+          if (status.title) {
+            console.log(`     ${chalk.dim(status.title)}`);
+          }
+        }
+      } else {
+        console.log(chalk.yellow('\nNo active changes found.'));
+      }
+
+      if (options.archived) {
+        if (archivedChanges.length > 0) {
+          console.log(chalk.bold('\n📦 Archived Changes\n'));
+          for (const change of archivedChanges) {
+            console.log(`  📦 ${chalk.cyan(change.name)}`);
+          }
+        } else {
+          console.log(chalk.dim('\nNo archived changes found.'));
         }
       }
 
@@ -64,6 +92,20 @@ class ListCommand {
       } else {
         throw error;
       }
+    }
+  }
+
+  async getArchivedChanges(archiveDir) {
+    try {
+      const entries = await fs.readdir(archiveDir, { withFileTypes: true });
+      return entries
+        .filter(e => e.isDirectory() && !e.name.startsWith('.'))
+        .sort();
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return [];
+      }
+      throw error;
     }
   }
 
