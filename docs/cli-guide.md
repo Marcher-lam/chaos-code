@@ -127,6 +127,7 @@ Commands:
   new                        Create new items
   skills [options]           List all available STDD skills
   commands                   List all Claude Code slash commands
+  hooks [options]            Manage Hooks for AI Code engines
   help [command]             display help for command
 ```
 
@@ -865,11 +866,13 @@ rm -rf stdd/memory/*
 | `stdd new spec <domain>` | 创建规格 |
 | `stdd skills` | 列出技能 |
 | `stdd commands` | 列出命令 |
-| `stdd constitution` | 查看条例 |
-| `stdd constitution show <n>` | 查看特定条例 |
 | `stdd hooks install` | 安装 Hooks |
 | `stdd hooks verify` | 验证 Hooks |
 | `stdd hooks status` | Hooks 状态 |
+| `stdd hooks enable` | 恢复并启用 Hooks |
+| `stdd hooks disable` | 禁用 Hooks |
+| `stdd constitution` | 查看条例 |
+| `stdd constitution show <n>` | 查看特定条例 |
 | `stdd --version` | 查看版本 |
 | `stdd --help` | 查看帮助 |
 
@@ -932,7 +935,9 @@ stdd hooks install --force
 🔧 STDD Hooks 安装
 
 📁 Hooks 脚本位置: /path/to/stdd-copilot/.claude/hooks
-📝 配置文件: .claude/settings.json
+
+🎯 检测到目标引擎配置: .claude/settings.json
+   📝 配置文件: .claude/settings.json
 
 ✅ Hooks 安装成功!
 
@@ -941,7 +946,6 @@ stdd hooks install --force
   • PostToolUse: Article 5, 6, 8 (Docs, Errors, Performance)
 
 配置位置: .claude/settings.json
-
 验证安装: stdd hooks verify
 禁用 Hooks: stdd hooks disable
 ```
@@ -977,7 +981,7 @@ stdd hooks disable
 # 重新启用
 stdd hooks enable
 
-# 禁用特定条例
+# 禁用特定条例 (当前版本仅保留兼容提示)
 stdd hooks disable --article=4
 ```
 

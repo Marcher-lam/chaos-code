@@ -12,27 +12,30 @@ const chalk = require('chalk');
 const enginesConfig = require('../../config/engines.json');
 const ALL_SUPPORTED_AGENTS = enginesConfig.engines.map(e => e.value);
 
+function getDefaultEngine() {
+  return enginesConfig.engines.find(e => e.checked) || enginesConfig.engines[0];
+}
+
 /**
  * 智能嗅探当前环境，获取所有存活终端的 settings.json 路径
  */
 function getSettingsPaths(global = false) {
   const baseDir = global ? os.homedir() : process.cwd();
-  
+
   try {
-    const items = fs.readdirSync(baseDir);
-    const activeAgents = ALL_SUPPORTED_AGENTS.filter(agent => items.includes(agent));
-    
+    const items = fs.readdirSync(baseDir, { withFileTypes: true });
+    const activeAgents = ALL_SUPPORTED_AGENTS.filter(agent =>
+      items.some(entry => entry.isDirectory() && entry.name === agent)
+    );
+
     // 如果没有任何引擎，fallback到配置中选中的主要配置
     if (activeAgents.length === 0) {
-      const defaultEngine = enginesConfig.engines.find(e => e.checked) || enginesConfig.engines[0];
-    return [path.join(baseDir, defaultEngine.value, 'settings.json')];
+      return [path.join(baseDir, getDefaultEngine().value, 'settings.json')];
     }
-    
+
     return activeAgents.map(agent => path.join(baseDir, agent, 'settings.json'));
-  } catch(e) {
-    const enginesConfig = require('../../config/engines.json');
-      const defaultEngine = enginesConfig.engines.find(e => e.checked) || enginesConfig.engines[0];
-      return [path.join(baseDir, defaultEngine.value, 'settings.json')];
+  } catch (error) {
+    return [path.join(baseDir, getDefaultEngine().value, 'settings.json')];
   }
 }
 
@@ -103,13 +106,32 @@ function generateHooksConfig(hooksPath, options = {}) {
   return config;
 }
 
+function mergeSettings(existingSettings, hooksConfig) {
+  const existingHooks = existingSettings.hooks && typeof existingSettings.hooks === 'object'
+    ? existingSettings.hooks
+    : {};
+  const generatedHooks = hooksConfig.hooks && typeof hooksConfig.hooks === 'object'
+    ? hooksConfig.hooks
+    : {};
+
+  return {
+    ...existingSettings,
+    ...hooksConfig,
+    hooks: {
+      ...existingHooks,
+      ...generatedHooks
+    }
+  };
+}
+
 /**
  * 安装 hooks
  */
 function installHooks(options) {
   const { global = false, force = false } = options;
+  const settingsPaths = getSettingsPaths(global);
 
-  console.log(chalk.bold('\n🔧 STDD Hooks 安装 (Multi-Agent Adaptation)\n'));
+  console.log(chalk.bold('\n🔧 STDD Hooks 安装\n'));
 
   const hooksPath = getSTDDHooksPath();
   if (!hooksPath) {
@@ -118,36 +140,44 @@ function installHooks(options) {
   }
   console.log(`📁 Hooks 脚本位置: ${hooksPath}`);
 
-  const settingsPaths = getSettingsPaths(global);
-  
   let successCount = 0;
+  let skippedCount = 0;
 
   for (const settingsPath of settingsPaths) {
     console.log(chalk.cyan(`\n🎯 检测到目标引擎配置: ${settingsPath}`));
+    console.log(chalk.dim(`   📝 配置文件: ${settingsPath}`));
     const existingSettings = readSettings(settingsPath);
 
     if (existingSettings.hooks && !force) {
       console.log(chalk.yellow('   ⚠️ 配置文件已包含 hooks 配置 (跳过)'));
+      skippedCount++;
       continue;
     }
 
     const hooksConfig = generateHooksConfig(hooksPath, options);
-    const newSettings = { ...existingSettings, ...hooksConfig };
-    
+    const newSettings = mergeSettings(existingSettings, hooksConfig);
+
     writeSettings(settingsPath, newSettings);
     console.log(chalk.green('   ✅ Hooks 注入成功!'));
     successCount++;
   }
 
   if (successCount > 0) {
-    console.log(chalk.bold('\n✅ Multi-Agent Hooks 安装完成!\n'));
+    console.log(chalk.bold('\n✅ Hooks 安装成功!\n'));
     console.log('已拦截的方法集:');
     console.log('  • PreToolUse: Article 2, 4, 7 (TDD, Style, Security)');
     console.log('  • PostToolUse: Article 5, 6, 8 (Docs, Errors, Performance)');
+    if (settingsPaths.length === 1) {
+      console.log(`\n配置位置: ${settingsPaths[0]}`);
+    } else {
+      console.log(`\n配置位置: ${settingsPaths.length} 个配置文件`);
+    }
     console.log('\n验证安装: stdd hooks verify');
+  } else if (skippedCount > 0) {
+    console.log(chalk.yellow('\n⚠️ 目标配置已存在 hooks 配置，未做更改。'));
   }
 
-  return true;
+  return successCount > 0 || skippedCount > 0;
 }
 
 /**
@@ -218,12 +248,13 @@ function disableHooks(options) {
   console.log(chalk.bold('\n⏸️  禁用 STDD Hooks\n'));
 
   const settingsPaths = getSettingsPaths(global);
-  
+
   if (article) {
     console.log(chalk.yellow('⚠️ 部分禁用暂不支持，建议设置环境变量: STDD_HOOKS_DISABLED=1'));
     return true;
   }
 
+  let disabledCount = 0;
   for (const settingsPath of settingsPaths) {
     const settings = readSettings(settingsPath);
     if (!settings.hooks) continue;
@@ -235,8 +266,14 @@ function disableHooks(options) {
     delete settings.hooks;
     writeSettings(settingsPath, settings);
     console.log(chalk.green(`✅ [禁用] ${settingsPath}`));
+    disabledCount++;
   }
-  return true;
+
+  if (disabledCount === 0) {
+    console.log(chalk.yellow('⚠️ 未发现可禁用的 Hooks 配置。'));
+  }
+
+  return disabledCount > 0;
 }
 
 /**
@@ -247,17 +284,30 @@ function enableHooks(options) {
   console.log(chalk.bold('\n▶️  启用 STDD Hooks\n'));
 
   const settingsPaths = getSettingsPaths(global);
-  
+
+  let restoredCount = 0;
+  let needsReinstall = false;
+
   for (const settingsPath of settingsPaths) {
     const backupPath = settingsPath + '.backup';
     if (fs.existsSync(backupPath)) {
       fs.copyFileSync(backupPath, settingsPath);
       fs.unlinkSync(backupPath);
       console.log(chalk.green(`✅ [恢复] ${settingsPath}`));
+      restoredCount++;
     } else {
-      installHooks({ ...options, force: true });
+      needsReinstall = true;
     }
   }
+
+  if (needsReinstall) {
+    console.log(chalk.yellow('⚠️ 部分配置缺少备份，将重新安装 Hooks。'));
+    installHooks({ ...options, force: true });
+  } else if (restoredCount === 0) {
+    console.log(chalk.yellow('⚠️ 没有找到备份文件，将重新安装 Hooks。'));
+    installHooks({ ...options, force: true });
+  }
+
   return true;
 }
 
@@ -269,13 +319,21 @@ function statusHooks(options) {
   console.log(chalk.bold('\n📊 STDD Hooks 状态\n'));
 
   const settingsPaths = getSettingsPaths(global);
-  
+
   for (const settingsPath of settingsPaths) {
     console.log(chalk.cyan(`\n🔧 引擎配置: ${settingsPath}`));
     const settings = readSettings(settingsPath);
+    const backupPath = settingsPath + '.backup';
+    const backupExists = fs.existsSync(backupPath);
 
     if (settings.hooks) {
-      console.log(chalk.green('  状态: ✅ 已启用'));
+      if (process.env.STDD_HOOKS_DISABLED === '1') {
+        console.log(chalk.yellow('  状态: ⏸️  当前会话已禁用'));
+      } else {
+        console.log(chalk.green('  状态: ✅ 已启用'));
+      }
+    } else if (backupExists) {
+      console.log(chalk.yellow('  状态: ⏸️  已禁用 (存在备份)'));
     } else {
       console.log(chalk.yellow('  状态: ⏸️  未配置'));
     }
@@ -317,3 +375,16 @@ module.exports = function(program) {
     .option('-g, --global', '显示全局状态')
     .action((options) => statusHooks(options));
 };
+
+module.exports.getDefaultEngine = getDefaultEngine;
+module.exports.getSettingsPaths = getSettingsPaths;
+module.exports.readSettings = readSettings;
+module.exports.writeSettings = writeSettings;
+module.exports.getSTDDHooksPath = getSTDDHooksPath;
+module.exports.generateHooksConfig = generateHooksConfig;
+module.exports.mergeSettings = mergeSettings;
+module.exports.installHooks = installHooks;
+module.exports.verifyHooks = verifyHooks;
+module.exports.disableHooks = disableHooks;
+module.exports.enableHooks = enableHooks;
+module.exports.statusHooks = statusHooks;
