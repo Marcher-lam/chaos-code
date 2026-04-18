@@ -120,15 +120,16 @@ Options:
   -h, --help                 display help for command
 
 Commands:
-  init [options] [path]      Initialize STDD Copilot in your project
-  update [options] [path]    Update STDD Copilot files in your project
-  list|ls [options]          List all changes or specs
-  status [options] [change]  Show status of a change or current work
-  new                        Create new changes or specs
-  skills [options]           List all available STDD skills
-  commands                   List all Claude Code slash commands
-  hooks [options]            Manage Hooks for AI Code engines
-  help [command]             display help for command
+  init [options] [path]                     Initialize STDD Copilot in your project
+  update [options] [path]                   Update STDD Copilot files in your project
+  list|ls [options]                         List all changes or specs
+  status [options] [change]                 Show status of a change or current work
+  new                                       Create new changes or specs
+  skills [options]                          List all available STDD skills
+  commands                                  List all Claude Code slash commands
+  hooks                                     管理 STDD Hook 系统 (多引擎适配版)
+  constitution [options] [action] [target]  Manage STDD Constitution (9 articles)
+  help [command]                            display help for command
 ```
 
 ### 检查版本
@@ -154,7 +155,7 @@ stdd commands
   /stdd:explore         Explore requirements
   /stdd:ff              Fast-forward generation
   /stdd:continue        Continue paused work
-  /stdd:apply           Execute TDD cycle
+  /stdd:apply           Apply change (TDD cycle)
   /stdd:verify          Verify implementation
   /stdd:archive         Archive completed change
   /stdd:constitution    Constitution management
@@ -477,7 +478,7 @@ stdd commands
   /stdd:explore         Explore requirements
   /stdd:ff              Fast-forward generation
   /stdd:continue        Continue paused work
-  /stdd:apply           Execute TDD cycle
+  /stdd:apply           Apply change (TDD cycle)
   /stdd:verify          Verify implementation
   /stdd:archive         Archive completed change
   /stdd:constitution    Constitution management

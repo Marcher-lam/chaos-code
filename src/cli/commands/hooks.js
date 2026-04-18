@@ -346,33 +346,70 @@ function statusHooks(options) {
  */
 module.exports = function(program) {
   const hooks = program.command('hooks')
-    .description('管理 STDD Hook 系统 (多引擎适配版)');
+    .description('管理 STDD Hook 系统 (多引擎适配版)')
+    .addHelpText('after', `
+Examples:
+  stdd hooks install
+  stdd hooks verify
+  stdd hooks status
+  stdd hooks disable --article 2
+  stdd hooks enable
+`);
 
   hooks.command('install')
     .description('自动嗅探并安装 STDD Hooks 到所有活跃引擎')
     .option('-g, --global', '安装到全局配置')
     .option('-f, --force', '强制覆盖现有配置')
+    .addHelpText('after', `
+Examples:
+  stdd hooks install
+  stdd hooks install --global
+  stdd hooks install --force
+`)
     .action((options) => installHooks(options));
 
   hooks.command('verify')
     .description('验证各个引擎内的 Hooks 安装')
     .option('-g, --global', '验证全局配置')
+    .addHelpText('after', `
+Examples:
+  stdd hooks verify
+  stdd hooks verify --global
+`)
     .action((options) => { process.exit(verifyHooks(options) ? 0 : 1); });
 
   hooks.command('disable')
     .description('禁用选定范围内的 Hooks')
     .option('-g, --global', '禁用全局配置')
     .option('--article <n>', '禁用特定条例')
+    .addHelpText('after', `
+Examples:
+  stdd hooks disable
+  stdd hooks disable --global
+  stdd hooks disable --article 4
+
+\`--article\` currently keeps compatibility semantics and disables the configured hooks set.
+`)
     .action((options) => disableHooks(options));
 
   hooks.command('enable')
     .description('恢复并启用 Hooks')
     .option('-g, --global', '启用全局配置')
+    .addHelpText('after', `
+Examples:
+  stdd hooks enable
+  stdd hooks enable --global
+`)
     .action((options) => enableHooks(options));
 
   hooks.command('status')
     .description('显示所有支持引擎的 Hooks 状态')
     .option('-g, --global', '显示全局状态')
+    .addHelpText('after', `
+Examples:
+  stdd hooks status
+  stdd hooks status --global
+`)
     .action((options) => statusHooks(options));
 };
 

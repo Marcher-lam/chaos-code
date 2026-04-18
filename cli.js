@@ -63,6 +63,16 @@ program
   .description('STDD Copilot - Spec + Test Driven Development Framework')
   .version(packageJson.version);
 
+program.addHelpText('after', `
+Common examples:
+  stdd init
+  stdd new change add-dark-mode
+  stdd list --archived
+  stdd status --json
+
+For Claude Code slash commands: stdd commands
+`);
+
 // Global options
 program.option('--no-color', 'Disable color output');
 
@@ -74,6 +84,13 @@ program
   .option('--skip-skills', 'Skip copying skills directory')
   .option('-y, --yes', 'Run non-interactively with default settings')
   .option('--non-interactive', 'Run non-interactively (same as --yes)')
+  .addHelpText('after', `
+Examples:
+  stdd init
+  stdd init /path/to/project
+  stdd init --force
+  stdd init --skip-skills --yes
+`)
   .action(async (targetPath = '.', options = {}) => {
     const spinner = createSpinner('Initializing STDD Copilot...').start();
     try {
@@ -92,6 +109,14 @@ program
   .command('update [path]')
   .description('Update STDD Copilot files in your project')
   .option('--force', 'Force update even when files exist')
+  .addHelpText('after', `
+Examples:
+  stdd update
+  stdd update /path/to/project
+  stdd update --force
+
+Use this after upgrading the CLI to sync command files and schemas.
+`)
   .action(async (targetPath = '.', options = {}) => {
     const spinner = createSpinner('Updating STDD Copilot...').start();
     try {
@@ -114,6 +139,15 @@ program
   .option('--specs', 'List specs')
   .option('--archived', 'Include archived items')
   .option('--json', 'Output as JSON')
+  .addHelpText('after', `
+Examples:
+  stdd list
+  stdd list --specs
+  stdd list --archived
+  stdd list --json
+
+\`--archived\` applies to change listings, not spec listings.
+`)
   .action(async (options = {}) => {
     try {
       const listCommand = new ListCommand();
@@ -129,6 +163,13 @@ program
   .command('status [change]')
   .description('Show status of a change or current work')
   .option('--json', 'Output as JSON')
+  .addHelpText('after', `
+Examples:
+  stdd status
+  stdd status add-dark-mode
+  stdd status --json
+  stdd status add-dark-mode --json
+`)
   .action(async (changeName, options = {}) => {
     try {
       const statusCommand = new StatusCommand();
