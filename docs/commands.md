@@ -1,10 +1,19 @@
 # Commands Reference
 
-STDD Copilot 所有斜杠命令的完整参考。
+STDD Copilot 统一会话入口参考。
+
+## Taxonomy 说明
+
+为避免 slash command 与 skill taxonomy 混淆，请先区分两层：
+
+- 一部分入口在 `.claude/commands/stdd/` 下有独立命令文件
+- 另一部分能力由 `.claude/skills/` 提供，并在对话中沿用 `/stdd:*` 作为用户可见入口名
+
+本页统一使用 `/stdd:*` 记录用户侧入口；是否存在独立 command 文件，请以仓库目录为准。
 
 ## 命令格式
 
-所有命令使用 `/stdd:*` 命名空间：
+统一入口格式如下：
 
 ```bash
 /stdd:<command> [arguments] [options]
@@ -377,19 +386,7 @@ API 规范先行。
 
 ---
 
-## 辅助功能命令
-
-### /stdd:guard
-
-TDD 守护钩子。
-
-```bash
-/stdd:guard on                 # 启用守护
-/stdd:guard off                # 禁用守护
-/stdd:guard status             # 查看状态
-```
-
----
+## 辅助功能入口（Skill 为主）
 
 ### /stdd:prp
 
@@ -622,7 +619,9 @@ TDD 守护钩子系统。
 
 ---
 
-## 命令速查表
+## 常用入口速查表
+
+> 以下表格是常用入口摘要，不是穷举清单；详细说明以上文章节为准。
 
 | 类别 | 命令 | 说明 |
 |------|------|------|
@@ -654,9 +653,13 @@ TDD 守护钩子系统。
 | | `/stdd:roles` | 多角色 |
 | | `/stdd:metrics` | 质量指标 |
 | | `/stdd:learn` | 自适应学习 |
+| | `/stdd:certainty` | 置信度评分 |
+| | `/stdd:complexity` | 复杂度评估 |
 | | `/stdd:vision` | 愿景文档 |
 | | `/stdd:user-test` | 用户测试 |
 | | `/stdd:help` | 帮助系统 |
+| | `/stdd:final-doc` | 最终文档 |
+| | `/stdd:commit` | 原子化提交 |
 
 ---
 

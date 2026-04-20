@@ -352,28 +352,30 @@ stdd hooks enable            # 恢复 Hooks
 | `/stdd:factory` | 测试数据工厂 (Builder/Faker) |
 | `/stdd:mutation` | 变异测试 (Quick + Deep 双模式) |
 
-### 辅助功能
+### 辅助功能 (Skill 驱动入口)
 
-| 命令 | 说明 |
-|------|------|
-| `/stdd:guard` | TDD 守护钩子 + Anti-Bypass 防绕过 |
-| `/stdd:constitution` | Constitution 管理 (9 篇条例 + 豁免) |
-| `/stdd:prp` | PRP 结构化规划 (What/Why/How/Success) |
-| `/stdd:supervisor` | 多 Agent 协调器 (Supervisor 模式) |
-| `/stdd:context` | 三层文档架构 (渐进式加载) |
-| `/stdd:iterate` | 自主迭代循环 (Plan-Execute-Reflect) |
-| `/stdd:memory` | 向量数据库记忆 (语义搜索) |
-| `/stdd:parallel` | 并行执行模式 (DAG 调度) |
-| `/stdd:roles` | 12 Agent 角色协作 (含对抗式审查) |
-| `/stdd:metrics` | 质量指标仪表板 |
-| `/stdd:learn` | 自适应学习 + Pattern Teaching |
-| `/stdd:certainty` | 5 维度置信度评分 |
-| `/stdd:complexity` | APP Mass 代码质量计算 |
-| `/stdd:vision` | 项目愿景文档管理 |
-| `/stdd:user-test` | 用户测试脚本生成 |
-| `/stdd:help` | 上下文感知帮助系统 |
-| `/stdd:final-doc` | 生成最终文档 |
-| `/stdd:commit` | 原子化提交 (red:/green:/refactor: 前缀) |
+> 本组能力多数由 Skill 实现驱动。为避免 taxonomy 混淆，下表统一使用用户可见的 `/stdd:*` 会话入口名；是否存在独立 command 文件，请以 `.claude/commands/stdd/` 与 `.claude/skills/` 的实际内容为准。
+
+| 功能 | 统一入口 | 说明 |
+|------|----------|------|
+| TDD 守护 | `/stdd:guard` | TDD 守护钩子 + Anti-Bypass 防绕过 |
+| Constitution | `/stdd:constitution` | Constitution 管理 (9 篇条例 + 豁免) |
+| PRP 规划 | `/stdd:prp` | PRP 结构化规划 (What/Why/How/Success) |
+| Supervisor | `/stdd:supervisor` | 多 Agent 协调器 (Supervisor 模式) |
+| Context | `/stdd:context` | 三层文档架构 (渐进式加载) |
+| Iterate | `/stdd:iterate` | 自主迭代循环 (Plan-Execute-Reflect) |
+| Memory | `/stdd:memory` | 向量数据库记忆 (语义搜索) |
+| Parallel | `/stdd:parallel` | 并行执行模式 (DAG 调度) |
+| Roles | `/stdd:roles` | 12 Agent 角色协作 (含对抗式审查) |
+| Metrics | `/stdd:metrics` | 质量指标仪表板 |
+| Learn | `/stdd:learn` | 自适应学习 + Pattern Teaching |
+| Certainty | `/stdd:certainty` | 5 维度置信度评分 |
+| Complexity | `/stdd:complexity` | APP Mass 代码质量计算 |
+| Vision | `/stdd:vision` | 项目愿景文档管理 |
+| User Test | `/stdd:user-test` | 用户测试脚本生成 |
+| Help | `/stdd:help` | 上下文感知帮助系统 |
+| Final Doc | `/stdd:final-doc` | 生成最终文档 |
+| Commit | `/stdd:commit` | 原子化提交 (red:/green:/refactor: 前缀) |
 
 ---
 
