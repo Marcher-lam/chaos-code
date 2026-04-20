@@ -54,6 +54,31 @@ const SKILL_DRIVEN_ENTRIES = [
   '/stdd:vision'
 ];
 
+const CANONICAL_CLI_ENTRIES = [
+  'stdd init',
+  'stdd init /path/to/project',
+  'stdd init --force',
+  'stdd list',
+  'stdd list --specs',
+  'stdd list --archived',
+  'stdd list --json',
+  'stdd status',
+  'stdd status add-dark-mode',
+  'stdd new change add-dark-mode',
+  'stdd new spec auth',
+  'stdd skills',
+  'stdd skills --phase 4',
+  'stdd commands',
+  'stdd constitution',
+  'stdd constitution show 2',
+  'stdd constitution check',
+  'stdd hooks install',
+  'stdd hooks verify',
+  'stdd hooks status',
+  'stdd hooks disable',
+  'stdd hooks enable'
+];
+
 function readFile(relativePath) {
   return fs.readFileSync(path.join(__dirname, '..', relativePath), 'utf8');
 }
@@ -148,6 +173,36 @@ describe('Documentation entry consistency', () => {
 
     for (const entry of [...COMMAND_ONLY_ENTRIES, ...COMMAND_FILE_BACKED_ENTRIES]) {
       expect(text).toContain(entry);
+    }
+  });
+
+  it('keeps AGENTS.md and CLAUDE_CODE_GUIDE.md high-level taxonomy notes aligned', () => {
+    const agents = readFile('AGENTS.md');
+    const guide = readFile('CLAUDE_CODE_GUIDE.md');
+
+    expect(agents).toContain('全部能力入口 (42 个 = 38 Skills + 4 Command-only 快捷入口)');
+    expect(agents).toContain('快捷入口 (4，仅有 Command 文件，无独立 Skill 目录)');
+    expect(agents).toContain('辅助功能 (12)');
+    expect(agents).toContain('constitution');
+
+    expect(guide).toContain('.claude/commands/stdd/{指令名称}.md');
+    expect(guide).toContain('.claude/skills/stdd-{指令名称}/SKILL.md');
+    expect(guide).toContain('new`、`ff`、`continue`、`explore`');
+    expect(guide).toContain('不要假定存在同名 Skill 目录');
+  });
+
+  it('keeps English documentation aligned with the canonical CLI entries', () => {
+    const docsToCheck = [
+      'README_EN.md',
+      'docs/en/cli-guide.md',
+      'docs/en/getting-started.md'
+    ];
+
+    for (const file of docsToCheck) {
+      const text = readFile(file);
+      const missing = CANONICAL_CLI_ENTRIES.filter(entry => !text.includes(entry));
+
+      expect(missing).toEqual([]);
     }
   });
 });
