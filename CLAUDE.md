@@ -132,6 +132,19 @@ stdd-copilot/
 
 **双入口设计**：CLI（`cli.js` + Commander.js）和 Claude Code 斜杠命令（`.claude/commands/stdd/*.md`）共享同一套业务逻辑，但斜杠命令是主要交互方式，CLI 主要用于项目初始化和状态查询。
 
+### 入口 taxonomy（防漂移约定）
+
+为避免把 slash command、command 文件和 skill 目录混为一谈，本仓库按以下三类理解 `/stdd:*` 入口：
+
+- **command-only 快捷入口（4）**：`/stdd:new`、`/stdd:ff`、`/stdd:continue`、`/stdd:explore`
+  - 有 `.claude/commands/stdd/*.md`
+  - 不要求存在同名 `.claude/skills/stdd-*` 目录
+- **command-file-backed 入口（15）**：`/stdd:init`、`/stdd:propose`、`/stdd:clarify`、`/stdd:confirm`、`/stdd:spec`、`/stdd:plan`、`/stdd:apply`、`/stdd:execute`、`/stdd:verify`、`/stdd:archive`、`/stdd:final-doc`、`/stdd:graph`、`/stdd:brainstorm`、`/stdd:issue`、`/stdd:constitution`
+  - 这些入口至少有明确的 command 文件承载交互协议
+- **skill-driven 入口（其余 25 个）**
+  - 主要由 `.claude/skills/` 驱动，如 `/stdd:turbo`、`/stdd:guard`、`/stdd:commit`、`/stdd:help`
+  - 文档中统一继续使用 `/stdd:*` 作为用户可见入口名
+
 ### 技术栈
 
 - **运行时**：Node.js >= 20.0.0（无编译步骤，直接运行 `.js`）
