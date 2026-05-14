@@ -256,10 +256,10 @@ Valid phases: 1, 2, 3, 4, 5
       const stddSkillsPath = path.join(__dirname, 'src', 'stdd-skills');
       console.log(chalk.bold('\n📚 STDD Copilot Skills\n'));
       console.log(chalk.cyan('Core Skills:'));
-      const coreSkills = fs.existsSync(path.join(__dirname, 'src', 'core-skills'))
-        ? fs.readdirSync(path.join(__dirname, 'src', 'core-skills')).filter(f => !f.startsWith('.'))
-        : [];
-      coreSkills.forEach(skill => console.log(`  • ${skill}`));
+      const coreSkillsConfig = path.join(__dirname, 'src', 'config', 'core-skills-module.yaml');
+      if (fs.existsSync(coreSkillsConfig)) {
+        console.log(`  • core-skills (${coreSkillsConfig})`);
+      }
       console.log(chalk.cyan('\nPhase-based Skills:'));
       [1, 2, 3, 4, 5].forEach(phase => {
         const stddSkills = fs.existsSync(stddSkillsPath)

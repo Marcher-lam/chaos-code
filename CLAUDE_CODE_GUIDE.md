@@ -22,5 +22,5 @@ STDD Copilot 2.0 支持 Agent 自主编排工作流。Agent 应主动读取 Skil
 - 测试基线: 61 套件, 764 测试, 全通过, npm audit 零漏洞
 - CI/CD: 矩阵测试 Node.js 18/20/22, 覆盖率收集
 - 新增模块: error-handler, logger, security, command-registry, command-loader, types
-- 新增文件: Dockerfile, docker-compose.yml, CHANGELOG.md, EvoRL.md
+- 新增文件: Dockerfile, docker-compose.yml, CHANGELOG.md, docs/EvoRL.md
 - npm 脚本: test:all, test:coverage, test:benchmark, audit, premerge

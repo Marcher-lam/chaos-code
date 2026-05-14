@@ -172,29 +172,43 @@ class Orchestrator {
         };
       case 'spec':
         return {
-          action: 'spec',
-          command: '/stdd:spec',
-          reason: '需求已确认，需要生成 BDD 规格。',
-          phase: 'spec',
-          progress: `${completedCount}/${phases.length}`,
-          instructions: '自动执行 /stdd:spec 生成 BDD feature 文件',
-        };
-      case 'plan':
-        return {
           action: 'plan',
           command: '/stdd:plan',
           reason: 'BDD 规格已生成，需要拆解为可执行任务。',
-          phase: 'plan',
+          phase: 'spec',
           progress: `${completedCount}/${phases.length}`,
           instructions: '自动执行 /stdd:plan 生成 tasks.md 和 design.md',
+        };
+      case 'plan':
+        return {
+          action: 'apply',
+          command: '/stdd:apply',
+          reason: '任务已拆解，可以开始 TDD 实现。',
+          phase: 'plan',
+          progress: `${completedCount}/${phases.length}`,
+          instructions: '自动执行 /stdd:apply 开始 TDD 循环',
         };
       case 'apply': {
         const tasksPath = path.join(changeDir, 'tasks.md');
         let pendingTask = null;
+        let allDone = false;
         if (fs.existsSync(tasksPath)) {
           const content = fs.readFileSync(tasksPath, 'utf-8');
           const match = content.match(/- \[[ ~]\] (.+)/);
           if (match) pendingTask = match[1];
+          const total = (content.match(/\[[ x~]\]/g) || []).length;
+          const done = (content.match(/\[x\]/g) || []).length;
+          allDone = total > 0 && done >= total;
+        }
+        if (allDone) {
+          return {
+            action: 'verify',
+            command: '/stdd:verify',
+            reason: '所有任务已完成，需要验证。',
+            phase: 'apply',
+            progress: `${completedCount}/${phases.length}`,
+            instructions: '自动执行 /stdd:verify 验证实现',
+          };
         }
         return {
           action: 'apply',
@@ -211,21 +225,22 @@ class Orchestrator {
       }
       case 'verify':
         return {
-          action: 'verify',
-          command: '/stdd:verify',
-          reason: '所有任务已完成，需要验证并归档。',
+          action: 'archive',
+          command: '/stdd:archive',
+          reason: '验证通过，等待用户确认归档。',
           phase: 'verify',
           progress: `${completedCount}/${phases.length}`,
-          instructions: '自动执行 /stdd:verify，然后执行 /stdd:mutation，最后 /stdd:archive',
+          instructions: '向用户展示验证结果，等待确认后执行 /stdd:archive',
+          gate: true,
         };
       case 'archive':
         return {
           action: 'archive',
           command: '/stdd:archive',
-          reason: '验证通过，等待用户确认归档。',
+          reason: '变更已准备好归档。',
           phase: 'archive',
-          progress: `${completedCount}/${phases.length}`,
-          instructions: '向用户展示验证结果，等待确认后执行 /stdd:archive',
+          progress: `${phases.length}/${phases.length}`,
+          instructions: '归档变更并等待新需求',
           gate: true,
         };
       default:
