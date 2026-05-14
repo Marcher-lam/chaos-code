@@ -23,6 +23,11 @@ stdd hooks verify
 stdd hooks status
 stdd hooks disable
 stdd hooks enable
+stdd progress
+stdd progress --summary
+stdd progress --resume
+stdd progress --json
+stdd progress --clear
 stdd new change add-dark-mode
 stdd new spec auth
 

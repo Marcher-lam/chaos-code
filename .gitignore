@@ -37,8 +37,10 @@ credentials.json
 secrets.yaml
 
 # Test artifacts
+stdd/graph/cache/
 stdd/changes/archive/
 stdd/evidence/
+stdd/progress.jsonl
 stdd/runtime/agent-state.json
 stdd/runtime/agent-turns.jsonl
 

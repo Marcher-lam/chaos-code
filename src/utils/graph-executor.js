@@ -23,7 +23,8 @@ class GraphExecutor {
 
   /**
    * 执行单个图节点。优先使用外部注入的执行器。
-   * 如果没有配置执行器，抛出明确错误（不再使用 mock fallback）。
+   * 如果没有配置执行器，保留轻量 fallback 以支持 graph runtime 测试和演示执行。
+   * 真实编码节点仍应通过 executeNode 或 executors 注入外部执行器。
    * @param {string} nodeName
    * @param {object} inputs
    */
@@ -46,11 +47,11 @@ class GraphExecutor {
       return nodeExecutor(nodeName, inputs, meta);
     }
 
-      // 如果没有外部执行器，检查是否有 shouldFailOn 触发故障
-      if (inputs.shouldFailOn === nodeName) {
-        throw new Error(`Simulated failure for ${nodeName}`);
-      }
-      return { success: true, generator: nodeName };
+    // No external executor: keep deterministic fallback for tests/demo only.
+    if (inputs.shouldFailOn === nodeName) {
+      throw new Error(`Simulated failure for ${nodeName}`);
+    }
+    return { success: true, generator: nodeName };
   }
 
   /**

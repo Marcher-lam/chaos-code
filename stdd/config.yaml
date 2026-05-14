@@ -22,7 +22,7 @@ project:
   language: "${LANGUAGE:-typescript}"     # typescript / javascript / python / go / rust
   framework: "${FRAMEWORK:-react}"       # react / vue / nextjs / express / fastapi / gin / actix
   backend: "${BACKEND:-express}"          # express / fastapi / gin / actix / none
-  test_framework: "${TEST_FRAMEWORK:-vitest}"  # vitest / jest / pytest / go test / cargo test
+  test_framework: "${TEST_FRAMEWORK:-jest}"  # vitest / jest / pytest / go test / cargo test
   package_manager: "${PKG_MANAGER:-npm}"  # npm / yarn / pnpm
   design_preset: "${DESIGN_PRESET:-modern}"  # modern / dark / minimal (前端项目时生效)
   database: "${DATABASE:-postgresql}"     # postgresql / mysql / sqlite / mongodb / none
@@ -45,7 +45,7 @@ changes:
 specs:
   dir: "stdd/specs"
   format: "gherkin"  # gherkin, yaml, markdown
-  bdd_framework: "${TEST_FRAMEWORK:-vitest}"
+  bdd_framework: "${TEST_FRAMEWORK:-jest}"
 
 # 记忆系统
 memory:
@@ -115,7 +115,7 @@ tdd:
       enabled: "auto"          # auto / true / false
       config_file: "stryker.conf.json"
       concurrency: 4
-      test_runner: "vitest"
+      test_runner: "jest"
       fallback_to_quick: true  # Stryker 不可用时降级到伪变异
 
   # Test Pipeline 自动生成（参考 ATDD）

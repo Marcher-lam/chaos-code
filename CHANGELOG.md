@@ -22,6 +22,7 @@ All notable changes to STDD Copilot will be documented in this file.
 - **TypeScript Type Definitions**: JSDoc types for core interfaces
 - **Command Registry**: Centralized command management for dynamic loading
 - **Error Handling**: Structured error codes, retry wrappers, evidence logging
+- **Session Progress Tracking** (`stdd progress`): Real-time JSONL progress log for all CLI commands, survives terminal close/crash, supports breakpoint resume via `--resume`, SIGINT/SIGTERM signal capture, automatic truncation at 5000 entries
 - **Logging System**: Multi-level structured logging with rotation
 
 ### Changed

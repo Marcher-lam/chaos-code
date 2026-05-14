@@ -135,23 +135,6 @@ Common examples:
 For Claude Code slash commands: stdd commands
 `);
 
-// ─── Base Configuration ───
-program
-  .name('stdd')
-  .description('STDD Copilot - Spec + Test Driven Development Framework')
-  .version(packageJson.version)
-  .option('--no-color', 'Disable color output');
-
-program.addHelpText('after', `
-Common examples:
-  stdd init
-  stdd new change add-dark-mode
-  stdd list --archived
-  stdd status --json
-
-For Claude Code slash commands: stdd commands
-`);
-
 // ─── Dynamic Command Loading ───
 // TODO: Migrate all commands to use CommandLoader for dynamic registration
 // const { CommandLoader } = require('./src/cli/registry/command-loader');
@@ -1035,6 +1018,50 @@ browserCmd.command('doctor')
     }
     if (result.status !== 'pass') process.exitCode = 1;
   });
+
+// ─── Session Progress: real-time command tracking for breakpoint resume ───
+const { progress, active, setActive, installSignals } = require('./src/utils/session-progress');
+const { ProgressCommand } = require('./src/cli/commands/progress');
+
+installSignals();
+
+// Register stdd progress command
+program
+  .command('progress')
+  .description('View session progress, resume context, and history')
+  .option('--last <n>', 'Show last N entries', '20')
+  .option('--summary', 'Show progress summary')
+  .option('--resume', 'Show resume context for last interrupted command')
+  .option('--clear', 'Clear progress log')
+  .option('--json', 'JSON output')
+  .action((options) => { new ProgressCommand().execute(options); });
+
+// Global progress tracking via Commander hooks — only active when stdd/ exists
+program.hook('preAction', (thisCmd, actionCmd) => {
+  try {
+    const p = progress();
+    if (!p._active) return;
+    const cmd = actionCmd.name();
+    const opts = actionCmd.opts() || {};
+    const args = {};
+    const operands = actionCmd.args || [];
+    if (operands.length) args._pos = operands.join(' ');
+    if (opts.task) args.task = opts.task;
+    if (opts.changeName) args.changeName = opts.changeName;
+    if (opts.workspace) args.workspace = opts.workspace;
+    if (opts.mode) args.mode = opts.mode;
+    if (cmd === 'change' || cmd === 'new') args._sub = 'new change';
+    if (operands[0] && cmd !== 'progress') args.change = operands[0];
+    setActive(p.start(cmd, args));
+  } catch { /* never block the main flow */ }
+});
+
+program.hook('postAction', () => {
+  try {
+    const e = active();
+    if (e) { progress().complete(e.id); progress().truncate(); }
+  } catch { /* never block the main flow */ }
+});
 
 program.parse();
 

@@ -244,7 +244,7 @@ describe('verify CLI command', () => {
     expect(result.status).toBe(0);
   });
 
-  it('lint failure is a warning, not fatal', () => {
+  it('lint failure makes verification fail', () => {
     const projectPath = createTempProject('lint-fail-project', {
       packageJson: { scripts: { test: 'echo ok', lint: 'exit 1' } },
     });

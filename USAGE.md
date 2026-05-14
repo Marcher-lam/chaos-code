@@ -4,7 +4,7 @@ STDD Copilot 提供双入口设计：CLI 命令行工具 (`stdd`) 和 Claude Cod
 
 当前 CLI 已覆盖日常工程闭环：`stdd ff/spec/api-spec/apply/continue/mutation/verify/archive/commit`、`stdd issue/turbo/explore`、`stdd constitution check/status/fix/audit/waive`、`stdd guard/hooks`、`stdd graph run/history/recommend`、`stdd workspace`、`stdd metrics/context/ci/starters/update`、`stdd validate --spec-guardian`、`stdd learn scan`、`stdd roles party/adversarial`、`stdd story`、`stdd user-test`、`stdd pipeline`、`stdd schema create/fork/validate`、`stdd extensions` 和 **`stdd runtime agent/sudo`**。也支持 **Docker 部署**：`docker build -t stdd-copilot .` 然后 `docker-compose up -d`。
 
-最新补强：`stdd fix-packet [change]` 会生成 Golden Packet 风格失败修复上下文，`stdd outside-in init/scaffold/status` 会生成 layer registry 与分层 TDD 骨架；Skill Graph 的 feature intent 已包含 `stdd-outside-in`，repair intent 已包含 `stdd-fix-packet → stdd-apply → stdd-verify`。完整测试验证：`npm test`，61 个测试套件、764 个测试通过，npm audit 零漏洞。
+最新补强：`stdd fix-packet [change]` 会生成 Golden Packet 风格失败修复上下文，`stdd outside-in init/scaffold/status` 会生成 layer registry 与分层 TDD 骨架；Skill Graph 的 feature intent 已包含 `stdd-outside-in`，repair intent 已包含 `stdd-fix-packet → stdd-apply → stdd-verify`。新增实时进度追踪：`stdd progress` 自动记录所有命令执行到 `stdd/progress.jsonl`，终端关闭/崩溃后可通过 `stdd progress --resume` 断点续传。完整测试验证：`npm test`，66 个测试套件、827 个测试通过，npm audit 零漏洞。
 
 ## 核心概念
 
@@ -488,6 +488,12 @@ stdd graph run --intent repair --change-name add-dark-mode  # 从 fix-packet 修
 stdd graph history           # 查看 graph 执行历史
 stdd graph recommend         # 推荐下一步
 stdd recommend               # CLI 侧下一步推荐
+
+stdd progress                # 查看进度历史 (最近 20 条)
+stdd progress --summary      # 进度总览 (总命令/成功/失败/中断)
+stdd progress --resume       # 断点恢复上下文 (中断后推荐续传命令)
+stdd progress --json         # JSON 输出
+stdd progress --clear        # 清空进度日志
 
 stdd skills                  # 列出所有技能
 stdd skills --phase 4        # 按阶段筛选
