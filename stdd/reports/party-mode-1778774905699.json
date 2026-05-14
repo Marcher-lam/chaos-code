@@ -1,0 +1,42 @@
+{
+  "topic": "user login",
+  "roles": [
+    {
+      "role": "po",
+      "name": "Product Owner",
+      "lens": "scope, value, acceptance criteria",
+      "prompt": "Assess 'user login' for scope, value, acceptance criteria. State risks first, then one concrete recommendation."
+    },
+    {
+      "role": "architect",
+      "name": "Architect",
+      "lens": "boundaries, dependencies, evolution",
+      "prompt": "Assess 'user login' for boundaries, dependencies, evolution. State risks first, then one concrete recommendation."
+    },
+    {
+      "role": "developer",
+      "name": "Developer",
+      "lens": "implementation simplicity and maintainability",
+      "prompt": "Assess 'user login' for implementation simplicity and maintainability. State risks first, then one concrete recommendation."
+    },
+    {
+      "role": "tester",
+      "name": "Tester",
+      "lens": "testability, edge cases, regression risk",
+      "prompt": "Assess 'user login' for testability, edge cases, regression risk. State risks first, then one concrete recommendation."
+    },
+    {
+      "role": "security",
+      "name": "Security",
+      "lens": "secrets, injection, unsafe defaults",
+      "prompt": "Assess 'user login' for secrets, injection, unsafe defaults. State risks first, then one concrete recommendation."
+    },
+    {
+      "role": "reviewer",
+      "name": "Reviewer",
+      "lens": "defects, coupling, unclear intent",
+      "prompt": "Assess 'user login' for defects, coupling, unclear intent. State risks first, then one concrete recommendation."
+    }
+  ],
+  "createdAt": "2026-05-14T16:08:25.698Z"
+}

@@ -21,7 +21,7 @@
 
 STDD Copilot 是一套基于 **Skill Graph（技能图谱）** 的全链路自动化开发框架。它将 **Spec-First (需求规范优先)** 与 **TDD (测试驱动开发)** 深度融合，通过文件化规格、CLI 工作流、Constitution 审计和外部 AI 代码助手协作，让开发过程从"模糊对话"转向"可验证工程"。
 
-**当前验证状态**: 67 个测试套件、831 个测试全部通过，npm audit 零漏洞。
+**当前验证状态**: 80 个测试套件、893 个测试全部通过，npm audit 零漏洞。
 
 ## 为什么选择 STDD Copilot?
 
@@ -324,19 +324,19 @@ stdd constitution waive 2 --reason "Legacy" --days 7  # 临时豁免
 stdd-copilot/
 ├── cli.js                       # CLI 入口 (Commander.js)
 ├── src/
-│   ├── cli/commands/            # 55 个命令实现
+│   ├── cli/commands/            # 55 个命令实现 (57 个注册含 start/doctor)
 │   ├── cli/registry/            # 命令注册与动态加载
 │   ├── utils/                   # 22 个工具模块
 │   │   ├── graph-executor.js    #   Graph 执行引擎 (含自愈)
 │   │   ├── session-progress.js  #   实时进度追踪
-│   │   ├── error-handler.js     #   结构化错误处理
+│   │   ├── file-walker.js      #   共享目录遍历
 │   │   ├── evidence-capture.js  #   证据采集
 │   │   └── ...
 │   └── types/                   # TypeScript/JSDoc 类型定义
 ├── src/templates/
 │   ├── skills/                  # 38 个 Skill 定义
 │   └── commands/                # 20 个斜杠命令模板
-├── __tests__/                   # 67 个测试套件
+├── __tests__/                   # 80 个测试套件
 ├── stdd/                        # 运行时工作目录
 │   ├── changes/                 # 变更管理
 │   ├── specs/                   # BDD 规格文件 (Source of Truth)
@@ -351,7 +351,7 @@ stdd-copilot/
 
 ## 已实现边界
 
-**已 CLI 化** (55 个命令): init、new、ff、spec、api-spec、apply、continue、mutation、verify、archive、commit、constitution (check/status/fix/audit/waive)、guard、hooks、graph (run/history/recommend)、workspace、metrics、context、ci、starters、depcheck、schema、contract、validate、fix-packet、outside-in、learn、roles、story、user-test、pipeline、extensions、progress、doctor、recommend、explore、brainstorm、issue、turbo、runtime (agent/sudo) 等。
+**已 CLI 化** (57 个命令): init、start、doctor、new、ff、spec、api-spec、apply、continue、mutation、verify、archive、commit、constitution (check/status/fix/audit/waive)、guard、hooks、graph (run/history/recommend)、workspace、metrics、context、ci、starters、depcheck、schema、contract、validate、fix-packet、outside-in、learn、roles、story、user-test、pipeline、extensions、progress、recommend、explore、brainstorm、issue、turbo、runtime (agent/sudo) 等。
 
 **Runtime 引擎**: Agent 状态机 (Party Mode)、SudoLang 解析引擎、内置浏览器驱动 (Playwright)、动态 Graph 编排 (DAG)、断点续传进度追踪、证据采集与审计。
 

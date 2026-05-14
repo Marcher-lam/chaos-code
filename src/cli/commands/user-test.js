@@ -1,16 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { resolveChangeDir } = require('../../utils/change-utils');
-
-function walk(dir, files = []) {
-  if (!fs.existsSync(dir)) return files;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) walk(fullPath, files);
-    else if (entry.isFile() && /\.(feature|md)$/.test(entry.name)) files.push(fullPath);
-  }
-  return files;
-}
+const { walkFiles } = require('../../utils/file-walker');
 
 class UserTestCommand {
   constructor(cwd = process.cwd()) { this.cwd = cwd; }
@@ -19,7 +10,7 @@ class UserTestCommand {
     const changeDir = changeName ? resolveChangeDir(path.join(this.cwd, 'stdd'), changeName) : null;
     const base = changeName ? path.join(changeDir || '', 'specs') : path.join(this.cwd, 'stdd', 'specs');
     if (!fs.existsSync(base)) throw new Error(`Spec directory not found: ${path.relative(this.cwd, base)}`);
-    const scenarios = this.extractScenarios(walk(base));
+    const scenarios = this.extractScenarios(walkFiles(base, { extensions: ['.feature', '.md'], skipDirs: new Set() }));
     const outputDir = changeName ? changeDir : path.join(this.cwd, 'stdd');
     const outputs = [];
     if (!options.agentOnly) outputs.push(this.writeHuman(outputDir, scenarios));

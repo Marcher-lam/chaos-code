@@ -1,0 +1,18 @@
+{
+  "topic": "topic",
+  "roles": [
+    {
+      "role": "po",
+      "name": "Product Owner",
+      "lens": "scope, value, acceptance criteria",
+      "prompt": "Assess 'topic' for scope, value, acceptance criteria. State risks first, then one concrete recommendation."
+    },
+    {
+      "role": "security",
+      "name": "Security",
+      "lens": "secrets, injection, unsafe defaults",
+      "prompt": "Assess 'topic' for secrets, injection, unsafe defaults. State risks first, then one concrete recommendation."
+    }
+  ],
+  "createdAt": "2026-05-14T16:09:03.752Z"
+}

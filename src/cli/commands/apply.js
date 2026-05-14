@@ -63,8 +63,6 @@ function getTaskPhaseFromLine(taskLine) {
 
 // getConfigTestCommand is imported from test-command-resolver module
 
-const TASK_PATTERN = /^(\s*- )\[([ ~x✓✓])\]\s*(.*)$/;
-
 function pickTask(tasks, options = {}) {
   if (options.task) {
     const target = String(options.task);

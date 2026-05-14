@@ -126,7 +126,7 @@ function redactSensitiveInfo(text) {
 
   return text
     .replace(/([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g, '[EMAIL]')
-    .replace(/(?:password|token|secret|key|auth)\s*[:=]\s*['"][^'"]+['"]/gi, '$1=["*** REDACTED ***"]')
+    .replace(/(password|token|secret|key|auth)\s*[:=]\s*['"][^'"]+['"]/gi, '$1=["*** REDACTED ***"]')
     .replace(/-----BEGIN\s[^-]+-----[\s\S]*?-----END\s[^-]+-----/g, '[PRIVATE KEY REDACTED]');
 }
 

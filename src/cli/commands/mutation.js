@@ -7,6 +7,7 @@ const { resolveWorkspace } = require('../../utils/workspace-detector');
 const { resolveWorkspaceScope, evidenceMatchesWorkspace, normalizePath } = require('../../utils/workspace-scope');
 const { normalizeMutationResult } = require('../../runtime/mutation/normalizer');
 const { resolveChangeDir, ensureInsideDir } = require('../../utils/change-utils');
+const { walkFiles: _walkFiles } = require('../../utils/file-walker');
 
 const TEST_FILE_PATTERNS = [
   /\.test\.(js|jsx|ts|tsx|py)$/,
@@ -16,29 +17,10 @@ const TEST_FILE_PATTERNS = [
 ];
 
 const SOURCE_EXTENSIONS = /\.(js|jsx|ts|tsx|py)$/;
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next', 'reports']);
 
 function isTestFile(filePath) {
   const basename = path.basename(filePath);
   return TEST_FILE_PATTERNS.some(pattern => pattern.test(basename));
-}
-
-function walkFiles(dir, predicate) {
-  const files = [];
-  if (!fs.existsSync(dir)) return files;
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!SKIP_DIRS.has(entry.name) && !entry.name.startsWith('.cache')) {
-        files.push(...walkFiles(fullPath, predicate));
-      }
-    } else if (entry.isFile() && predicate(fullPath)) {
-      files.push(fullPath);
-    }
-  }
-  return files;
 }
 
 function safeReadJson(filePath) {
@@ -143,8 +125,8 @@ class MutationCommand {
 
   _runQuick(threshold, workspace) {
     const root = this._scanRoot(workspace);
-    const sourceFiles = walkFiles(root, filePath => SOURCE_EXTENSIONS.test(filePath) && !isTestFile(filePath));
-    const testFiles = walkFiles(root, filePath => SOURCE_EXTENSIONS.test(filePath) && isTestFile(filePath));
+    const sourceFiles = _walkFiles(root, { predicate: filePath => SOURCE_EXTENSIONS.test(filePath) && !isTestFile(filePath) });
+    const testFiles = _walkFiles(root, { predicate: filePath => SOURCE_EXTENSIONS.test(filePath) && isTestFile(filePath) });
 
     let assertions = 0;
     let placeholders = 0;

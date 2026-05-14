@@ -20,7 +20,7 @@ npm link
 
 | 命令 | 说明 |
 |------|------|
-| `npm test` | 运行全部测试 (67 套件, 831 测试) |
+| `npm test` | 运行全部测试 (80 套件, 893 测试) |
 | `npm run test:all` | 完整测试套件 (含集成测试) |
 | `npm run test:coverage` | 生成覆盖率报告 (text/lcov/html) |
 | `npm run test:benchmark` | 运行性能基准套件 |
@@ -29,7 +29,7 @@ npm link
 
 ## 测试与质量门禁
 
-- **测试基线**: 67 个测试套件、831 个测试，CI 矩阵 (Node.js 18/20/22) 全绿
+- **测试基线**: 80 个测试套件、893 个测试，CI 矩阵 (Node.js 18/20/22) 全绿
 - **覆盖率**: `jest.config.js` 配置 `collectCoverageFrom` 收集 `src/**/*.js`，生成 text/lcov/html 报告
 - **安全**: `npm audit` 零漏洞，`security.js` 提供输入清理、密钥检测、路径安全
 - **基准**: `test-support/benchmark.js` 性能回归监控

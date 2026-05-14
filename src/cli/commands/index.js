@@ -50,4 +50,6 @@ module.exports = {
   SudoExecutor: require('../../runtime/sudolang-executor').SudoExecutor,
   BrowserDoctor: require('../../runtime/browser-doctor').BrowserDoctor,
   createAgentExecutor: require('../../runtime/agents').createAgentExecutor,
+  StartCommand: require('./start').StartCommand,
+  DoctorCommand: require('./doctor').DoctorCommand,
 };

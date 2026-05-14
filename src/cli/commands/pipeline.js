@@ -1,16 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { resolveChangeDir } = require('../../utils/change-utils');
-
-function walk(dir, files = []) {
-  if (!fs.existsSync(dir)) return files;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) walk(fullPath, files);
-    else if (entry.isFile() && /\.(feature|md)$/.test(entry.name)) files.push(fullPath);
-  }
-  return files;
-}
+const { walkFiles } = require('../../utils/file-walker');
 
 class PipelineCommand {
   constructor(cwd = process.cwd()) { this.cwd = cwd; }
@@ -19,7 +10,7 @@ class PipelineCommand {
     const changeDir = changeName ? resolveChangeDir(path.join(this.cwd, 'stdd'), changeName) : null;
     const specsDir = changeName ? path.join(changeDir || '', 'specs') : path.join(this.cwd, 'stdd', 'specs');
     if (!fs.existsSync(specsDir)) throw new Error(`Spec directory not found: ${path.relative(this.cwd, specsDir)}`);
-    const ir = this.parseSpecs(walk(specsDir));
+    const ir = this.parseSpecs(walkFiles(specsDir, { extensions: ['.feature', '.md'], skipDirs: new Set() }));
     const outDir = changeName ? path.join(changeDir, 'pipeline') : path.join(this.cwd, 'stdd', 'pipeline');
     fs.mkdirSync(outDir, { recursive: true });
     const irPath = path.join(outDir, 'ir.json');

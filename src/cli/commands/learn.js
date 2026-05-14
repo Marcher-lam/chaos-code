@@ -6,25 +6,9 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+const { walkFiles: _walkFiles } = require('../../utils/file-walker');
 
-const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.py', '.go', '.rs']);
-
-function walkFiles(dir) {
-  const files = [];
-  if (!fs.existsSync(dir)) return files;
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!entry.name.startsWith('.') && entry.name !== 'node_modules' && entry.name !== 'coverage') {
-        files.push(...walkFiles(fullPath));
-      }
-    } else if (entry.isFile() && SOURCE_EXTENSIONS.has(path.extname(entry.name))) {
-      files.push(fullPath);
-    }
-  }
-  return files;
-}
+const SOURCE_EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.py', '.go', '.rs'];
 
 function top(entries, limit = 5) {
   return Object.entries(entries)
@@ -65,7 +49,7 @@ class LearnCommand {
     const roots = ['src', 'lib', 'app', 'packages']
       .map(root => path.join(this.cwd, root))
       .filter(root => fs.existsSync(root));
-    const files = roots.flatMap(root => walkFiles(root));
+    const files = roots.flatMap(root => _walkFiles(root, { extensions: SOURCE_EXTENSIONS }));
     const patterns = this.extractPatterns(files);
     const learningDir = this.ensureLearningDir();
     const jsonPath = path.join(learningDir, 'code-patterns.json');

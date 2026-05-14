@@ -6,7 +6,7 @@ All notable changes to STDD Copilot will be documented in this file.
 
 ### Added
 - **Skill Graph Engine**: Dynamic DAG orchestration with intent-adaptive topology (hotfix/feature/repair/research)
-- **40+ CLI Commands**: Full workflow automation (init, new, apply, verify, archive, mutation, etc.)
+- **57 CLI Commands**: Full workflow automation (init, new, apply, verify, archive, mutation, start, doctor, etc.)
 - **Constitution System**: 9 articles with Hook Enforcement and waiver tracking
 - **Ralph Loop TDD**: Red → Green → Refactor cycle with phase enforcement
 - **5-Level Defense System**: Human confirmation gates, micro-task isolation, failure rollback, static quality, mutation review
@@ -21,15 +21,19 @@ All notable changes to STDD Copilot will be documented in this file.
 - **Performance Benchmarks**: Baseline metrics for core operations
 - **TypeScript Type Definitions**: JSDoc types for core interfaces
 - **Command Registry**: Centralized command management for dynamic loading
-- **Error Handling**: Structured error codes, retry wrappers, evidence logging
 - **Session Progress Tracking** (`stdd progress`): Real-time JSONL progress log for all CLI commands, survives terminal close/crash, supports breakpoint resume via `--resume`, SIGINT/SIGTERM signal capture, automatic truncation at 5000 entries
 - **Logging System**: Multi-level structured logging with rotation
+- **`stdd start`**: Interactive quick-start wizard for new users
+- **`stdd doctor`**: Project health diagnostics (10 checks: STDD dir, config, Node.js version, git hooks, etc.)
+- **`file-walker.js`**: Shared directory traversal utility, unifies 7 duplicated implementations
+- **14 new test suites**: doctor, start, fix-packet, learn, roles, story, pipeline, user-test, validate, outside-in, baby-steps, elicitation, waiver-manager, file-walker (80 suites / 893 tests total)
 
 ### Changed
 - **apply.js/verify.js**: Extracted `getConfigTestCommand()` to shared module (`test-command-resolver.js`)
 - **graph-executor.js**: Restored noop fallback with `shouldFailOn` simulation support, aligned comments with actual fallback behavior
 - **config.yaml**: Calibrated test framework defaults from `vitest` to `jest` (3 locations)
 - **cli.js**: Removed duplicate base program configuration (`--version`, `--no-color`, help footer)
+- **7 command files**: Replaced local `walk`/`walkFiles` with shared `file-walker.js` utility
 - **CI/CD**: Added Node.js 18/20/22 matrix testing
 
 ### Fixed
@@ -41,9 +45,14 @@ All notable changes to STDD Copilot will be documented in this file.
 - **Progress tracking**: `stdd progress --clear` no longer leaves dangling `complete` entry
 - **Progress tracking**: `--resume` hints narrowed to resumable workflow commands only (apply/verify/archive/continue)
 - **Verify test**: Renamed stale test name `'lint failure is a warning, not fatal'` → `'lint failure makes verification fail'`
+- **security.js**: Fixed `redactSensitiveInfo` regex — non-capturing group `(?:...)` caused `$1` to output as literal text
 
 ### Removed
 - `stdd/graph/cache/*` and `stdd/progress.jsonl` removed from git tracking; added to `.gitignore`
+- `error-handler.js`: Removed dead code (never imported by any production file)
+- `ora` dependency: Removed unused package
+- `apply.js` local `TASK_PATTERN`: Removed unused duplicate of `change-utils.js` pattern
+- `cli.js` dead `recommendEngine` function after `program.parse()`
 
 ### Security
 - Path traversal protection in change name validation

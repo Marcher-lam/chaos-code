@@ -4,7 +4,7 @@
 
 A **Skill Graph**-based full-lifecycle automation development framework that deeply integrates **Spec-First** with **TDD**.
 
-**Current baseline**: 67 test suites, 831 tests passed, zero npm audit vulnerabilities.
+**Current baseline**: 80 test suites, 893 tests passed, zero npm audit vulnerabilities.
 
 [**English**](./README_EN.md) · [**简体中文**](./README.md)
 
@@ -198,7 +198,7 @@ init → new → propose → clarify → confirm → spec → plan → apply →
 
 ## Implementation Boundary
 
-**CLI-ified** (55 commands): init, new, ff, spec, api-spec, apply, continue, mutation, verify, archive, commit, constitution, guard, hooks, graph, workspace, metrics, context, ci, starters, depcheck, schema, contract, validate, fix-packet, outside-in, learn, roles, story, user-test, pipeline, extensions, progress, doctor, recommend, explore, brainstorm, issue, turbo, runtime, etc.
+**CLI-ified** (57 commands): init, start, doctor, new, ff, spec, api-spec, apply, continue, mutation, verify, archive, commit, constitution, guard, hooks, graph, workspace, metrics, context, ci, starters, depcheck, schema, contract, validate, fix-packet, outside-in, learn, roles, story, user-test, pipeline, extensions, progress, recommend, explore, brainstorm, issue, turbo, runtime, etc.
 
 **Runtime Engines**: Agent state machine (Party Mode), SudoLang parser, built-in browser driver (Playwright), dynamic Graph orchestration (DAG), breakpoint-resume progress tracking, evidence capture & audit.
 

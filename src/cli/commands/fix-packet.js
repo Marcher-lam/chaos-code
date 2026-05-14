@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { findActiveChange } = require('../../utils/change-utils');
+const { walkFiles } = require('../../utils/file-walker');
 
 const TEXT_EXTENSIONS = /\.(md|feature|txt|json|yaml|yml|log)$/i;
 const MAX_FILE_CHARS = 12000;
@@ -13,19 +14,6 @@ function safeRead(filePath, limit = MAX_FILE_CHARS) {
   } catch (_) {
     return null;
   }
-}
-
-function walk(dir, predicate, files = []) {
-  if (!fs.existsSync(dir)) return files;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!entry.name.startsWith('.') && entry.name !== 'node_modules') walk(fullPath, predicate, files);
-    } else if (entry.isFile() && predicate(fullPath)) {
-      files.push(fullPath);
-    }
-  }
-  return files;
 }
 
 function newestFirst(files) {
@@ -73,11 +61,11 @@ class FixPacketCommand {
       const filePath = path.join(changeDir, name);
       if (fs.existsSync(filePath)) files.push(filePath);
     }
-    files.push(...walk(specsDir, file => TEXT_EXTENSIONS.test(file)));
+    files.push(...walkFiles(specsDir, { predicate: file => TEXT_EXTENSIONS.test(file) }));
 
     const evidenceFiles = newestFirst([
-      ...walk(evidenceDir, file => TEXT_EXTENSIONS.test(file)),
-      ...walk(rootEvidenceDir, file => TEXT_EXTENSIONS.test(file)),
+      ...walkFiles(evidenceDir, { predicate: file => TEXT_EXTENSIONS.test(file) }),
+      ...walkFiles(rootEvidenceDir, { predicate: file => TEXT_EXTENSIONS.test(file) }),
     ]).slice(0, Number(options.evidenceLimit || 8));
 
     return {
@@ -116,7 +104,7 @@ class FixPacketCommand {
       path.join(this.cwd, 'coverage'),
     ];
     const artifactPattern = /\.(png|jpg|jpeg|webp|zip|trace|har|html|json)$/i;
-    return newestFirst(roots.flatMap(root => walk(root, file => artifactPattern.test(file))))
+    return newestFirst(roots.flatMap(root => walkFiles(root, { predicate: file => artifactPattern.test(file) })))
       .map(file => path.relative(this.cwd, file).replace(/\\/g, '/'));
   }
 

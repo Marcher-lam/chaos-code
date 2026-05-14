@@ -8,6 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { findActiveChange, parseTasks } = require('../../utils/change-utils');
 const EvidenceCapture = require('../../utils/evidence-capture');
+const { walkFiles } = require('../../utils/file-walker');
 
 const GWT_PATTERN = /^\s*(?:[-*]\s*)?(Given|When|Then|And|But)\b/i;
 
@@ -43,23 +44,6 @@ const LEAKAGE_RULES = [
     message: 'Spec contains unresolved placeholder language.',
   },
 ];
-
-function walkFiles(dir, predicate) {
-  const files = [];
-  if (!fs.existsSync(dir)) return files;
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!entry.name.startsWith('.') && entry.name !== 'node_modules') {
-        files.push(...walkFiles(fullPath, predicate));
-      }
-    } else if (entry.isFile() && predicate(fullPath)) {
-      files.push(fullPath);
-    }
-  }
-  return files;
-}
 
 function lineDiagnostics(filePath, cwd) {
   const relFile = path.relative(cwd, filePath).replace(/\\/g, '/');
@@ -135,7 +119,7 @@ class ValidateCommand {
       throw new Error(changeName ? `No specs directory found for change '${changeName}'.` : 'No stdd/specs directory found.');
     }
 
-    const specFiles = walkFiles(specsDir, file => /\.(feature|md)$/.test(file));
+    const specFiles = walkFiles(specsDir, { predicate: file => /\.(feature|md)$/.test(file) });
     const diagnostics = specFiles.flatMap(file => lineDiagnostics(file, this.cwd));
     const taskReport = changeDir ? this.compareTasksToSpecs(changeDir, specFiles) : null;
     const blocking = diagnostics.filter(d => d.severity === 'blocking');

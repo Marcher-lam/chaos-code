@@ -1036,6 +1036,21 @@ program
   .option('--json', 'JSON output')
   .action((options) => { new ProgressCommand().execute(options); });
 
+program.command('start')
+  .description('Interactive quick-start wizard')
+  .action(async () => {
+    const { StartCommand } = require('./src/cli/commands/start');
+    await new StartCommand().execute({});
+  });
+
+program.command('doctor')
+  .description('Diagnose STDD project health')
+  .option('--json', 'JSON output')
+  .action((options) => {
+    const { DoctorCommand } = require('./src/cli/commands/doctor');
+    new DoctorCommand().execute(options);
+  });
+
 // Global progress tracking via Commander hooks — only active when stdd/ exists
 program.hook('preAction', (thisCmd, actionCmd) => {
   try {
@@ -1073,10 +1088,3 @@ program.hook('postAction', () => {
 });
 
 program.parse();
-
-// Helpers
-async function recommendEngine(options = {}) {
-  const engine = new RecommendEngine(process.cwd());
-  const recs = engine.recommend(undefined, options);
-  printRecommendations(recs);
-}

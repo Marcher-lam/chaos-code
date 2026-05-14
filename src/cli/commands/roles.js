@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+const { walkFiles } = require('../../utils/file-walker');
 
 const ROLES = [
   { id: 'po', name: 'Product Owner', lens: 'scope, value, acceptance criteria' },
@@ -31,22 +32,6 @@ const REVIEW_PATTERNS = [
   { role: 'developer', severity: 'low', pattern: /console\.log\(|debugger;/i, message: 'Debug artifacts should not ship unless intentional.' },
   { role: 'techwriter', severity: 'low', pattern: /TBD|lorem ipsum|xxx/i, message: 'Documentation has unresolved placeholder language.' },
 ];
-
-function walkFiles(dir, files = []) {
-  if (!fs.existsSync(dir)) return files;
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!entry.name.startsWith('.') && entry.name !== 'node_modules' && entry.name !== 'coverage') {
-        walkFiles(fullPath, files);
-      }
-    } else if (entry.isFile() && /\.(js|jsx|ts|tsx|py|go|rs|md|feature|yaml|yml|json)$/.test(entry.name)) {
-      files.push(fullPath);
-    }
-  }
-  return files;
-}
 
 class RolesCommand {
   constructor(cwd = process.cwd()) {
@@ -83,7 +68,7 @@ class RolesCommand {
   adversarial(target = '.', options = {}) {
     const targetPath = path.resolve(this.cwd, target);
     const files = fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()
-      ? walkFiles(targetPath)
+      ? walkFiles(targetPath, { extensions: ['.js', '.jsx', '.ts', '.tsx', '.py', '.go', '.rs', '.md', '.feature', '.yaml', '.yml', '.json'] })
       : fs.existsSync(targetPath) ? [targetPath] : [];
     if (files.length === 0) throw new Error(`No reviewable files found at '${target}'.`);
 
