@@ -16,12 +16,16 @@ i18n:
     en: "docs/en/"                # 英文文档目录
 
 # 项目信息
+# 以下配置在 stdd init 时由技术栈交互流程确定
 project:
-  type: "${PROJECT_TYPE:-node}"
-  language: "${LANGUAGE:-typescript}"
-  framework: "${FRAMEWORK:-react}"
-  test_framework: "${TEST_FRAMEWORK:-vitest}"
-  package_manager: "${PKG_MANAGER:-npm}"
+  type: "${PROJECT_TYPE:-node}"          # web / cli / api / lib
+  language: "${LANGUAGE:-typescript}"     # typescript / javascript / python / go / rust
+  framework: "${FRAMEWORK:-react}"       # react / vue / nextjs / express / fastapi / gin / actix
+  backend: "${BACKEND:-express}"          # express / fastapi / gin / actix / none
+  test_framework: "${TEST_FRAMEWORK:-vitest}"  # vitest / jest / pytest / go test / cargo test
+  package_manager: "${PKG_MANAGER:-npm}"  # npm / yarn / pnpm
+  design_preset: "${DESIGN_PRESET:-modern}"  # modern / dark / minimal (前端项目时生效)
+  database: "${DATABASE:-postgresql}"     # postgresql / mysql / sqlite / mongodb / none
 
 # Skill Graph 配置
 graph:
