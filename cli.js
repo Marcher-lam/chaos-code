@@ -27,14 +27,14 @@ const {
   UserTestCommand, PipelineCommand, FixPacketCommand, OutsideInCommand,
   RecommendEngine, printRecommendations,
   ConstitutionFixCommand, MutationCommand, AgentEngine, SudoLangParser,
-  BabyStepsCommand, SudoExecutor, ElicitationCommand, BrowserDoctor,
+  BabyStepsCommand, SudoExecutor, ElicitationCommand,
   createAgentExecutor, ProductProposalCommand,
   StartCommand, DoctorCommand
 } = require('./src/cli/commands/index');
 
 const { ProgressCommand } = require('./src/cli/commands/progress');
 
-const BrowserCommand = require('./src/cli/commands/browser');
+const { BrowserCommand } = require('./src/cli/commands/browser');
 const { SpecGenerator } = require('./src/cli/commands/spec-generator');
 const { ApiSpecCommand } = require('./src/cli/commands/api-spec');
 const { MemoryScanner } = require('./src/cli/commands/memory-scan');
@@ -121,7 +121,7 @@ const commandFactories = {
   BrowserCommand,
   BrowserSnapshotCommand: BrowserCommand,
   BrowserInspectCommand: BrowserCommand,
-  BrowserDoctorCommand: BrowserDoctor,
+  BrowserDoctorCommand: BrowserCommand,
   RuntimeAgentCommand: AgentEngine,
   RuntimeSudoCommand: SudoLangParser,
   SpecGenerator,

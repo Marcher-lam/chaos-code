@@ -533,12 +533,12 @@ const commandRegistry = [
           { flags: '--width <width>', description: 'Viewport width', default: '1280' },
           { flags: '--height <height>', description: 'Viewport height', default: '800' },
         ],
-        action: 'BrowserSnapshotCommand',
+        action: 'BrowserCommand.snapshot',
       },
       {
         name: 'inspect <url>',
         description: 'Inspect the page title and basic info',
-        action: 'BrowserInspectCommand',
+        action: 'BrowserCommand.inspect',
       },
       {
         name: 'doctor',
@@ -547,7 +547,7 @@ const commandRegistry = [
           { flags: '--no-launch', description: 'Skip headless Chromium launch probe' },
           { flags: '--json', description: 'JSON output' },
         ],
-        action: 'BrowserDoctorCommand',
+        action: 'BrowserCommand.doctor',
       },
     ],
   },

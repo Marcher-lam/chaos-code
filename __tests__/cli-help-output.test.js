@@ -57,4 +57,14 @@ describe('CLI help output alignment', () => {
     expect(output).toContain('--consumer <name>');
     expect(output).toContain('--provider <name>');
   });
+
+  it('registry subcommands should execute class.method actions', () => {
+    const schemaOutput = runCli(['schema', 'validate', 'nonexistent', '--json']);
+    const workspaceOutput = runCli(['workspace', 'list', '--json']);
+    const browserOutput = runCli(['browser', 'doctor', '--json', '--no-launch']);
+
+    expect(JSON.parse(schemaOutput).status).toBe('pass');
+    expect(JSON.parse(workspaceOutput)).toHaveProperty('workspaces');
+    expect(JSON.parse(browserOutput)).toHaveProperty('checks');
+  });
 });

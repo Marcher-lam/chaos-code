@@ -94,12 +94,13 @@ class CommandLoader {
     if (options) this._addOptions(sub, options);
     if (helpText) sub.addHelpText('after', helpText);
     if (subDef.action) {
-      const Factory = this.commandFactories[subDef.action];
+      const [factoryName, actionMethod] = String(subDef.action).split('.');
+      const Factory = this.commandFactories[factoryName];
       if (Factory) {
         sub.action(async (...actionArgs) => {
           try {
             const instance = new Factory();
-            const method = subDef.method || 'execute';
+            const method = subDef.method || actionMethod || 'execute';
             await instance[method](...actionArgs);
           } catch (error) {
             console.error(chalk.red(error.message));
