@@ -66,7 +66,7 @@ describe('WaiverManager', () => {
       const manager = new WaiverManager(tempDir);
       manager.add({ article: 2, reason: 'First reason' });
 
-      const result = manager.add({
+      manager.add({
         article: 2,
         reason: 'Second reason',
         force: true,

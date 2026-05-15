@@ -1,0 +1,25 @@
+{
+  "env": {
+    "commonjs": true,
+    "es2022": true,
+    "jest": true,
+    "node": true
+  },
+  "extends": ["eslint:recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2022
+  },
+  "ignorePatterns": [
+    "coverage/",
+    "node_modules/",
+    "stdd/graph/cache/",
+    "stdd/templates/starters/",
+    "stdd/runtime/generated/"
+  ],
+  "rules": {
+    "no-control-regex": "off",
+    "no-useless-escape": "off",
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
+  }
+}

@@ -4,7 +4,7 @@
 
 A Skill Graph-based development framework that integrates Spec-First with TDD.
 
-80 test suites, 893 tests passed, zero npm audit vulnerabilities.
+The premerge gate (`npm run premerge`) enforces quality across audit, lint, docs, and Jest regression tests.
 
 [**English**](./README_EN.md) · [**简体中文**](./README.md)
 
@@ -95,6 +95,19 @@ stdd archive add-dark-mode
 /stdd:verify
 /stdd:archive
 ```
+
+### Docker (Optional Isolated Runtime)
+
+The Docker image is suitable for CI smoke tests, internal distribution, and isolated evaluation. For daily development, global npm installation is recommended.
+
+```bash
+docker run --rm -it \
+  -v "$PWD:/workspace" \
+  marcher-lam/stdd-copilot:latest \
+  --help
+```
+
+The image runs as a non-root user and packages only the CLI, templates, schemas, and reporters needed at runtime.
 
 ## Core Workflow
 

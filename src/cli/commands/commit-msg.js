@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
-const { findActiveChange, parseTasks, checkTasksCompletion } = require('../../utils/change-utils');
+const { findActiveChange, parseTasks } = require('../../utils/change-utils');
 
 const MAX_SUBJECT_LENGTH = 50;
 
@@ -45,7 +45,7 @@ function extractScopeFromChangeName(changeName) {
   return null;
 }
 
-function detectType(changeName, proposalContent, tasks) {
+function detectType(changeName, _proposalContent, _tasks) {
   if (changeName && changeName.startsWith('bugfix-')) {
     return 'fix';
   }
@@ -108,7 +108,7 @@ function buildBody(completedTasks, changeName, changeDir) {
 
   if (completedTasks.length > 0) {
     lines.push('');
-    completedTasks.forEach((task, i) => {
+      completedTasks.forEach((task, _i) => {
       lines.push(`- ${task.description}`);
     });
   }

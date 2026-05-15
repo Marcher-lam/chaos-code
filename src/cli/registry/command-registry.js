@@ -1,6 +1,3 @@
-const chalk = require('chalk');
-const path = require('path');
-
 // ─── Command Registry ───
 // Centralized command definitions for dynamic loading
 
@@ -17,6 +14,7 @@ const commandRegistry = [
     action: 'InitCommand',
     spinner: 'Initializing STDD Copilot',
     success: 'STDD initialized successfully!',
+    mapper: (targetPath, options) => [require('path').resolve(targetPath || '.'), options],
   },
   {
     name: 'update [path]',
@@ -75,6 +73,7 @@ const commandRegistry = [
           { flags: '--title <title>', description: 'Change title' },
         ],
         action: 'NewCommand',
+        method: 'createChange',
         spinner: (name) => `Creating change: ${name}`,
         success: (name) => `Change '${name}' created!`,
       },
@@ -121,11 +120,13 @@ const commandRegistry = [
       { flags: '--task <id>', description: 'Task ID to apply' },
       { flags: '--dry-run', description: 'Show what would be done' },
       { flags: '--test-command <cmd>', description: 'Custom test command' },
+      { flags: '--allow-no-tests', description: 'Explicitly allow apply phases to proceed without a test command' },
+      { flags: '--phase <phase>', description: 'TDD phase: red, green, refactor' },
       { flags: '--delegate', description: 'Write cross-model delegation evidence on failure' },
       { flags: '--e2e-command <cmd>', description: 'Run E2E probe as part of apply evidence' },
       { flags: '--workspace <workspace>', description: 'Scope to workspace' },
     ],
-    helpText: `Examples:\n  stdd apply\n  stdd apply --dry-run`,
+    helpText: 'Examples:\n  stdd apply\n  stdd apply --dry-run\n  stdd apply --phase red\n  stdd apply --allow-no-tests',
     action: 'ApplyCommand',
   },
   {
@@ -138,7 +139,7 @@ const commandRegistry = [
       { flags: '--test-command <cmd>', description: 'Custom test command' },
       { flags: '--workspace <workspace>', description: 'Scope to workspace' },
     ],
-    helpText: `Examples:\n  stdd verify\n  stdd verify --lint`,
+    helpText: `\nExamples:\n  stdd verify\n  stdd verify --lint\n  stdd verify --workspace packages/api`,
     action: 'VerifyCommand',
   },
   {

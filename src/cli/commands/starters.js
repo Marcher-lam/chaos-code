@@ -4,7 +4,6 @@
  */
 
 const fs = require('fs').promises;
-const fsSync = require('fs');
 const path = require('path');
 const { getPackageRoot } = require('../../utils/path-resolver');
 const { InitCommand } = require('./init');

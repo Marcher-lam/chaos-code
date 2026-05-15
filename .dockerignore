@@ -1,0 +1,28 @@
+.git
+.github
+.claude
+node_modules
+coverage
+benchmark-results.json
+npm-debug.log*
+*.tgz
+.DS_Store
+
+# STDD runtime state generated during local usage
+stdd/evidence
+stdd/reports
+stdd/runtime
+stdd/progress.jsonl
+stdd/graph/cache
+stdd/memory
+stdd/changes/*/evidence
+
+# Test-only fixtures and local outputs
+existing-project
+js-starter-test
+my-awesome-app
+py-starter-test
+ts-starter-test
+go-starter-test
+rust-starter-test
+stdd-integrated-test

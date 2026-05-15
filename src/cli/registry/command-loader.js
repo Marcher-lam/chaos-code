@@ -2,108 +2,124 @@ const chalk = require('chalk');
 const { commandRegistry } = require('./command-registry');
 
 /**
- * Command Loader - Dynamically loads and registers commands
- * 
- * This module provides a centralized way to register commands
- * from the command registry, reducing boilerplate in cli.js
+ * Command Loader - Dynamically registers commands with action wiring
  */
 
 class CommandLoader {
-  constructor(program) {
+  /**
+   * @param {object} program - Commander program instance
+   * @param {object} context  - { commandFactories: Map<name, Constructor>, createSpinner: fn }
+   */
+  constructor(program, context = {}) {
     this.program = program;
+    this.commandFactories = context.commandFactories || {};
+    this.createSpinner = context.createSpinner || null;
+    this.skipNames = context.skipNames || [];
     this.commands = new Map();
   }
 
-  /**
-   * Register all commands from the registry
-   */
   registerAll() {
+    const skip = new Set(this.skipNames || []);
     for (const commandDef of commandRegistry) {
-      this.registerCommand(commandDef);
+      if (!skip.has(commandDef.name)) {
+        this.registerCommand(commandDef);
+      }
     }
   }
 
-  /**
-   * Register a single command
-   * @param {object} commandDef - Command definition from registry
-   */
+  /** Wire a standard action handler for the given commander cmd object */
+  _wireAction(cmd, def) {
+    const className = def.action;
+    const Factory = className ? this.commandFactories[className] : null;
+    if (!Factory) return;
+
+    const spinnerText = def.spinner || null;
+    const successText = def.success || null;
+    const errorViaStderr = def.errorViaStderr !== false && !spinnerText;
+
+    cmd.action(async (...actionArgs) => {
+      const args = def.mapper ? def.mapper(...actionArgs) : actionArgs;
+
+      let spinner = null;
+      if (spinnerText && this.createSpinner) {
+        const text = typeof spinnerText === 'function' ? spinnerText(...args) : spinnerText;
+        spinner = this.createSpinner(text).start();
+      }
+
+      const instance = new Factory(spinner || undefined);
+
+      try {
+        const result = await instance.execute(...args);
+        if (typeof successText === 'function') {
+          spinner && spinner.succeed(successText(result));
+        } else if (spinner) {
+          spinner.succeed(successText || 'Done');
+        }
+        return result;
+      } catch (error) {
+        if (spinner) {
+          spinner.fail(error.message);
+        } else if (errorViaStderr) {
+          console.error(chalk.red(error.message));
+        }
+        process.exit(1);
+      }
+    });
+  }
+
   registerCommand(commandDef) {
     const { name, alias, description, options, helpText, subcommands } = commandDef;
 
-    // If this is a parent command with subcommands
     if (subcommands && subcommands.length > 0) {
       const parentCmd = this.program.command(name).description(description);
-      
-      // Register options on parent if any
-      if (options) {
-        for (const option of options) {
-          parentCmd.option(option.flags, option.description, option.default);
-        }
-      }
-
-      // Register subcommands
+      if (options) this._addOptions(parentCmd, options);
+      if (helpText) parentCmd.addHelpText('after', helpText);
+      if (commandDef.action) this._wireAction(parentCmd, commandDef);
       for (const sub of subcommands) {
         this.registerSubcommand(parentCmd, sub);
       }
     } else {
-      // Register as a regular command
       const cmd = this.program.command(name).description(description);
-      
-      if (alias) {
-        cmd.alias(alias);
-      }
-
-      // Register options
-      if (options) {
-        for (const option of options) {
-          cmd.option(option.flags, option.description, option.default);
-        }
-      }
-
-      // Add help text if provided
-      if (helpText) {
-        cmd.addHelpText('after', helpText);
-      }
-
-      // Store command reference
+      if (alias) cmd.alias(alias);
+      if (options) this._addOptions(cmd, options);
+      if (helpText) cmd.addHelpText('after', helpText);
+      if (commandDef.action) this._wireAction(cmd, commandDef);
       this.commands.set(name, cmd);
     }
   }
 
-  /**
-   * Register a subcommand
-   * @param {object} parent - Parent command
-   * @param {object} subDef - Subcommand definition
-   */
   registerSubcommand(parent, subDef) {
     const { name, description, options, helpText } = subDef;
-    
     const sub = parent.command(name).description(description);
-    
-    if (options) {
-      for (const option of options) {
-        sub.option(option.flags, option.description, option.default);
+    if (options) this._addOptions(sub, options);
+    if (helpText) sub.addHelpText('after', helpText);
+    if (subDef.action) {
+      const Factory = this.commandFactories[subDef.action];
+      if (Factory) {
+        sub.action(async (...actionArgs) => {
+          try {
+            const instance = new Factory();
+            const method = subDef.method || 'execute';
+            await instance[method](...actionArgs);
+          } catch (error) {
+            console.error(chalk.red(error.message));
+            process.exit(1);
+          }
+        });
       }
-    }
-
-    if (helpText) {
-      sub.addHelpText('after', helpText);
     }
   }
 
-  /**
-   * Get a registered command by name
-   * @param {string} name - Command name
-   * @returns {object|null}
-   */
+  _addOptions(cmd, options) {
+    for (const option of options) {
+      cmd.option(option.flags, option.description, option.default);
+    }
+  }
+
   getCommand(name) {
     return this.commands.get(name) || null;
   }
 
-  /**
-   * Get all registered commands
-   * @returns {Map}
-   */
   getAllCommands() {
     return this.commands;
   }

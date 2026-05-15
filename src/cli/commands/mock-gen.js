@@ -164,7 +164,7 @@ class MockGenCommand {
     }
   }
 
-  stringDefault(schema, routePath) {
+  stringDefault(schema, _routePath) {
     if (schema.default !== undefined) return schema.default;
     if (schema.format === 'date-time') return '2024-01-01T00:00:00Z';
     if (schema.format === 'date') return '2024-01-01';

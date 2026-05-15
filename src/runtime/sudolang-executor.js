@@ -19,7 +19,7 @@ class SudoExecutor {
     return this.run(parsed, { ...options, sourceFile: path.basename(filePath) });
   }
 
-  run(parsedData, options = {}) {
+  run(parsedData, _options = {}) {
     this.prepareEnv();
     
     // 1. Generate executable JS from parsed constraints/interfaces

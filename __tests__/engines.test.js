@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const enginesConfig = require('../src/config/engines.json');
 
 describe('Engines Config Validation', () => {

@@ -3,7 +3,6 @@
  * Generate and verify Consumer-Driven Contracts from OpenAPI specs
  */
 
-const fs = require('fs');
 const fsPromises = require('fs').promises;
 const path = require('path');
 const yaml = require('js-yaml');

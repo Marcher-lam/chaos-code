@@ -249,7 +249,7 @@ describe('apply CLI command', () => {
     const projectPath = createTempProject('no-cmd-project');
     const result = runCli(['apply', 'demo'], projectPath);
 
-    expect(result.stdout).toContain('No test command configured');
+    expect(result.stdout).toContain('requires test commands to be configured');
     // P0-1 Fix: TDD mode now fails when no test command is configured
     expect(result.status).toBe(1);
 
@@ -257,5 +257,31 @@ describe('apply CLI command', () => {
     const tasksContent = fs.readFileSync(tasksPath, 'utf-8');
     // Task should remain pending (not marked as done)
     expect(tasksContent).toContain('- [ ] TASK-001');
+  });
+
+  it('fails GREEN phase when no test command configured unless explicitly allowed', () => {
+    const projectPath = createTempProject('no-cmd-green-project', {
+      tasksContent: '- [ ] [phase:green] TASK-001 Implement docs-only change',
+    });
+
+    const result = runCli(['apply', 'demo'], projectPath);
+
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('GREEN Phase requires test commands');
+    const tasksPath = path.join(projectPath, 'stdd', 'changes', 'demo', 'tasks.md');
+    expect(fs.readFileSync(tasksPath, 'utf-8')).toContain('[phase:green]');
+  });
+
+  it('allows explicit no-test GREEN phase bypass', () => {
+    const projectPath = createTempProject('allow-no-tests-green-project', {
+      tasksContent: '- [ ] [phase:green] TASK-001 Implement docs-only change',
+    });
+
+    const result = runCli(['apply', 'demo', '--allow-no-tests'], projectPath);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('--allow-no-tests');
+    const tasksPath = path.join(projectPath, 'stdd', 'changes', 'demo', 'tasks.md');
+    expect(fs.readFileSync(tasksPath, 'utf-8')).toContain('[phase:refactor]');
   });
 });

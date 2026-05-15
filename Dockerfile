@@ -1,7 +1,7 @@
 # STDD Copilot Dockerfile
 # Multi-stage build for production deployment
 
-# Stage 1: Build
+# Stage 1: Production dependencies
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -9,15 +9,26 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci --production=false && \
+# Install runtime dependencies only
+RUN npm ci --omit=dev && \
     npm cache clean --force
 
-# Copy source code
+# Copy runtime source code
 COPY cli.js ./
 COPY src/ ./src/
 COPY schemas/ ./schemas/
-COPY stdd/ ./stdd/
+COPY stdd/config.yaml ./stdd/config.yaml
+COPY stdd/config/ ./stdd/config/
+COPY stdd/extensions/catalog.json ./stdd/extensions/catalog.json
+COPY stdd/extensions/README.md ./stdd/extensions/README.md
+COPY stdd/graph/conditions.json ./stdd/graph/conditions.json
+COPY stdd/graph/config.json ./stdd/graph/config.json
+COPY stdd/graph/skills.yaml ./stdd/graph/skills.yaml
+COPY stdd/presets/ ./stdd/presets/
+COPY stdd/reporters/ ./stdd/reporters/
+COPY stdd/templates/ ./stdd/templates/
+COPY stdd/specs/.gitkeep ./stdd/specs/.gitkeep
+COPY stdd/changes/archive/.gitkeep ./stdd/changes/archive/.gitkeep
 
 # Stage 2: Production
 FROM node:20-alpine

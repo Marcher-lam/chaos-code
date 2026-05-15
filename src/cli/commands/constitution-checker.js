@@ -1118,7 +1118,7 @@ class ConstitutionChecker {
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
           const loopStarts = [...line.matchAll(/(?<!\w)(?:for\s*\(|forEach\s*\()/g)];
-          for (const _ of loopStarts) {
+          for (let __j = 0; __j < loopStarts.length; __j++) {
             nestingDepth++;
             loopStack.push(i + 1);
           }
@@ -1476,7 +1476,6 @@ class ConstitutionChecker {
         const lines = content.split('\n');
         let fileHasAnyJsdoc = false;
         let exportCount = 0;
-        let undocumentedCount = 0;
 
         for (let i = 0; i < lines.length; i++) {
           if (!this._isPublicExport(lines[i])) continue;
@@ -1488,7 +1487,6 @@ class ConstitutionChecker {
           if (this._hasJsdocBeforeLine(lines, i)) {
             fileHasAnyJsdoc = true;
           } else {
-            undocumentedCount++;
             this.issues.warning.push({
               article: 5,
               name: 'Documentation',

@@ -3,8 +3,9 @@
 > **验证项目**: EvoAgent — 基于 RL/GA 的可进化 Agent 协作平台
 > **验证日期**: 2026-05-15
 > **验证环境**: Claude Code
-> **覆盖范围**: 69 个 `/stdd:` 斜杠命令 (20 命令模板 + 47 Skill + CLI-only 命令)
-> **测试用例数**: 109
+> **覆盖范围**: 69 个 `/stdd:` 斜杠命令 (Command 模板 + Skill 模板) + CLI 命令
+> **测试用例数**: 110
+> **质量基线**: `npm run premerge` (audit + zero-warning lint + docs + coverage + 77 suites / 888 tests)
 
 ---
 
@@ -47,12 +48,12 @@ cd ~/stdd-copilot && npm install && npm link
 stdd --version
 ```
 
-**方式 C: Docker**
+**方式 C: Docker — 隔离运行 / CI smoke**
 ```bash
-git clone https://github.com/Marcher-lam/STDD-COPILOT.git ~/stdd-copilot
-cd ~/stdd-copilot && docker build -t stdd-copilot . && docker-compose up -d
-docker exec -it stdd-copilot stdd --help
+docker pull marcher-lam/stdd-copilot:latest
+docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help
 ```
+> Docker 适合 CI 验证和企业内网分发。常规开发推荐 npm 全局安装。
 
 ### 创建验证项目
 
@@ -1085,14 +1086,15 @@ git init && npm init -y
 **验证点**: Workspace 管理正常
 
 ### T86 — stdd recommend / depcheck / doctor
-> **场景**: 推荐/依赖检查/诊断
+> **场景**: 推荐/依赖检查/诊断 (含深度检查)
 
 ```bash
 ! stdd recommend
 ! stdd depcheck
 ! stdd doctor
+! stdd doctor --deep
 ```
-**验证点**: 三个辅助命令正常
+**验证点**: 三个辅助命令正常，`--deep` 输出 lint/audit/changes/progress/evidence
 
 ### T87 — stdd constitution (CLI 侧)
 > **场景**: Constitution 完整 CLI 流程
@@ -1117,11 +1119,12 @@ git init && npm init -y
 **验证点**: Agent 状态机运行
 
 ### T89 — stdd browser
-> **场景**: 浏览器自动化 (需 Playwright)
+> **场景**: 浏览器自动化 + 诊断 (需 Playwright)
 
 ```bash
 ! stdd browser doctor
 ! stdd browser doctor --json
+! stdd doctor --deep
 # (需要前端 dev server 运行)
 ! stdd browser snapshot http://localhost:3000
 ! stdd browser inspect http://localhost:3000
@@ -1515,7 +1518,7 @@ git init && npm init -y
 - 进度追踪: 8 个 (T90-T97)
 - 补全 CLI: 12 个 (T98-T109)
 - 产品方案: 1 个 (T110)
-- 覆盖全部 69 个 `/stdd:` 斜杠命令 + CLI 命令
+- 覆盖全部 `/stdd:` 斜杠命令 + CLI 命令 (registry 注册 40+)
 
 ---
 

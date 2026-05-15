@@ -6,7 +6,6 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
-const { TechStackDetector } = require('../../utils/tech-stack-detector');
 
 const CHECKS = [
   { name: 'STDD directory', id: 'stddDir', severity: 'error' },
@@ -32,6 +31,10 @@ class DoctorCommand {
     for (const check of CHECKS) {
       const result = this[check.id]();
       results.push({ ...result, id: check.id, severity: check.severity });
+    }
+
+    if (options.deep) {
+      results.push(...this._deepChecks());
     }
 
     if (options.json) {
@@ -157,6 +160,57 @@ class DoctorCommand {
       return { status: 'pass', message: 'package.json present' };
     }
     return { status: 'warn', message: 'package.json not found' };
+  }
+
+  _deepChecks() {
+    const results = [];
+    const { spawnSync } = require('child_process');
+
+    // Lint availability
+    try {
+      const r = spawnSync('npx', ['eslint', '--version'], { cwd: this.cwd, timeout: 8000, encoding: 'utf8' });
+      results.push({ status: r.status === 0 ? 'pass' : 'warn', severity: 'info',
+        id: 'lintAvailable', message: r.status === 0 ? 'ESLint available' : 'ESLint not available' });
+    } catch { results.push({ status: 'warn', severity: 'info', id: 'lintAvailable', message: 'Could not check ESLint' }); }
+
+    // Audit status
+    try {
+      const r = spawnSync('npm', ['audit', '--audit-level=high'], { cwd: this.cwd, timeout: 30000, encoding: 'utf8' });
+      results.push({ status: r.status === 0 ? 'pass' : 'warn', severity: 'warning',
+        id: 'npmAudit', message: r.status === 0 ? 'npm audit passed' : `npm audit found issues (exit ${r.status})` });
+    } catch { results.push({ status: 'warn', severity: 'info', id: 'npmAudit', message: 'Could not run npm audit' }); }
+
+    // Active changes
+    const changesDir = path.join(this.cwd, 'stdd', 'changes');
+    if (fs.existsSync(changesDir)) {
+      const entries = fs.readdirSync(changesDir, { withFileTypes: true })
+        .filter(e => e.isDirectory() && e.name !== 'archive' && !e.name.startsWith('.'));
+      if (entries.length > 0) {
+        const withTasks = entries.filter(e => fs.existsSync(path.join(changesDir, e.name, 'tasks.md'))).length;
+        results.push({ status: 'info', severity: 'info', id: 'activeChanges',
+          message: `${entries.length} active change(s), ${withTasks} with tasks.md` });
+      } else {
+        results.push({ status: 'info', severity: 'info', id: 'activeChanges', message: 'No active changes' });
+      }
+    }
+
+    // Progress log size
+    const progressFile = path.join(this.cwd, 'stdd', 'progress.jsonl');
+    if (fs.existsSync(progressFile)) {
+      const size = fs.statSync(progressFile).size;
+      results.push({ status: 'info', severity: 'info', id: 'progressSize',
+        message: `Progress log: ${(size / 1024).toFixed(1)} kB` });
+    }
+
+    // Evidence files
+    const evidenceDir = path.join(this.cwd, 'stdd', 'evidence');
+    if (fs.existsSync(evidenceDir)) {
+      const count = fs.readdirSync(evidenceDir).filter(f => f.endsWith('.json')).length;
+      results.push({ status: 'info', severity: 'info', id: 'evidenceCount',
+        message: `${count} evidence file(s)` });
+    }
+
+    return results;
   }
 
   printResults(results) {

@@ -36,3 +36,10 @@ stdd hooks verify
 stdd hooks status
 stdd hooks disable
 stdd hooks enable
+stdd doctor
+stdd doctor --deep
+stdd apply <name> --allow-no-tests
+
+## Docker 快速启动
+
+docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help

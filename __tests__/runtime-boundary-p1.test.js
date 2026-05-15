@@ -71,6 +71,30 @@ describe('P1 runtime boundary implementations', () => {
     expect(result.output).toBe('qa:find edge cases');
   });
 
+  test('shell agent executor does not evaluate shell metacharacters', async () => {
+    const marker = path.join(tempProject('stdd-shell-injection-'), 'pwned.txt');
+    const executor = new ShellAgentExecutor({ command: `${process.execPath} -e "process.exit(0)" ; ${process.execPath} -e "require('fs').writeFileSync('${marker}', 'x')"` });
+
+    const result = await executor.run({ role: 'qa', goal: 'do not inject' });
+
+    expect(result.status).toBe('success');
+    expect(fs.existsSync(marker)).toBe(false);
+  });
+
+  test('shell agent executor rejects binaries outside the allowlist by default', async () => {
+    const executor = new ShellAgentExecutor({ command: 'python -c "print(1)"' });
+
+    await expect(executor.run({ role: 'qa', goal: 'blocked' })).rejects.toThrow('rejected');
+  });
+
+  test('shell agent executor accepts an explicit binary allowlist', async () => {
+    const executor = new ShellAgentExecutor({ command: `${process.execPath} -e "console.log('ok')"`, allowedBins: 'custom-bin' });
+    const result = await executor.run({ role: 'qa', goal: 'allowed' });
+
+    expect(result.status).toBe('success');
+    expect(result.output).toBe('ok');
+  });
+
   test('runtime agent run uses noop executor through CLI', () => {
     const cliPath = path.join(__dirname, '..', 'cli.js');
     const root = tempProject('stdd-agent-cli-');
@@ -83,6 +107,27 @@ describe('P1 runtime boundary implementations', () => {
     expect(result.status).toBe(0);
     const payload = JSON.parse(result.stdout);
     expect(payload).toEqual(expect.objectContaining({ adapter: 'noop', role: 'architect', status: 'success' }));
+  });
+
+  test('runtime agent shell executor exposes explicit unsafe switch through CLI', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-shell-cli-');
+    const result = spawnSync(process.execPath, [
+      cliPath,
+      'runtime', 'agent', 'run', 'execute command',
+      '--executor', 'shell',
+      '--command', `${process.execPath} -e "console.log('shell-ok')"`,
+      '--allow-unsafe-shell-executor',
+      '--json',
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload).toEqual(expect.objectContaining({ adapter: 'shell', status: 'success', output: 'shell-ok' }));
   });
 
   test('sudo executor runs in a project path containing spaces and cleans temp file', async () => {

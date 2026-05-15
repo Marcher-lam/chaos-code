@@ -99,7 +99,7 @@ function getSTDDHooksPath() {
 /**
  * 生成 hooks 配置
  */
-function generateHooksConfig(hooksPath, options = {}) {
+function generateHooksConfig(hooksPath, _options = {}) {
   const config = {
     hooks: {
       PreToolUse: [

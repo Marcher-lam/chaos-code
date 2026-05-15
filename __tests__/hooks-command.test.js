@@ -251,7 +251,6 @@ describe('HooksCommand - Verify', () => {
 
   describe('verifyHooks integration', () => {
     let tempDir;
-    let settingsPath;
     let hooksDir;
 
     beforeEach(() => {

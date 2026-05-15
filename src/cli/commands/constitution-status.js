@@ -3,10 +3,7 @@
  * Quick health score and per-article status for the codebase.
  */
 
-const fs = require('fs');
 const path = require('path');
-const os = require('os');
-const yaml = require('js-yaml');
 const chalk = require('chalk');
 const { ConstitutionChecker } = require('./constitution-checker');
 const { WaiverManager } = require('./waiver-manager');

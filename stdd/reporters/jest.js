@@ -17,7 +17,7 @@ class STDDJestReporter {
     console.log(`\n[STDD] 开始测试: ${aggregatedResults.numTotalTestSuites} 个文件\n`);
   }
 
-  onTestResult(testPath, testResult, aggregatedResults) {
+  onTestResult(testPath, testResult) {
     testResult.testResults.forEach((result) => {
       const entry = {
         name: result.fullName,
@@ -39,7 +39,7 @@ class STDDJestReporter {
     });
   }
 
-  onRunComplete(contexts, results) {
+  onRunComplete() {
     const total = this.passed.length + this.failed.length + this.skipped.length;
 
     console.log('\n╔══════════════════════════════════════════════╗');

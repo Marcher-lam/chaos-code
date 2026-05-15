@@ -236,8 +236,6 @@ describe('MockGenCommand', () => {
               },
             },
           },
-        },
-        '/api/users': {
           post: {
             summary: 'Create user',
             responses: { '201': { description: 'Created' } },

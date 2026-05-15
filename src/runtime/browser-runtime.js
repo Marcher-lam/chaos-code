@@ -63,6 +63,7 @@ class BrowserRuntime {
       
       // Extract text content, title, and URL
       const data = await page.evaluate((sel) => {
+        /* global document, window */
         const element = document.querySelector(sel);
         return {
           title: document.title,

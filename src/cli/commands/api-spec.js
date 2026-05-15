@@ -165,9 +165,6 @@ class ApiSpecCommand {
     const methodPattern = /\b(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+(\/[\w\/{}\-\._]*)/gi;
     const lines = content.split('\n');
 
-    let currentRequestHints = [];
-    let currentResponseHints = [];
-
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 

@@ -6,7 +6,6 @@
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const path = require('path');
-const chalk = require('chalk');
 const { resolveWorkspace } = require('../../utils/workspace-detector');
 const { resolveChangeDir } = require('../../utils/change-utils');
 

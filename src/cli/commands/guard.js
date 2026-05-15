@@ -8,7 +8,6 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const chalk = require('chalk');
 const { ConstitutionChecker } = require('./constitution-checker');
-const { MetricsCommand } = require('./metrics');
 const { TechStackDetector } = require('../../utils/tech-stack-detector');
 const EvidenceCapture = require('../../utils/evidence-capture');
 const { detectWorkspaces, resolveWorkspace } = require('../../utils/workspace-detector');

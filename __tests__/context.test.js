@@ -6,7 +6,6 @@ const { ContextCommand } = require('../src/cli/commands/context');
 describe('ContextCommand', () => {
   let tempDirs = [];
   let logSpy;
-  let errorSpy;
 
   function createTempDir() {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-context-test-'));
@@ -25,7 +24,7 @@ describe('ContextCommand', () => {
 
   beforeEach(() => {
     logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -290,7 +289,7 @@ describe('ContextCommand', () => {
       const outFile = path.join(baseDir, 'context.md');
 
       const cmd = new ContextCommand(baseDir);
-      const result = await cmd.execute({ mode: 'export', output: outFile });
+      await cmd.execute({ mode: 'export', output: outFile });
 
       const fileContent = fs.readFileSync(outFile, 'utf-8');
       expect(fileContent).toContain('# Project Context');

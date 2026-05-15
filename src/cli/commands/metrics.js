@@ -4,7 +4,6 @@
  */
 
 const fs = require('fs');
-const fsPromises = require('fs').promises;
 const path = require('path');
 const chalk = require('chalk');
 const { spawnSync } = require('child_process');

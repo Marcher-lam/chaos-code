@@ -23,6 +23,9 @@ stdd hooks verify
 stdd hooks status
 stdd hooks disable
 stdd hooks enable
+stdd doctor
+stdd doctor --deep
+stdd apply <name> --allow-no-tests
 
 ## Documentation
 [English Docs Index](README.md) — English documentation hub

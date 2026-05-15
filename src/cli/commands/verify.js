@@ -8,7 +8,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const yaml = require('js-yaml');
 const chalk = require('chalk');
 const { findActiveChange, checkTasksCompletion } = require('../../utils/change-utils');
 const { ConstitutionChecker } = require('./constitution-checker');

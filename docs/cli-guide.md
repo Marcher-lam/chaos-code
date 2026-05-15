@@ -43,3 +43,6 @@ stdd progress --clear
 stdd product-proposal
 stdd product-proposal --json
 stdd product-proposal --output my-report.md
+stdd doctor
+stdd doctor --deep
+stdd apply <name> --allow-no-tests

@@ -13,12 +13,15 @@
     "test:docs": "jest --runInBand __tests__/docs-taxonomy-consistency.test.js __tests__/docs-cli-examples-consistency.test.js",
     "test:coverage": "jest --coverage --runInBand",
     "test:benchmark": "node test-support/benchmark.js",
-    "premerge": "npm run audit && npm run test:docs && jest --runInBand --testPathIgnorePatterns=__tests__/docs-taxonomy-consistency.test.js --testPathIgnorePatterns=__tests__/docs-cli-examples-consistency.test.js",
+    "test:smoke": "bash test-support/smoke-test.sh",
+    "premerge": "npm run audit && npm run lint && npm run test:docs && npm run test:coverage -- --runInBand",
     "audit": "npm audit --audit-level=high",
-    "lint": "echo 'Lint not configured yet'",
+    "lint": "eslint . --no-error-on-unmatched-pattern --max-warnings=0",
     "build": "echo 'No build step required'",
     "clean": "rm -rf node_modules coverage benchmark-results.json stdd/logs",
-    "prepublishOnly": "npm run premerge"
+    "prepublishOnly": "npm run premerge",
+    "preversion": "npm run premerge",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -34,13 +37,24 @@
     "js-yaml": "^4.1.1"
   },
   "devDependencies": {
+    "eslint": "^8.57.1",
     "jest": "^29.7.0"
   },
   "files": [
     "cli.js",
     "src",
     "schemas",
-    ".claude",
-    "stdd"
+    "stdd/config.yaml",
+    "stdd/config",
+    "stdd/extensions/catalog.json",
+    "stdd/extensions/README.md",
+    "stdd/graph/conditions.json",
+    "stdd/graph/config.json",
+    "stdd/graph/skills.yaml",
+    "stdd/presets",
+    "stdd/reporters",
+    "stdd/templates",
+    "stdd/specs/.gitkeep",
+    "stdd/changes/archive/.gitkeep"
   ]
 }

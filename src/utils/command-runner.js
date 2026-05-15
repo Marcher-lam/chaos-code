@@ -16,22 +16,6 @@ const DANGEROUS_COMMANDS = [
   /\bpowershell\b.*-Command\b/i,
 ];
 
-// P0-3 Fix: Allowed binaries for test commands (whitelist approach)
-const SAFE_TEST_BINS = new Set([
-  'npm', 'yarn', 'pnpm', 'npx',
-  'jest', 'vitest', 'mocha', 'ava', 'jasmine', 'node',
-  'pytest', 'py.test',
-  'go',
-  'cargo',
-  'mix',
-  'dotnet',
-  'mvn',
-  'gradle',
-  './node_modules/.bin/jest',
-  './node_modules/.bin/vitest',
-  './node_modules/.bin/mocha',
-]);
-
 function isDangerous(command) {
   for (const pattern of DANGEROUS_COMMANDS) {
     if (pattern.test(command)) {
@@ -86,7 +70,7 @@ function parseCommand(command) {
   return { bin: args[0], args: args.slice(1) };
 }
 
-function validateCommand(command, options = {}) {
+function validateCommand(command, _options = {}) {
   const input = String(command || '').trim();
   if (!input) throw new Error('Command is required.');
 

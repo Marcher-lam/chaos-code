@@ -21,13 +21,19 @@ All notable changes to STDD Copilot will be documented in this file.
 - **Performance Benchmarks**: Baseline metrics for core operations
 - **TypeScript Type Definitions**: JSDoc types for core interfaces
 - **Command Registry**: Centralized command management for dynamic loading
+- **CommandLoader Pattern**: CLI refactored from 1125 to ~400 lines via modular command loading
+- **Shell Executor**: Allowlist-based shell command execution with audit logging
 - **Session Progress Tracking** (`stdd progress`): Real-time JSONL progress log for all CLI commands, survives terminal close/crash, supports breakpoint resume via `--resume`, SIGINT/SIGTERM signal capture, automatic truncation at 5000 entries
 - **Product Proposal Generator** (`stdd product-proposal`): Scans all `stdd/` artifacts (vision, proposals, specs, designs, tasks, evidence, progress) and generates a 15-section product proposal report (`PRODUCT-PROPOSAL.md`) with artifact coverage, quality metrics, PM capability matrix, and roadmap
 - **Logging System**: Multi-level structured logging with rotation
 - **`stdd start`**: Interactive quick-start wizard for new users
-- **`stdd doctor`**: Project health diagnostics (10 checks: STDD dir, config, Node.js version, git hooks, etc.)
+- **`stdd doctor`**: Project health diagnostics (10 checks: STDD dir, config, Node.js version, git hooks, etc.); `--deep` mode for extended audit
 - **`file-walker.js`**: Shared directory traversal utility, unifies 7 duplicated implementations
-- **14 new test suites**: doctor, start, fix-packet, learn, roles, story, pipeline, user-test, validate, outside-in, baby-steps, elicitation, waiver-manager, file-walker (80 suites / 893 tests total)
+- **Docker Multi-Stage Build**: `.dockerignore`, non-root user, minimal production image
+- **Coverage Thresholds**: Enforced on 7 core modules via Jest configuration
+- **CI Pipeline**: test + package + docker jobs matrix (Node.js 20/22); premerge gate covering audit + lint + docs + coverage + Jest
+- **Smoke Tests**: Quick health checks for initialized projects and active changes
+- **14 new test suites**: doctor, start, fix-packet, learn, roles, story, pipeline, user-test, validate, outside-in, baby-steps, elicitation, waiver-manager, file-walker (77 suites / 888 tests total)
 
 ### Changed
 - **apply.js/verify.js**: Extracted `getConfigTestCommand()` to shared module (`test-command-resolver.js`)

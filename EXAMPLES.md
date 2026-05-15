@@ -484,6 +484,7 @@ node "/Users/marcher/Desktop/stdd-copliot/cli.js" metrics add-multiply --json
 npm test
 node "/Users/marcher/Desktop/stdd-copliot/cli.js" status --json
 node "/Users/marcher/Desktop/stdd-copliot/cli.js" recommend
+node "/Users/marcher/Desktop/stdd-copliot/cli.js" doctor --deep   # 深度项目健康检查
 ```
 
 对进行中的 change：
@@ -492,4 +493,10 @@ node "/Users/marcher/Desktop/stdd-copliot/cli.js" recommend
 node "/Users/marcher/Desktop/stdd-copliot/cli.js" apply <change> --dry-run
 node "/Users/marcher/Desktop/stdd-copliot/cli.js" mutation <change> --threshold 50
 node "/Users/marcher/Desktop/stdd-copliot/cli.js" verify <change> --no-constitution
+```
+
+跳过测试缺失的 apply (适用于仅有文档/配置变更)：
+
+```bash
+node "/Users/marcher/Desktop/stdd-copliot/cli.js" apply <change> --allow-no-tests
 ```

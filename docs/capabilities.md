@@ -16,17 +16,19 @@ STDD Copilot 是一个 **CLI 工具 + 模板框架**，它本身不提供 AI 编
 |------|------|------|
 | `stdd init` | 初始化项目结构 | ✅ 完全实现 |
 | `stdd new <name>` | 创建变更目录和文件 | ✅ 完全实现 |
-| `stdd apply <name> [--phase red|green|refactor]` | 运行测试并更新任务状态 | ✅ 完全实现 |
+| `stdd apply <name> [--phase red|green|refactor] [--allow-no-tests]` | 运行测试并更新任务状态 | ✅ 完全实现 |
 | `stdd verify <name>` | 验证变更（测试 + Constitution） | ✅ 完全实现 |
 | `stdd archive <name>` | 归档变更 + Delta Spec 合并 | ✅ 完全实现 |
 | `stdd list` | 列出所有变更 | ✅ 完全实现 |
 | `stdd status [name]` | 显示变更状态 | ✅ 完全实现 |
+| `stdd doctor [--deep]` | 综合健康检查 / 深度诊断 | ✅ 完全实现 |
 | `stdd guard` | 质量门禁检查 | ✅ 完全实现 |
 | `stdd constitution` | 查看/检查开发条例 | ✅ 完全实现 |
 | `stdd mutation <name>` | Quick 启发式变异测试 | ✅ 部分实现 |
 | `stdd workspace` | 工作区管理 | ✅ 完全实现 |
 | `stdd metrics` | 质量指标 | ✅ 完全实现 |
 | `stdd graph run` | Graph 引擎执行 | ⚠️ 需要外部执行器 |
+| CommandLoader 模式 | ~50 个命令统一注册/发现/加载 | ✅ 完全实现 |
 
 ### Constitution 检查（9 篇条例）
 
@@ -53,6 +55,7 @@ STDD Copilot 是一个 **CLI 工具 + 模板框架**，它本身不提供 AI 编
 
 - ✅ 结构化证据收集
 - ✅ 审计追踪
+- ✅ Shell 执行器审计日志（`stdd/logs/shell-executor-audit.jsonl`）
 - ✅ Fix Packet 生成
 
 ### Workspace / Monorepo

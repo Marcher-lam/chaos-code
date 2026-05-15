@@ -9,7 +9,6 @@ const os = require('os');
  * Provides performance benchmarks for critical STDD Copilot operations.
  */
 
-const BENCHMARK_TIMEOUT = 30000; // 30 seconds
 
 class BenchmarkRunner {
   constructor() {

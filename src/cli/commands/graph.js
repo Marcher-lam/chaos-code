@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const os = require('os');
 const chalk = require('chalk');
 const DynamicGraphRouter = require('../../utils/dynamic-router');
@@ -65,20 +65,23 @@ function getGraphHtmlTemplatePath() {
 function openInBrowser(filePath) {
   const platform = os.platform();
   let command;
+  let args;
   if (platform === 'darwin') {
-    command = `open "${filePath}"`;
+    command = 'open';
+    args = [filePath];
   } else if (platform === 'win32') {
-    command = `start "" "${filePath}"`;
+    command = 'cmd';
+    args = ['/c', 'start', '', filePath];
   } else {
-    command = `xdg-open "${filePath}"`;
+    command = 'xdg-open';
+    args = [filePath];
   }
   return new Promise((resolve, reject) => {
-    exec(command, (error) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
+    const child = spawn(command, args, { stdio: 'ignore', detached: false, shell: false });
+    child.on('error', reject);
+    child.on('close', code => {
+      if (code === 0) resolve();
+      else reject(new Error(`${command} exited with code ${code}`));
     });
   });
 }

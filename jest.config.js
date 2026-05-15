@@ -16,10 +16,61 @@ module.exports = {
     '<rootDir>/stdd/templates/starters',
   ],
   verbose: true,
+  detectOpenHandles: true,
+  forceExit: true,
   collectCoverageFrom: [
+    'cli.js',
     'src/**/*.js',
     '!src/**/*.test.js',
   ],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/stdd/',
+  ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  coverageThreshold: {
+    './src/utils/security.js': {
+      branches: 80,
+      functions: 100,
+      lines: 90,
+      statements: 90,
+    },
+    './src/utils/change-utils.js': {
+      branches: 75,
+      functions: 80,
+      lines: 85,
+      statements: 85,
+    },
+    './src/utils/command-runner.js': {
+      branches: 70,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    './src/utils/file-walker.js': {
+      branches: 60,
+      functions: 80,
+      lines: 75,
+      statements: 75,
+    },
+    './src/utils/dynamic-router.js': {
+      branches: 60,
+      functions: 75,
+      lines: 75,
+      statements: 75,
+    },
+    './src/utils/path-resolver.js': {
+      branches: 50,
+      functions: 100,
+      lines: 70,
+      statements: 70,
+    },
+    './src/utils/workspace-detector.js': {
+      branches: 50,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+  },
 };

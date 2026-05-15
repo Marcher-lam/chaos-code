@@ -1,13 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
-const { promisify } = require('util');
+const { spawnSync } = require('child_process');
 const { TddInitCommand } = require('./tdd-init');
 const { detectWorkspaces, resolveWorkspace } = require('../../utils/workspace-detector');
 const { workspaceToScope } = require('../../utils/workspace-scope');
-const execAsync = promisify(exec);
-
-const EXPORT_NAME_PAT = /(?:export\s+(?:async\s+)?function\s+(\w+)|export\s+class\s+(\w+)|export\s+(?:const|let|var)\s+(\w+)\s*=)/;
+const LINT_TIMEOUT = 10000;
 
 class ConstitutionFixCommand {
   constructor(spinner) {
@@ -339,29 +336,32 @@ class ConstitutionFixCommand {
 
   async _countLintErrors(cwd, linter) {
     let cmd;
+    let args;
     if (linter.name === 'eslint') {
-      cmd = 'npx eslint "src/**/*.{js,jsx,ts,tsx}"';
+      cmd = 'npx';
+      args = ['eslint', 'src/**/*.{js,jsx,ts,tsx}'];
     } else if (linter.name === 'prettier') {
-      cmd = 'npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"';
+      cmd = 'npx';
+      args = ['prettier', '--check', 'src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'];
     } else if (linter.name === 'standard') {
-      cmd = 'npx standard';
+      cmd = 'npx';
+      args = ['standard'];
     } else {
       return 0;
     }
 
-    try {
-      await execAsync(cmd, { cwd, timeout: 30000 });
+    const result = spawnSync(cmd, args, { cwd, timeout: LINT_TIMEOUT, encoding: 'utf8' });
+    if (result.status === 0) {
       return 0;
-    } catch (err) {
-      const output = (err.stdout || '') + (err.stderr || '');
-      const problemMatch = output.match(/(\d+)\s+problem/);
-      if (problemMatch) return parseInt(problemMatch[1], 10);
-      const codeErrorMatch = output.match(/(\d+)\s+code\s+error/);
-      if (codeErrorMatch) return parseInt(codeErrorMatch[1], 10);
-      const errorMatch = output.match(/(\d+)\s+error/);
-      if (errorMatch) return parseInt(errorMatch[1], 10);
-      return 1;
     }
+    const output = (result.stdout || '') + (result.stderr || '');
+    const problemMatch = output.match(/(\d+)\s+problem/);
+    if (problemMatch) return parseInt(problemMatch[1], 10);
+    const codeErrorMatch = output.match(/(\d+)\s+code\s+error/);
+    if (codeErrorMatch) return parseInt(codeErrorMatch[1], 10);
+    const errorMatch = output.match(/(\d+)\s+error/);
+    if (errorMatch) return parseInt(errorMatch[1], 10);
+    return 1;
   }
 
   async _fixArticle4(cwd, dryRun, workspace = null) {
@@ -396,8 +396,13 @@ class ConstitutionFixCommand {
       const before = await this._countLintErrors(target.cwd, target.linter);
 
       try {
-        await execAsync(target.linter.command, { cwd: target.cwd, timeout: 60000 });
-      } catch (err) {
+        const fixArgs = target.linter.command === 'npx standard --fix'
+          ? ['standard', '--fix']
+          : target.linter.name === 'prettier'
+            ? ['prettier', '--write', 'src/**/*.{js,jsx,ts,tsx,json,css,scss,md}']
+            : ['eslint', 'src/**/*.{js,jsx,ts,tsx}', '--fix'];
+        spawnSync('npx', fixArgs, { cwd: target.cwd, timeout: 60000, encoding: 'utf8' });
+      } catch (_) {
       }
 
       const after = await this._countLintErrors(target.cwd, target.linter);

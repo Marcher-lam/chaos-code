@@ -63,7 +63,7 @@ class SudoLangParser {
     };
   }
 
-  generateArtifacts(parsedData, options = {}) {
+  generateArtifacts(parsedData, _options = {}) {
     const outputDir = path.join(this.cwd, 'stdd', 'runtime', 'generated');
     fs.mkdirSync(outputDir, { recursive: true });
 

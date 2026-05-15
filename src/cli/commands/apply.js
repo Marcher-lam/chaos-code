@@ -5,9 +5,7 @@
  */
 
 const fs = require('fs');
-const fsPromises = require('fs').promises;
 const path = require('path');
-const yaml = require('js-yaml');
 const chalk = require('chalk');
 const { findActiveChange, parseTasks } = require('../../utils/change-utils');
 const { injectReporter } = require('../../utils/reporter-injector');
@@ -33,27 +31,19 @@ const PHASE_LABELS = {
 
 const PHASE_ORDER = [TDD_PHASES.RED, TDD_PHASES.GREEN, TDD_PHASES.REFACTOR, TDD_PHASES.DONE];
 
+function failNoTestCommand(phase = null) {
+  const phasePrefix = phase ? `${phase.toUpperCase()} Phase ` : '';
+  console.log(chalk.red(`\n❌ ${phasePrefix}requires test commands to be configured.`));
+  console.log(chalk.yellow(`  Please configure a test command in stdd/config.yaml or pass --test-command`));
+  console.log(chalk.dim(`  Use --allow-no-tests only for explicit non-code/documentation tasks.`));
+  process.exitCode = 1;
+}
+
 function getCurrentPhase(taskPhase) {
   if (!taskPhase || !PHASE_ORDER.includes(taskPhase)) {
     return null;
   }
   return taskPhase;
-}
-
-function getNextPhase(currentPhase) {
-  const idx = PHASE_ORDER.indexOf(currentPhase);
-  if (idx < 0 || idx >= PHASE_ORDER.length - 1) {
-    return TDD_PHASES.DONE;
-  }
-  return PHASE_ORDER[idx + 1];
-}
-
-function getPhaseForTask(task) {
-  const phaseMatch = task.description.match(/\[phase:(\w+)\]/);
-  if (phaseMatch) {
-    return phaseMatch[1];
-  }
-  return getCurrentPhase(task.tddPhase);
 }
 
 function getTaskPhaseFromLine(taskLine) {
@@ -271,8 +261,7 @@ class ApplyCommand {
     if (testCommands.length === 0) {
       // P0-1 Fix: In TDD mode, no test command should not silently complete.
       // Mark as failed and exit with error to enforce TDD discipline.
-      console.log(chalk.red(`\n❌ No test command configured. TDD requires tests to run.`));
-      console.log(chalk.yellow(`  Please configure a test command in stdd/config.yaml or pass --test-command`));
+      failNoTestCommand();
       updateTaskLine(tasksPath, task, ' ');  // Keep task pending
       writeLog(changeDir, {
         change: changeName,
@@ -282,7 +271,6 @@ class ApplyCommand {
         status: 'failed',
         error: 'No test command configured. TDD requires tests to run.',
       });
-      process.exitCode = 1;
       return;
     } else {
       console.log(`\n  ${chalk.dim('📡 STDD Reporter linked for better evidence')}`);
@@ -374,9 +362,19 @@ class ApplyCommand {
     });
 
     if (testCommands.length === 0) {
-      console.log(chalk.red(`\n❌ RED Phase requires test commands to be configured.`));
-      console.log(chalk.yellow(`  Please add a test command in stdd/config.yaml or pass --test-command`));
-      process.exitCode = 1;
+      if (options.allowNoTests) {
+        console.log(chalk.yellow(`\n⚠ RED Phase skipped because --allow-no-tests was provided.`));
+        updateTaskPhase(tasksPath, task.index, TDD_PHASES.GREEN);
+        writeLog(changeDir, {
+          change: changeName,
+          task: task.description,
+          phase: TDD_PHASES.RED,
+          status: 'skipped',
+          reason: '--allow-no-tests',
+        });
+        return;
+      }
+      failNoTestCommand(TDD_PHASES.RED);
       return;
     }
 
@@ -415,7 +413,11 @@ class ApplyCommand {
     const e2eEvidence = options.e2eCommand ? this.runE2EProbe(options.e2eCommand, cwd, changeDir) : null;
 
     if (testCommands.length === 0) {
-      console.log(chalk.yellow(`  No test command configured. Skipping test execution.`));
+      if (!options.allowNoTests) {
+        failNoTestCommand(TDD_PHASES.GREEN);
+        return;
+      }
+      console.log(chalk.yellow(`  No test command configured. Skipping test execution because --allow-no-tests was provided.`));
       updateTaskPhase(tasksPath, task.index, TDD_PHASES.REFACTOR);
       writeLog(changeDir, {
         change: changeName,
@@ -427,6 +429,26 @@ class ApplyCommand {
     }
 
     console.log(`\n  ${chalk.dim('📡 STDD Reporter linked for better evidence')}`);
+
+    if (testCommands.length === 0) {
+      if (!options.allowNoTests) {
+        failNoTestCommand(TDD_PHASES.REFACTOR);
+        return;
+      }
+      console.log(chalk.yellow(`  No test command configured. Marking complete because --allow-no-tests was provided.`));
+      updateTaskLine(tasksPath, task, 'x');
+      updateTaskPhase(tasksPath, task.index, TDD_PHASES.DONE);
+      writeLog(changeDir, {
+        change: changeName,
+        task: task.description,
+        phase: TDD_PHASES.REFACTOR,
+        command: '(none)',
+        workspaces: [],
+        status: 'skipped',
+        reason: '--allow-no-tests',
+      });
+      return;
+    }
 
     const testResults = await this._runTests(testCommands, cwd);
     const allPassed = testResults.every(r => r.passed);

@@ -60,10 +60,6 @@ class BrowserController {
         title: await page.title(),
         timestamp: timestamp
       };
-    } catch (e) {
-      // Capture error screenshot if navigation fails?
-      // For now, just propagate
-      throw e;
     } finally {
       await browser.close();
     }

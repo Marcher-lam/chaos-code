@@ -21,7 +21,7 @@
 
 STDD Copilot 将 Spec-First (需求规范优先) 与 TDD (测试驱动开发) 深度融合，通过文件化规格、CLI 工作流、Constitution 审计和 AI 代码助手协作，将开发从"模糊对话"转向"可验证工程"。
 
-80 个测试套件、893 个测试全部通过，npm audit 零漏洞。
+当前质量门禁由 `npm run premerge` 统一执行，覆盖依赖审计、lint、文档契约和 Jest 回归测试。
 
 ## 为什么选择 STDD Copilot?
 
@@ -145,6 +145,19 @@ stdd archive add-dark-mode
 /stdd:verify                            # 验证
 /stdd:archive                           # 归档
 ```
+
+### Docker 可选隔离运行
+
+Docker 镜像适合 CI smoke test、企业内部分发和隔离试用；常规开发仍推荐 npm 全局安装。
+
+```bash
+docker run --rm -it \
+  -v "$PWD:/workspace" \
+  marcher-lam/stdd-copilot:latest \
+  --help
+```
+
+镜像默认以非 root 用户运行，并只打包运行所需 CLI、模板、schemas 和 reporters。不要把 Docker 视为强安全沙箱；如需运行外部命令，请限制挂载目录和可执行命令范围。
 
 ## 核心工作流
 
@@ -372,8 +385,8 @@ stdd-copilot/
 
 | 文档 | 说明 |
 |------|------|
-| [快速开始](./docs/getting-started.md) | 首次使用 |
-| [CLI 指南](./docs/cli-guide.md) | CLI 完整文档 |
+| [CLI 使用指南](./docs/cli-guide.md) | CLI 完整文档 |
+| [快速开始](./docs/getting-started.md) | 首次使用流程和 CLI 速查 |
 | [使用手册](./USAGE.md) | 完整使用指南 |
 | [系统架构](./ARCHITECTURE.md) | 架构设计 |
 | [命令参考](./docs/commands.md) | 完整命令参考 |

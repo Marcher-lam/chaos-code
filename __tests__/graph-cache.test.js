@@ -1,5 +1,4 @@
 const GraphCacheManager = require('../src/utils/graph-cache');
-const fs = require('fs');
 
 describe('GraphCacheManager (中间件状态幂等缓存)', () => {
   let cacheManager;

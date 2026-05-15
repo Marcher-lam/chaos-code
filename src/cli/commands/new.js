@@ -72,7 +72,7 @@ class NewCommand {
     console.log(chalk.cyan(`  3. Or: /stdd:apply ${name}`));
   }
 
-  async createSpec(domain, options = {}) {
+  async createSpec(domain, _options = {}) {
     this.validateName(domain);
 
     const specsDir = path.join(process.cwd(), 'stdd', 'specs');

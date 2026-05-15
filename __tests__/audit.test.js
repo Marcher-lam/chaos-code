@@ -15,30 +15,6 @@ describe('AuditCommand', () => {
     return tempDir;
   }
 
-  function parseJsonOutput() {
-    const printed = logSpy.mock.calls.map(call => String(call[0]));
-    for (const line of printed) {
-      if (line.trim().startsWith('{')) {
-        try {
-          return JSON.parse(line);
-        } catch {
-          // continue
-        }
-      }
-    }
-    // Try to find a JSON block in a long output
-    const fullOutput = printed.join('\n');
-    const jsonStart = fullOutput.indexOf('{');
-    if (jsonStart > -1) {
-      try {
-        return JSON.parse(fullOutput.slice(jsonStart));
-      } catch {
-        // continue
-      }
-    }
-    throw new Error(`No JSON output found. Printed lines:\n${printed.join('\n')}`);
-  }
-
   function makeEvidence(type, status, constitutionIssues = {}, extra = {}) {
     return {
       type,

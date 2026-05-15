@@ -3,8 +3,6 @@
  * Interactive quick-start wizard for new users
  */
 
-const fs = require('fs');
-const path = require('path');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 
@@ -79,6 +77,7 @@ class StartCommand {
         break;
 
       case 'new':
+      {
         const { name } = await inquirer.prompt([
           {
             type: 'input',
@@ -90,6 +89,7 @@ class StartCommand {
         console.log('\n' + chalk.cyan('To create this change:'));
         console.log(chalk.yellow(`  stdd new ${name}`) + '\n');
         break;
+      }
 
       case 'apply':
         console.log('\n' + chalk.cyan('TDD Apply Command:'));

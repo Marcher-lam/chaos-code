@@ -18,10 +18,6 @@ const VALID_JSON_SCHEMA_KEYS = new Set([
   'definitions',
 ]);
 
-const VALID_YAML_SCHEMA_KEYS = new Set([
-  ...VALID_JSON_SCHEMA_KEYS,
-]);
-
 function findSchemasDir(cwd) {
   const candidates = [
     path.join(cwd, 'schemas'),
@@ -226,11 +222,12 @@ class SchemaCommand {
     };
 
     const evidenceDir = path.join(this.cwd, 'stdd', 'evidence');
+    let evidenceFile;
     if (fs.existsSync(path.join(this.cwd, 'stdd'))) {
       if (!fs.existsSync(evidenceDir)) {
         fs.mkdirSync(evidenceDir, { recursive: true });
       }
-      const evidenceFile = path.join(evidenceDir, `schema-validation-${timestamp}.json`);
+      evidenceFile = path.join(evidenceDir, `schema-validation-${timestamp}.json`);
       fs.writeFileSync(evidenceFile, JSON.stringify(evidence, null, 2), 'utf8');
     }
 

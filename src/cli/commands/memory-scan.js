@@ -4,7 +4,6 @@
  */
 
 const fs = require('fs').promises;
-const fsSync = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 const chalk = require('chalk');
@@ -142,7 +141,7 @@ ${tree}
     }
   }
 
-  renderTree(tree, prefix, isLast = false) {
+  renderTree(tree, prefix, _isLast = false) {
     const lines = [];
     const entries = Object.keys(tree).sort();
 

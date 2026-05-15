@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 const { DepcheckCommand, isSafeListed } = require('../src/cli/commands/depcheck');
 
 describe('DepcheckCommand', () => {
@@ -49,9 +48,8 @@ describe('DepcheckCommand', () => {
       );
 
       const cmd = new DepcheckCommand(tmpDir);
-      let exitCode;
       const origExit = process.exit;
-      process.exit = jest.fn((code) => { exitCode = code; });
+      process.exit = jest.fn();
 
       const result = await cmd.execute({ path: tmpDir, json: true });
 

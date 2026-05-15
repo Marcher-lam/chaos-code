@@ -3,7 +3,6 @@
  * FF -> Spec -> Done in one shot
  */
 
-const fs = require('fs').promises;
 const chalk = require('chalk');
 const { FFCommand } = require('./ff');
 const { SpecGenerator } = require('./spec-generator');

@@ -87,7 +87,7 @@ describe('ParallelExecutor', () => {
       },
     });
 
-    const { results, layers, conflicts } = await pe.executeAll({});
+    const { results, conflicts } = await pe.executeAll({});
 
     // 所有节点应都已执行
     expect(Object.keys(results).length).toBe(7);

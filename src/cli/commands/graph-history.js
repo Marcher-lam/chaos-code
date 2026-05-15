@@ -8,7 +8,6 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
-const { spawnSync } = require('child_process');
 const { evidenceMatchesWorkspace, extractEvidenceWorkspaceRefs } = require('../../utils/workspace-scope');
 
 function extractWorkspacesFromEvidence(data) {
@@ -257,17 +256,17 @@ class GraphHistoryCommand {
 
   _printResults(results) {
     if (results.tasks) {
-      var t = results.tasks;
-      console.log('  Tasks:     ' + (t.allDone ? chalk.green('OK') : chalk.red('FAIL')) + ' ' + t.done + '/' + t.total + ' completed');
+      var taskResult = results.tasks;
+      console.log('  Tasks:     ' + (taskResult.allDone ? chalk.green('OK') : chalk.red('FAIL')) + ' ' + taskResult.done + '/' + taskResult.total + ' completed');
     }
     if (results.tests !== undefined && results.tests !== null) {
-      var t = results.tests;
-      if (t.passed === null) {
+      var testResult = results.tests;
+      if (testResult.passed === null) {
         console.log('  Tests:     SKIP');
       } else {
-        console.log('  Tests:     ' + (t.passed ? chalk.green('pass') : chalk.red('fail')));
-        if (!t.passed && t.error) {
-          var tail = t.error.trim().split('\n').slice(-3).join('\n      ');
+        console.log('  Tests:     ' + (testResult.passed ? chalk.green('pass') : chalk.red('fail')));
+        if (!testResult.passed && testResult.error) {
+          var tail = testResult.error.trim().split('\n').slice(-3).join('\n      ');
           console.log(chalk.dim('    ' + tail));
         }
       }

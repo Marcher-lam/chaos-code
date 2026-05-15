@@ -10,7 +10,6 @@
  */
 
 const fs = require('fs');
-const path = require('path');
 
 let inputData = '';
 process.stdin.on('data', chunk => {
@@ -91,7 +90,7 @@ function getCorrespondingTestFile(filePath) {
     .replace(/\.go$/, '_test.go');
 }
 
-function checkCodeStyle(content, filePath) {
+function checkCodeStyle(content) {
   const violations = [];
 
   const lines = content.split('\n');

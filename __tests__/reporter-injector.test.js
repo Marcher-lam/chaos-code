@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { injectReporter, _detectFramework, _resolveReporter, STDD_REPORTERS } = require('../src/utils/reporter-injector');
+const { injectReporter, _detectFramework, _resolveReporter } = require('../src/utils/reporter-injector');
 
 describe('reporter-injector utility', () => {
   function createTempProject(name, options = {}) {
@@ -61,7 +61,7 @@ describe('reporter-injector utility', () => {
 
   describe('_resolveReporter', () => {
     it('returns bundled vitest reporter path when local does not exist', () => {
-      const projectPath = createTempProject('resolved-vitest', {
+      createTempProject('resolved-vitest', {
         packageJson: { devDependencies: { vitest: '^1.0.0' } },
       });
       const reporterPath = _resolveReporter('vitest');
@@ -71,7 +71,7 @@ describe('reporter-injector utility', () => {
     });
 
     it('returns bundled jest reporter path when local does not exist', () => {
-      const projectPath = createTempProject('resolved-jest', {
+      createTempProject('resolved-jest', {
         packageJson: { devDependencies: { jest: '^29.0.0' } },
       });
       const reporterPath = _resolveReporter('jest');
@@ -81,7 +81,7 @@ describe('reporter-injector utility', () => {
     });
 
     it('returns bundled pytest plugin path when local does not exist', () => {
-      const projectPath = createTempProject('resolved-pytest', { pyproject: true });
+      createTempProject('resolved-pytest', { pyproject: true });
       const reporterPath = _resolveReporter('pytest');
       expect(reporterPath).toBeTruthy();
       expect(reporterPath).toMatch(/stdd\/reporters\/pytest_plugin\.py$/);
@@ -141,7 +141,7 @@ describe('reporter-injector utility', () => {
       const origEnv = process.env.PYTHONPATH;
       process.env.PYTHONPATH = originalPath;
       try {
-        const { command, env } = injectReporter('pytest', projectPath);
+        const { env } = injectReporter('pytest', projectPath);
         expect(env.PYTHONPATH).toContain(originalPath);
         expect(env.PYTHONPATH).toContain('reporters');
       } finally {

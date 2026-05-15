@@ -19,7 +19,8 @@ STDD Copilot 2.0 支持 Agent 自主编排工作流。Agent 应主动读取 Skil
 
 ## 最近更新 (2026-05-14)
 
-- 测试基线: 77 套件, 863 测试, 全通过
+- 测试基线: `npm run premerge` 质量门禁统一覆盖审计、lint、文档与 Jest 回归测试
+- 当前全部测试套件通过，零 warning ESLint
 - CI/CD: 矩阵测试 Node.js 18/20/22, 覆盖率收集
 - 新增模块: error-handler, logger, security, command-registry, command-loader, types
 - 新增文件: Dockerfile, docker-compose.yml, CHANGELOG.md, docs/EvoRL.md

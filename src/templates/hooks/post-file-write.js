@@ -9,8 +9,6 @@
  * - Article 8: Performance
  */
 
-const fs = require('fs');
-const path = require('path');
 
 let inputData = '';
 process.stdin.on('data', chunk => {

@@ -56,7 +56,7 @@ describe('RecommendEngine', () => {
   describe('no active changes', () => {
     it('recommends stdd new when no changes exist', () => {
       const root = createTempDir();
-      const stddDir = createSTDD(root);
+      createSTDD(root);
 
       const engine = new RecommendEngine(root);
       const recs = engine.recommend();

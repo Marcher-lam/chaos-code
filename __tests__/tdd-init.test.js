@@ -306,7 +306,7 @@ describe('TddInitCommand', () => {
     fs.writeFileSync(path.join(srcDir, 'core.py'), 'def core(): pass\n');
 
     const cmd = new TddInitCommand(silentSpinner);
-    const result = await cmd.execute(tempDir);
+    await cmd.execute(tempDir);
 
     const testContent = fs.readFileSync(path.join(srcDir, '__tests__', 'test_core.py'), 'utf8');
     expect(testContent).toContain('def test_core');

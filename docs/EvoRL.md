@@ -51,12 +51,12 @@ cd ~/stdd-copilot && npm install && npm link
 stdd --version
 ```
 
-**C: Docker**
+**C: Docker — 隔离运行 / CI smoke**
 ```bash
-git clone https://github.com/Marcher-lam/STDD-COPILOT.git ~/stdd-copilot
-cd ~/stdd-copilot && docker build -t stdd-copilot . && docker-compose up -d
-docker exec -it stdd-copilot stdd --help
+docker pull marcher-lam/stdd-copilot:latest
+docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help
 ```
+> Docker 适合 CI 验证和企业内网分发。常规开发推荐 npm 全局安装。
 
 ### 创建项目
 
@@ -1069,14 +1069,20 @@ git init && npm init -y
 ```
 
 ## 6.15 诊断与依赖检查
+> 终验诊断，--deep 模式会额外检查 lint/audit/changes/progress/evidence
 
 ```
 /stdd:doctor
+/stdd:doctor --deep
 /stdd:depcheck
 /stdd:depcheck --json
 ```
+/stdd:doctor
+/stdd:doctor --deep
+/stdd:depcheck
+```
 
-**预期**: 项目健康诊断 + 未使用依赖检测
+**预期**: 项目健康诊断 + 深度检查(lint/audit/changes/progress/evidence) + 未使用依赖检测
 
 ## 6.16 TDD 脚手架
 

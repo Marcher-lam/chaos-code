@@ -116,4 +116,16 @@ describe('graph CLI command', () => {
     expect(content).not.toContain('{{MERMAID_CODE}}');
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
+
+  it('writes graph output with shell metacharacters without executing them', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-graph-injection-'));
+    const marker = path.join(tmpDir, 'pwned.txt');
+    const outputPath = path.join(tmpDir, `graph.html;touch ${path.basename(marker)}`);
+    const result = runCli(['graph', 'visualize', '--format', 'html', '--output', outputPath]);
+
+    expect(result.status).toBe(0);
+    expect(fs.existsSync(outputPath)).toBe(true);
+    expect(fs.existsSync(marker)).toBe(false);
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
 });

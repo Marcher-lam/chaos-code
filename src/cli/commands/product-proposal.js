@@ -21,24 +21,6 @@ const SECTIONS = [
   'appendix',
 ];
 
-const SECTION_TITLES = {
-  'product-overview': '产品概述',
-  'market-analysis': '市场分析',
-  'user-personas': '用户画像与场景',
-  positioning: '产品定位与价值主张',
-  features: '核心功能清单',
-  architecture: '产品架构',
-  workflow: '工作流设计',
-  'pm-capability': 'PM 能力矩阵',
-  quality: '质量保障体系',
-  'tech-stack': '技术栈与依赖',
-  competitive: '竞品对比',
-  roadmap: '产品路线图',
-  metrics: '成功指标与 KPI',
-  risk: '风险分析',
-  appendix: '附录',
-};
-
 class ProductProposalCommand {
   constructor(cwd = process.cwd()) {
     this.cwd = cwd;
@@ -281,7 +263,7 @@ class ProductProposalCommand {
     };
   }
 
-  buildReport(options = {}) {
+  buildReport(_options = {}) {
     const pkg = this.artifacts.packageJson;
     const projectName = pkg ? pkg.name : 'Unknown Project';
     const projectVersion = pkg ? pkg.version : '0.0.0';

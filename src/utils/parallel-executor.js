@@ -1,5 +1,3 @@
-const HeterogeneousAdapter = require('./heterogeneous-adapter');
-
 /**
  * ParallelExecutor - DAG 分层并行执行器
  *
@@ -224,7 +222,7 @@ class ParallelExecutor {
   /**
    * 检测并行节点间的文件输出冲突
    */
-  _detectFileConflicts(layerNodes, existingResults) {
+  _detectFileConflicts(layerNodes, _existingResults) {
     const conflicts = [];
     const outputMap = {}; // filePath → [nodeName]
 
