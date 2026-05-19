@@ -10,5 +10,4 @@
 - [CLI 使用指南](cli-guide.md) - CLI 完整文档
 - [工作流程](workflows.md) - 常见模式和使用场景
 - [命令参考](commands.md) - 完整命令参考
-- [核心概念](concepts.md)
 - [英文文档入口](en/README.md) - English docs index

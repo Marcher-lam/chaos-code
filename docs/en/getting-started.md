@@ -32,9 +32,6 @@ stdd apply <name> --allow-no-tests
 docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help
 
 ## Documentation
-[English Docs Index](README.md) — English documentation hub
-[Getting Started](getting-started.md) — First-run workflow and quick CLI reference
-[CLI Guide](cli-guide.md) — Full CLI command reference
-[Project README](../../README_EN.md) — Project overview and top-level examples
-[Getting Started](getting-started.md) — First-run workflow and quick CLI reference
-[CLI Guide](cli-guide.md) — Full CLI command reference
+- [English Docs Index](README.md) — English documentation hub
+- [CLI Guide](cli-guide.md) — Full CLI command reference
+- [Project README](../../README_EN.md) — Project overview and top-level examples

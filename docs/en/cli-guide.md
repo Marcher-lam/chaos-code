@@ -27,15 +27,12 @@ stdd doctor
 stdd doctor --deep
 stdd apply <name> --allow-no-tests
 
-## Documentation
-[English Docs Index](README.md) — English documentation hub
-[Getting Started](getting-started.md) — First-run workflow and quick CLI reference
-[CLI Guide](cli-guide.md) — Full CLI command reference
-[Project README](../../README_EN.md) — Project overview and top-level examples
-[Getting Started](getting-started.md) — First-run workflow and quick CLI reference
-[CLI Guide](cli-guide.md) — Full CLI command reference
-
 ## TDD Gap Enhancements
-`stdd fix-packet [change]` creates a Golden Packet style AI handoff context for failed tests.
 
-`stdd outside-in init/scaffold/status` creates and uses a layer registry for outside-in TDD.
+- `stdd fix-packet [change]` — Golden Packet style AI handoff context for failed tests
+- `stdd outside-in init/scaffold/status` — Layer registry for outside-in TDD
+
+## Documentation
+- [English Docs Index](README.md) — English documentation hub
+- [Getting Started](getting-started.md) — First-run workflow and quick CLI reference
+- [Project README](../../README_EN.md) — Project overview and top-level examples

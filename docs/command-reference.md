@@ -148,7 +148,7 @@
 | **Constitution 条例** | **9** | 3 Blocking + 4 Warning + 2 Suggestion |
 | **Agent 角色** | **12** | 4 基础 + 8 专用 |
 | **Graph Intent** | **4** | feature/hotfix/repair/research |
-| **测试基线** | **80 套件 / 893 测试** | `npm test` 全部通过，npm audit 零漏洞 |
+| **测试基线** | **171 套件 / 3810 测试** | Branch 91.03%，`npm test` 全部通过 |
 
 ---
 

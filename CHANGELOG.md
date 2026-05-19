@@ -2,6 +2,33 @@
 
 All notable changes to STDD Copilot will be documented in this file.
 
+## [1.0.1] - 2026-05-19
+
+### Added
+- **28 轮质量优化**: 测试套件从 77 增至 171，测试用例从 888 增至 3810（100% 通过）
+- **覆盖率大幅提升**: Stmts 72% → 97.33%, Branch 72% → 91.03%, Funcs → 97.15%, Lines → 97.87%
+- **171 个测试套件**: 覆盖全部 57 个命令文件和 21 个工具模块
+- **新增 round 测试文件**: round24-round28 针对性覆盖低覆盖模块的边界分支
+- **结构化 logger 迁移**: 92 处 console.error → logger 迁移，新增 `src/utils/logger.js`
+- **process.exit 修复**: 14 处 process.exit → exitCode 改造，提升测试友好性
+- **空 catch 块修复**: 52 处空 catch 块添加合理处理或注释
+- **var → const/let**: 9 处遗留 var 声明全部清理
+- **未使用导出清理**: 13 处未使用的导出项清理
+- **Jest 覆盖率阈值**: 7 个核心模块配置覆盖率阈值
+
+### Changed
+- **CHANGELOG.md**: 补充 v1.0.1 版本完整变更记录
+- **CONTRIBUTING.md**: 更新测试基线至 171 套件 / 3810 测试
+- **CLAUDE_CODE_GUIDE.md**: 更新测试基线信息
+- **README.md / README_EN.md**: 更新项目结构中的测试套件数量
+- **ARCHITECTURE.md**: 核对命令数量和工具模块数量
+- **AGENTS.md**: 更新版本至 2.3
+
+### Fixed
+- 52 个空 catch 块添加合理处理（JSON.parse fallback、signal handling 等）
+- 6 处 TODO 注释替换为数据驱动实现
+- 覆盖率报告从 `coverage-summary.json` 精确解析
+
 ## [1.0.0] - 2026-05-14
 
 ### Added

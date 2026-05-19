@@ -1,7 +1,7 @@
 # STDD Copilot 系统架构
 
-version: "2.3"
-last_updated: "2026-05-15"
+version: "2.4"
+last_updated: "2026-05-19"
 
 ## 概述
 
@@ -493,6 +493,17 @@ sequenceDiagram
 | **test-command-resolver.js** | 共享测试命令解析 | 从 `apply.js`/`verify.js` 提取，统一 `getConfigTestCommand()` 逻辑 |
 | **command-runner.js** | 安全命令执行 | shell 注入检测、危险命令拦截、白名单验证 |
 | **session-progress.js** | 实时进度追踪 | JSONL 进度日志，start/complete/fail/interrupt 四态记录，断点续传，SIGINT/SIGTERM 信号捕获 |
+| **bdd-scenario-parser.js** | BDD 场景解析 | Feature/Scenario/Step 解析，支持文件和文本输入 |
+| **parse-command.js** | 命令行解析 | shell 命令字符串拆分，支持引号参数 |
+| **coverage-parser.js** | 覆盖率解析 | 支持 summary/istanbul/cobertura 多格式 |
+| **change-utils.js** | 变更工具函数 | tasks.md 解析、状态判断、共享变更操作 |
+| **path-resolver.js** | 路径解析 | 项目路径、STDD 目录、变更目录解析 |
+| **tech-stack-detector.js** | 技术栈检测 | 从 package.json/tsconfig 等自动识别技术栈 |
+| **workspace-detector.js** | 工作区检测 | monorepo workspace 自动发现和注册 |
+| **workspace-scope.js** | 工作区作用域 | workspace 路径标准化、作用域隔离 |
+| **reporter-injector.js** | 测试报告器注入 | STDD Reporter 环境变量注入和结果捕获 |
+| **mock-gen.js** | Mock 生成 | 从 spec/接口生成测试 Mock 数据 |
+| **memory-scan.js** | 记忆扫描 | stdd/memory/ 目录扫描和索引 |
 
 ### 反向自愈流程
 

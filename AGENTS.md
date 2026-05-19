@@ -1,6 +1,6 @@
 # STDD Copilot - AI Agent Instructions
 
-> Version: 2.2 | Last Updated: 2026-05-15
+> Version: 2.3 | Last Updated: 2026-05-19
 
 ---
 

@@ -20,7 +20,7 @@ npm link
 
 | 命令 | 说明 |
 |------|------|
-| `npm test` | 运行全部测试 (77 套件, 888 测试) |
+| `npm test` | 运行全部测试 (171 套件, 3810 测试) |
 | `npm run test:all` | 完整测试套件 (含集成测试) |
 | `npm run test:coverage` | 生成覆盖率报告 (text/lcov/html) |
 | `npm run test:benchmark` | 运行性能基准套件 |
@@ -29,12 +29,12 @@ npm link
 
 ## 测试与质量门禁
 
-- **测试基线**: 77 个测试套件、888 个测试，CI 矩阵 (Node.js 18/20/22) 全绿
-- **覆盖率**: `jest.config.js` 配置 `collectCoverageFrom` 收集 `src/**/*.js`，生成 text/lcov/html 报告
+- **测试基线**: 171 个测试套件、3810 个测试，100% 通过率
+- **覆盖率**: Stmts 97.33% | Branch 91.03% | Funcs 97.15% | Lines 97.87%
 - **Lint**: 零警告 ESLint（`npm run lint`），纳入 `premerge` 门禁
 - **安全**: `npm audit` 零漏洞，`security.js` 提供输入清理、密钥检测、路径安全
 - **基准**: `test-support/benchmark.js` 性能回归监控
-- **CI**: `.github/workflows/ci.yml` 矩阵测试，含 `premerge` 脚本
+- **CI**: `.github/workflows/ci.yml` 矩阵测试 (Node.js 20/22)，含 `premerge` 脚本
 
 ## 提交规范
 

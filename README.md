@@ -339,7 +339,7 @@ stdd-copilot/
 ├── src/
 │   ├── cli/commands/            # 57 个命令实现
 │   ├── cli/registry/            # 命令注册与动态加载
-│   ├── utils/                   # 22 个工具模块
+│   ├── utils/                   # 21 个工具模块
 │   │   ├── graph-executor.js    #   Graph 执行引擎
 │   │   ├── session-progress.js  #   实时进度追踪
 │   │   ├── file-walker.js      #   共享目录遍历
@@ -349,12 +349,15 @@ stdd-copilot/
 ├── src/templates/
 │   ├── skills/                  # 47 个 Skill 定义
 │   └── commands/                # 20 个斜杠命令模板
-├── __tests__/                   # 80 个测试套件
+├── __tests__/                   # 171 个测试套件
 ├── stdd/                        # 运行时工作目录
 │   ├── changes/                 # 变更管理
 │   ├── specs/                   # BDD 规格文件 (Source of Truth)
 │   ├── graph/                   # Graph 配置与缓存
 │   ├── config.yaml              # 项目配置
+│   ├── evidence/                # guard/verify/mutation 证据
+│   ├── reporters/               # 测试报告器
+│   ├── runtime/                 # Agent 状态机 / SudoLang 引擎
 │   └── progress.jsonl           # 进度日志
 ├── schemas/                     # JSON/YAML Schema
 │   ├── spec-driven/             # 规格模板
