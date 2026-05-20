@@ -2,12 +2,30 @@
 
 All notable changes to STDD Copilot will be documented in this file.
 
+## [1.0.2] - 2026-05-20
+
+### Added
+- **2 个新 Command 模板**: `fix-packet.md`, `product-proposal.md`
+- **9 个新命令实现**: `brainstorm.js`, `clarify.js`, `confirm.js`, `constitution.js`, `execute.js`, `final-doc.js`, `plan.js`, `propose.js`, `spec.js`
+- **43 个辅助命令模板**: api-spec, audit, baby-steps, browser, ci-generator, commands, commit-msg, context, contract, depcheck, doctor, elicitation, extensions, fix-packet, graph-history, graph-run, guard, hooks, learn, list, memory-scan, metrics, mock-gen, mutation, outside-in, pipeline, product-proposal, progress, recommend, roles, schema, skills, spec-generator, start, starters, status, story, tdd-init, update, user-test, validate, waiver-manager, workspace
+
+### Changed
+- **Command 模板数量**: 61 → 63
+- **斜杠命令总数**: 108 → 110 (63 Command + 47 Skill)
+- **CLI 命令实现**: 66 → 67
+- **文档同步更新**: CLAUDE.md, AGENTS.md, CLAUDE_CODE_GUIDE.md, README.md, USAGE.md, docs/commands.md, docs/EvoRL.md, docs/STDD-VERIFICATION-TEST.md
+- **测试更新**: docs-taxonomy-consistency.test.js, test-support/docs-contracts.js
+
+### Fixed
+- 修复文档中命令数量不一致的问题
+- 所有 110 个斜杠命令和 67 个 CLI 命令已完全覆盖
+
 ## [1.0.1] - 2026-05-19
 
 ### Added
 - **28 轮质量优化**: 测试套件从 77 增至 171，测试用例从 888 增至 3810（100% 通过）
 - **覆盖率大幅提升**: Stmts 72% → 97.33%, Branch 72% → 91.03%, Funcs → 97.15%, Lines → 97.87%
-- **171 个测试套件**: 覆盖全部 57 个命令文件和 21 个工具模块
+- **171 个测试套件**: 覆盖全部 66 个命令文件和 21 个工具模块
 - **新增 round 测试文件**: round24-round28 针对性覆盖低覆盖模块的边界分支
 - **结构化 logger 迁移**: 92 处 console.error → logger 迁移，新增 `src/utils/logger.js`
 - **process.exit 修复**: 14 处 process.exit → exitCode 改造，提升测试友好性
@@ -33,7 +51,7 @@ All notable changes to STDD Copilot will be documented in this file.
 
 ### Added
 - **Skill Graph Engine**: Dynamic DAG orchestration with intent-adaptive topology (hotfix/feature/repair/research)
-- **57 CLI Commands**: Full workflow automation (init, new, apply, verify, archive, mutation, start, doctor, etc.)
+- **66 CLI Commands**: Full workflow automation (init, new, apply, verify, archive, mutation, start, doctor, etc.)
 - **Constitution System**: 9 articles with Hook Enforcement and waiver tracking
 - **Ralph Loop TDD**: Red → Green → Refactor cycle with phase enforcement
 - **5-Level Defense System**: Human confirmation gates, micro-task isolation, failure rollback, static quality, mutation review

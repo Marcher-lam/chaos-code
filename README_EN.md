@@ -209,7 +209,7 @@ init → new → propose → clarify → confirm → spec → plan → apply →
 
 ## Implementation Boundary
 
-**CLI-ified** (57 commands): init, start, doctor, new, ff, spec, api-spec, apply, continue, mutation, verify, archive, commit, constitution, guard, hooks, graph, workspace, metrics, context, ci, starters, depcheck, schema, contract, validate, fix-packet, outside-in, learn, roles, story, user-test, pipeline, extensions, progress, recommend, explore, brainstorm, issue, turbo, runtime, etc.
+**CLI-ified** (66 commands): init, start, doctor, new, ff, spec, api-spec, apply, continue, mutation, verify, archive, commit, constitution, guard, hooks, graph, workspace, metrics, context, ci, starters, depcheck, schema, contract, validate, fix-packet, outside-in, learn, roles, story, user-test, pipeline, extensions, progress, recommend, explore, brainstorm, issue, turbo, runtime, etc.
 
 **Runtime Engines**: Agent state machine (Party Mode), SudoLang parser, built-in browser driver (Playwright), dynamic Graph orchestration (DAG), breakpoint-resume progress tracking, evidence capture & audit.
 

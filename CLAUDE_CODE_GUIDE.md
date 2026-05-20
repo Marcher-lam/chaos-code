@@ -11,7 +11,7 @@
 
 核心入口包括 `init`、`new`、`ff`、`continue`、`explore`、`graph` 以及 `apply`、`verify`、`archive` 等。
 
-注意：不要假定 command 模板与 Skill 模板一一对应；当前入口由 20 个 command 模板和 47 个 Skill 模板共同组成，去重后提供 47 个 `/stdd:*` 会话入口。
+注意：不要假定 command 模板与 Skill 模板一一对应；当前入口由 63 个 command 模板和 47 个 Skill 模板共同组成，去重后提供 47 个 `/stdd:*` 会话入口。
 
 ## Agent 自主编排
 

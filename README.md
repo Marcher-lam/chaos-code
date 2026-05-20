@@ -79,9 +79,9 @@ stdd progress --clear        # 清空进度
 ## 核心特性
 
 <details>
-<summary>全部 47 个斜杠命令</summary>
+<summary>全部 110 个斜杠命令（63 Command 模板 + 47 Skill 模板）</summary>
 
-**Command 模板 (20)**: `/stdd:init` `/stdd:new` `/stdd:propose` `/stdd:clarify` `/stdd:confirm` `/stdd:spec` `/stdd:plan` `/stdd:apply` `/stdd:execute` `/stdd:verify` `/stdd:archive` `/stdd:final-doc` `/stdd:brainstorm` `/stdd:issue` `/stdd:constitution` `/stdd:ff` `/stdd:continue` `/stdd:explore` `/stdd:graph` `/stdd:turbo`
+**Command 模板 (63)**: `/stdd:api-spec` `/stdd:apply` `/stdd:archive` `/stdd:audit` `/stdd:baby-steps` `/stdd:brainstorm` `/stdd:browser` `/stdd:ci-generator` `/stdd:clarify` `/stdd:commands` `/stdd:commit-msg` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:depcheck` `/stdd:doctor` `/stdd:elicitation` `/stdd:execute` `/stdd:explore` `/stdd:extensions` `/stdd:ff` `/stdd:final-doc` `/stdd:fix-packet` `/stdd:graph` `/stdd:graph-history` `/stdd:graph-run` `/stdd:guard` `/stdd:hooks` `/stdd:init` `/stdd:issue` `/stdd:learn` `/stdd:list` `/stdd:memory-scan` `/stdd:metrics` `/stdd:mock-gen` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:pipeline` `/stdd:plan` `/stdd:product-proposal` `/stdd:progress` `/stdd:propose` `/stdd:recommend` `/stdd:roles` `/stdd:schema` `/stdd:skills` `/stdd:spec` `/stdd:spec-generator` `/stdd:start` `/stdd:starters` `/stdd:status` `/stdd:story` `/stdd:tdd-init` `/stdd:turbo` `/stdd:update` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:waiver-manager` `/stdd:workspace`
 
 **Skill 模板 (47)**: `/stdd:api-spec` `/stdd:apply` `/stdd:archive` `/stdd:brainstorm` `/stdd:certainty` `/stdd:clarify` `/stdd:commit` `/stdd:complexity` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:design` `/stdd:execute` `/stdd:explore` `/stdd:factory` `/stdd:ff` `/stdd:final-doc` `/stdd:fix-packet` `/stdd:graph` `/stdd:guard` `/stdd:help` `/stdd:init` `/stdd:issue` `/stdd:iterate` `/stdd:learn` `/stdd:memory` `/stdd:metrics` `/stdd:mock` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:parallel` `/stdd:plan` `/stdd:product-proposal` `/stdd:propose` `/stdd:prp` `/stdd:roles` `/stdd:schema` `/stdd:spec` `/stdd:supervisor` `/stdd:turbo` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:vision`
 
@@ -337,7 +337,7 @@ stdd constitution waive 2 --reason "Legacy" --days 7  # 临时豁免
 stdd-copilot/
 ├── cli.js                       # CLI 入口 (Commander.js)
 ├── src/
-│   ├── cli/commands/            # 57 个命令实现
+│   ├── cli/commands/            # 66 个命令实现
 │   ├── cli/registry/            # 命令注册与动态加载
 │   ├── utils/                   # 21 个工具模块
 │   │   ├── graph-executor.js    #   Graph 执行引擎
@@ -367,7 +367,7 @@ stdd-copilot/
 
 ## 已实现边界
 
-**已 CLI 化** (57 个命令): init、start、doctor、new、ff、spec、api-spec、apply、continue、mutation、verify、archive、commit、constitution、guard、hooks、graph、workspace、metrics、context、ci、starters、depcheck、schema、contract、validate、fix-packet、outside-in、learn、roles、story、user-test、pipeline、extensions、progress、recommend、explore、brainstorm、issue、turbo、runtime 等。
+**已 CLI 化** (66 个命令): init、start、doctor、new、ff、spec、api-spec、apply、continue、mutation、verify、archive、commit、constitution、guard、hooks、graph、workspace、metrics、context、ci、starters、depcheck、schema、contract、validate、fix-packet、outside-in、learn、roles、story、user-test、pipeline、extensions、progress、recommend、explore、brainstorm、issue、turbo、runtime 等。
 
 **Runtime 引擎**: Agent 状态机、SudoLang 解析引擎、Playwright 浏览器驱动、动态 Graph 编排 (DAG)、断点续传进度追踪、证据采集与审计。
 

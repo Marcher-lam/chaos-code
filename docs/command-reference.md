@@ -139,7 +139,7 @@
 | **Skill 模板** (SKILL.md) | **47** | `.claude/skills/stdd/{name}/SKILL.md` |
 | **Command 模板** (.md) | **20** | `.claude/commands/stdd/{name}.md` |
 | **唯一斜杠命令** (`/stdd:*`) | **47** | Skill 驱动，Claude Code 中使用 |
-| **CLI 命令** (含子命令) | **57** | `stdd xxx` 终端命令 |
+| **CLI 命令** (含子命令) | **66** | `stdd xxx` 终端命令 |
 | **全三者覆盖** (CLI + Skill + Command) | **20** | 同时拥有 CLI、Skill、Command 三种入口 |
 | **仅 Skill 驱动** (无 CLI) | **10** | design/final-doc/factory/iterate/parallel/prp/supervisor/vision/help/confirm |
 | **仅 CLI** (无斜杠命令) | **~22** | status/list/skills/commands/progress/start/doctor/depcheck/update/hooks/audit/tdd-init/baby-steps/workspace/extensions/starters/ci/browser/story/pipeline/runtime 等 |

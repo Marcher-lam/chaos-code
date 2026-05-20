@@ -744,5 +744,5 @@ node --test
 
 ---
 
-> STDD Copilot 共提供 57 个 CLI 命令、20 个 Command 模板和 47 个 Skill 模板。
+> STDD Copilot 共提供 67 个 CLI 命令、63 个 Command 模板和 47 个 Skill 模板。
 > 完整列表见 `stdd --help`、`stdd skills`、`stdd commands`。

@@ -5,7 +5,7 @@ last_updated: "2026-05-19"
 
 ## 概述
 
-STDD Copilot 基于 Skill Graph (技能图谱) 将 Spec-First 与 TDD 深度融合。包含 47 个 Skills、12 个 Agent 角色、9 篇 Constitution 条例、Hook Enforcement System，以及 57 个 CLI 命令。
+STDD Copilot 基于 Skill Graph (技能图谱) 将 Spec-First 与 TDD 深度融合。包含 47 个 Skills、12 个 Agent 角色、9 篇 Constitution 条例、Hook Enforcement System，以及 66 个 CLI 命令。
 
 **架构边界**: CLI 负责产物生成、测试执行、mutation evidence、证据采集、质量门禁和工作区编排。真实 AI 自动编码、多 Agent runtime、contract/mock/factory 等仍由 Skill 和外部 AI 执行器承载。Quick mutation 是启发式 anti-fake-green 检查；真实 mutation 依赖项目安装并配置 Stryker。
 

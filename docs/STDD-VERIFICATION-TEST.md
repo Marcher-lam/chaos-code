@@ -2,7 +2,7 @@
 
 > **项目**: STDD Copilot CLI v1.0.1
 > **验证日期**: 2026-05-19
-> **覆盖范围**: 57 个 CLI 命令 + 20 个 Command 模板 + 47 个 Skill 模板
+> **覆盖范围**: 67 个 CLI 命令 + 63 个 Command 模板 + 47 个 Skill 模板
 > **质量基线**: `npm run premerge` (audit + zero-warning lint + docs + coverage)
 
 ---
@@ -710,5 +710,5 @@ T42-T44  → 进度追踪与辅助工具
 
 ---
 
-> 本文档覆盖 STDD Copilot v1.0.1 全部 57 个 CLI 命令 + 20 个 Command 模板 + 47 个 Skill 模板。
+> 本文档覆盖 STDD Copilot v1.0.1 全部 67 个 CLI 命令 + 63 个 Command 模板 + 47 个 Skill 模板。
 > 请在终端中按 Phase 顺序逐条执行验证。
