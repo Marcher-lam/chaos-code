@@ -98,6 +98,9 @@ stdd apply <change-id> --task TASK-001 --phase red
 - **验证**: 测试**必须**失败（TDD 纪律）
 - **违反处理**: 如果测试通过，报错并阻止进入 GREEN 阶段
 - **输出**: `[phase:green]` 标记写入 tasks.md
+- **增强 (取自 Vitest/pytest)**:
+  - 自动生成测试骨架（参数化测试支持）
+  - 智能测试发现和分组
 
 #### 🟢 GREEN Phase - 最小实现
 ```bash
@@ -108,6 +111,10 @@ stdd apply <change-id> --task TASK-001 --phase green
 - **验证**: 所有测试必须通过
 - **失败处理**: 保持在 GREEN 阶段，生成 fix-packet
 - **输出**: `[phase:refactor]` 标记写入 tasks.md
+- **增强 (取自 Jest/Vitest)**:
+  - Snapshot 测试支持
+  - 并行测试执行（worker threads）
+  - 智能重跑失败的测试
 
 #### 🔵 REFACTOR Phase - 重构优化
 ```bash
@@ -118,6 +125,9 @@ stdd apply <change-id> --task TASK-001 --phase refactor
 - **验证**: 所有测试必须仍然通过
 - **失败处理**: 重构破坏了行为，需要回退
 - **输出**: `[phase:done]` + `[x]` 标记写入 tasks.md
+- **增强 (取自 pytest)**:
+  - Coverage-aware 重构建议
+  - 模块化 fixtures 支持
 
 ### 3. Legacy 模式（无 phase 标签）
 

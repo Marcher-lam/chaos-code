@@ -125,14 +125,36 @@ stdd api-spec <change-id> --language ts --full
 stdd/changes/<change-id>/specs/
 ├── api-spec.yaml
 ├── types/
-│   └── api-types.ts       # TypeScript interfaces
+│   └── api-types.ts       # TypeScript interfaces (零运行时开销)
+├── client/
+│   ├── react-query.ts     # React Query hooks (type-safe)
+│   ├── swr.ts             # SWR hooks
+│   ├── vue-query.ts       # Vue Query hooks
+│   ├── svelte-query.ts    # Svelte Query hooks
+│   └── fetch-client.ts    # 原生 fetch wrapper
 ├── mocks/
-│   └── msw-handlers.ts    # MSW handlers
+│   ├── msw-handlers.ts    # MSW handlers
+│   └── faker-fixtures.ts  # Faker.js 自动生成测试数据
 └── validators/
-    └── zod-schemas.ts     # Zod schemas
+    └── zod-schemas.ts     # Zod schemas (运行时验证)
 ```
 
+**框架原生支持 (取自 Orval):**
+- React Query / TanStack Query
+- SWR
+- Vue Query
+- Svelte Query
+- Solid Query
+- Angular HttpClient
+- Axios interceptors
+
 **灵感来源:** Orval, openapi-typescript
+
+**新增能力:**
+- 自动生成响应式 hooks（stale-while-revalidate 策略）
+- 自动 MSW handlers + Faker.js 随机数据
+- Zod 运行时验证（与 TS 类型双保险）
+- 零运行时类型推断（使用 TypeScript 类型推导）
 
 #### Python (--language py)
 ```bash
@@ -268,9 +290,16 @@ stdd api-spec <change-id> --language java --mocks-only
 # 指定输出目录
 stdd api-spec <change-id> --output-dir src/api
 
-# 指定框架/库 (未来)
-stdd api-spec <change-id> --language ts --framework react-query
-stdd api-spec <change-id> --language py --framework fastapi
+# 指定框架/库 (取自 Orval + OpenAPI Generator)
+stdd api-spec <change-id> --language ts --framework react-query  # React Query hooks
+stdd api-spec <change-id> --language ts --framework swr          # SWR hooks
+stdd api-spec <change-id> --language ts --framework vue-query    # Vue Query hooks
+stdd api-spec <change-id> --language ts --framework angular      # Angular HttpClient
+stdd api-spec <change-id> --language py --framework fastapi     # FastAPI 路由
+stdd api-spec <change-id> --language java --framework spring     # Spring Boot
+
+# 自定义模板 (取自 OpenAPI Generator)
+stdd api-spec <change-id> --template-dir ./templates
 
 # Monorepo workspace
 stdd api-spec <change-id> --workspace packages/api
@@ -280,6 +309,14 @@ stdd api-spec <change-id> --validate-existing
 
 # 输出格式
 stdd api-spec <change-id> --format json
+
+# 集成插件 (取自 OpenAPI Generator)
+stdd api-spec <change-id> --plugin maven       # Maven 插件集成
+stdd api-spec <change-id> --plugin gradle      # Gradle 插件集成
+stdd api-spec <change-id> --plugin bazel       # Bazel 插件集成
+
+# IoC 模式 (取自 OpenAPI Generator)
+stdd api-spec <change-id> --ioc                # Inversion of Control，保留业务逻辑代码
 ```
 
 ## Graph Semantics
