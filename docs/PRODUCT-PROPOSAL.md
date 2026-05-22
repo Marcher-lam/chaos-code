@@ -4,7 +4,7 @@
 >
 > 文档类型：产品方案报告
 > 产品名称：STDD Copilot — Specification & Test-Driven Development Copilot
-> 产品版本：v1.0.0
+> 产品版本：v1.0.4-preview
 > 作者：Marcher-lam
 > 仓库：https://github.com/Marcher-lam/STDD-COPILOT
 

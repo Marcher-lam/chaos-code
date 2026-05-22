@@ -1,6 +1,6 @@
 # STDD Copilot - AI Agent 入口规则
 
-> Version: 1.3 | Last Updated: 2026-05-21
+> Version: 1.4 | Last Updated: 2026-05-22
 
 ## 概览
 

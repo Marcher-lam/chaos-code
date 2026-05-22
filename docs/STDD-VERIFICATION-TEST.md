@@ -1,8 +1,8 @@
 # STDD Copilot 全命令验证文档
 
-> **项目**: STDD Copilot CLI v1.0.3
-> **验证日期**: 2026-05-19
-> **覆盖范围**: 75 个 CLI 命令 + 75 个 Command 模板 + 47 个 Skill 模板
+> **项目**: STDD Copilot CLI v1.0.4-preview
+> **验证日期**: 2026-05-22
+> **覆盖范围**: 75 个 CLI 命令 + 75 个 Command 模板 + 47 个 Skill 模板 (全部审查完成)
 > **质量基线**: `npm run premerge` (audit + zero-warning lint + docs + coverage)
 
 ---

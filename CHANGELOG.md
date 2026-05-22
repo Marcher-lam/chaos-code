@@ -2,6 +2,21 @@
 
 All notable changes to STDD Copilot will be documented in this file.
 
+## [1.0.4-preview] - 2026-05-22
+
+### Added
+- **STDD Skills 全量审查完成**: 47 个 STDD skills 全部审查并标记 ✅ 完成
+- **api-spec skill 增强**: 添加框架原生 hooks (React Query, SWR, Vue Query, Svelte Query)
+- **apply skill 增强**: 添加 Snapshot 测试、并行执行、智能重试、参数化测试支持
+
+### Changed
+- **SKILL.md 文档质量**: 所有 47 个 skill 文档覆盖外部工具最佳实践
+- **多语言支持**: 确认所有 skills 支持语言无关设计
+- **文档计数**: skill_method.md 中所有 skills 标记完成状态
+
+### Fixed
+- 文档与实际实现保持一致
+
 ## [1.0.3] - 2026-05-21
 
 ### Added

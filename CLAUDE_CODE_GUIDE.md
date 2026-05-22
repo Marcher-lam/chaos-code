@@ -17,7 +17,7 @@
 
 STDD Copilot 2.0 支持 Agent 自主编排工作流。Agent 应主动读取 Skill Graph（`stdd/graph/skills.yaml`），根据当前变更状态自动推进工作流，仅在关键确认点（Confirm Gate）暂停等待用户输入。用户无需记住全部 47 个斜杠命令。
 
-## 质量基线（2026-05-19）
+## 质量基线（2026-05-22）
 
 - 测试: 171 套件 / 3810 用例 / 100% 通过率
 - 覆盖率: Stmts 97.33% | Branch 91.03% | Funcs 97.15% | Lines 97.87%
