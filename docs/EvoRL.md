@@ -1,6 +1,6 @@
 # STDD Copilot 用户实操手册：从零构建一个完整项目
 
-> **版本**: v1.0.4-preview | **更新日期**: 2026-05-22
+> **版本**: v1.0.5 | **更新日期**: 2026-05-24
 > **适用场景**: 从零开始的新项目，完整掌握 STDD Copilot 工作流
 
 ---
@@ -744,7 +744,7 @@ node --test
 
 ---
 
-> **STDD Copilot v1.0.4-preview**
+> **STDD Copilot v1.0.5**
 > - 75 个 CLI 命令
 > - 80 个 Command 模板
 > - 47 个 Skill 模板

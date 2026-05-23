@@ -62,7 +62,7 @@ describe('Documentation taxonomy consistency', () => {
   it('keeps CLAUDE.md taxonomy notes aligned with the repository', () => {
     const text = readFile('CLAUDE.md');
 
-    expect(text).toContain('76 个 /stdd:* 会话入口');
+    expect(text).toContain('80 个 /stdd:* 会话入口');
     expect(text).toContain('80 个 Command 模板文件');
     expect(text).toContain('47 个 Skill 模板目录');
     expect(text).toContain('入口 taxonomy（防漂移约定）');

@@ -1,7 +1,7 @@
 # STDD Copilot 系统架构
 
 version: "2.5"
-last_updated: "2026-05-22"
+last_updated: "2026-05-24"
 
 ## 概述
 
