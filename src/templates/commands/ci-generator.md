@@ -2,7 +2,7 @@
 description: Generate CI configuration files
 ---
 
-# Command: /stdd:ci
+# Command: /stdd:ci-generator
 
 ## Usage
 ```

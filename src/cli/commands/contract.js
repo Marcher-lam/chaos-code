@@ -10,6 +10,7 @@ const { resolveWorkspace } = require('../../utils/workspace-detector');
 const EvidenceCapture = require('../../utils/evidence-capture');
 const { resolveChangeDir } = require('../../utils/change-utils');
 const { createLogger } = require('../../utils/logger');
+const { toSafeFilename: _toSafe } = require('../../utils/change-helpers');
 const logger = createLogger('contract');
 
 class ContractCommand {
