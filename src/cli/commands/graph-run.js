@@ -16,6 +16,7 @@ const { getPackageRoot } = require('../../utils/path-resolver');
 const { walkFiles } = require('../../utils/file-walker');
 const { parseCommand, runCommand: runParsedCommand } = require('../../utils/command-runner');
 const { FFCommand } = require('./ff');
+const { generateChangeName: _genChangeName } = require('../../utils/change-helpers');
 const { SpecGenerator } = require('./spec-generator');
 const { ApplyCommand } = require('./apply');
 const { VerifyCommand } = require('./verify');
@@ -94,6 +95,7 @@ const NODE_COMMAND_MAP = {
   'stdd-apply': 'apply',
   'stdd-fix-packet': 'fix-packet',
   'stdd-verify': 'verify',
+  'stdd-issue': 'issue',
   'stdd-archive': 'archive',
   'stdd-commit': 'commit',
   'stdd-explore': 'explore',
@@ -199,6 +201,12 @@ class GraphRunCommand {
         return { status: 'success', node: nodeName, workspace: options.workspaceContext };
       }
 
+      case 'stdd-issue': {
+        const { IssueCommand } = require('./issue');
+        const issueDesc = options.description || changeName;
+        await new IssueCommand(silentSpinner).execute(issueDesc, options);
+        return { status: 'success', node: nodeName };
+      }
       case 'stdd-archive': {
         const archive = new ArchiveCommand();
         await archive.execute(changeName, options.archiveOptions || {});
@@ -293,6 +301,7 @@ class GraphRunCommand {
     }
 
     const changeName = options.changeName || this._generateChangeName(intent);
+    options.changeName = changeName;
     this.result.changeName = changeName;
 
     if (options.workspace) {

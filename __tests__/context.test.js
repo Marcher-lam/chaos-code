@@ -452,10 +452,10 @@ describe('ContextCommand', () => {
 
       // 重置模块缓存，用 doMock 注入 mock 的 execSync
       jest.resetModules();
-      const execSyncMock = jest.fn(() => true);
+      const execSyncMock = jest.fn(() => ({ status: 0 }));
       jest.doMock('child_process', () => ({
         ...jest.requireActual('child_process'),
-        execSync: execSyncMock,
+        spawnSync: execSyncMock,
       }));
 
       const { ContextCommand: FreshCmd } = require('../src/cli/commands/context');
@@ -481,7 +481,7 @@ describe('ContextCommand', () => {
       const execSyncMock = jest.fn(() => { throw new Error('clipboard error'); });
       jest.doMock('child_process', () => ({
         ...jest.requireActual('child_process'),
-        execSync: execSyncMock,
+        spawnSync: execSyncMock,
       }));
 
       const { ContextCommand: FreshCmd } = require('../src/cli/commands/context');

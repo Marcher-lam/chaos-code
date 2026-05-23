@@ -61,10 +61,10 @@ describe('DynamicGraphRouter branch coverage', () => {
         version: '2.0',
         config: { max_parallel: 5 },
         skills: {
-          'stdd-propose': { description: 'Propose changes', phase: 'propose' },
+          'stdd-issue': { description: 'Issue tracking', phase: 'propose' },
           'stdd-apply': { description: 'Apply changes', phase: 'execute' },
           'stdd-verify': { description: 'Verify changes', phase: 'verify' },
-          'stdd-commit': { description: 'Commit changes', phase: 'commit' },
+          'stdd-archive': { description: 'Archive changes', phase: 'archive' },
         },
       };
       fs.writeFileSync(yamlPath, yaml.dump(graphData), 'utf8');
@@ -74,10 +74,10 @@ describe('DynamicGraphRouter branch coverage', () => {
 
       expect(result.version).toBe('2.0');
       expect(result.config.max_parallel).toBe(5);
-      expect(result.skills['stdd-propose'].phase).toBe('propose');
-      expect(result.skills['stdd-propose'].depends_on).toEqual([]);
-      expect(result.skills['stdd-apply'].depends_on).toEqual(['stdd-propose']);
-      expect(result.skills['stdd-commit'].depends_on).toEqual(['stdd-verify']);
+      expect(result.skills['stdd-issue'].phase).toBe('propose');
+      expect(result.skills['stdd-issue'].depends_on).toEqual([]);
+      expect(result.skills['stdd-apply'].depends_on).toEqual(['stdd-issue']);
+      expect(result.skills['stdd-archive'].depends_on).toEqual(['stdd-verify']);
     });
 
     it('generates auto nodes for skills not in rawGraph', () => {
@@ -92,7 +92,7 @@ describe('DynamicGraphRouter branch coverage', () => {
       const result = router.compile('hotfix');
 
       // All skills should be auto-generated since rawGraph.skills is empty
-      expect(result.skills['stdd-propose'].description).toContain('Auto-generated');
+      expect(result.skills['stdd-issue'].description).toContain('Auto-generated');
       expect(result.skills['stdd-apply'].description).toContain('Auto-generated');
     });
 

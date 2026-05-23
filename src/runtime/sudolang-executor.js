@@ -53,6 +53,7 @@ class SudoExecutor {
   }
 
   generateTestScript(data) {
+    const s = (v) => this._sanitize(v);
     const lines = [
       "const assert = require('assert');",
       "console.log('Starting SudoLang Simulation...');",
@@ -63,9 +64,10 @@ class SudoExecutor {
     if (data.interfaces && data.interfaces.length > 0) {
       lines.push("// Interface Validations");
       data.interfaces.forEach(iface => {
+        const safeName = s(iface.name);
         lines.push(`{`);
-        lines.push(`  const mockInstance = {}; // Simulate instance of ${iface.name}`);
-        lines.push(`  console.log('Validating Interface: ${iface.name}');`);
+        lines.push(`  const mockInstance = {}; // Simulate instance of ${safeName}`);
+        lines.push(`  console.log('Validating Interface: ${safeName}');`);
         lines.push(`  assert(typeof mockInstance === 'object', 'Instance must be object');`);
         lines.push(`}`);
       });
@@ -76,8 +78,9 @@ class SudoExecutor {
       lines.push("");
       lines.push("// Constraint Checks");
       data.constraints.forEach(c => {
+        const safeDesc = s(c.description);
         lines.push(`{`);
-        lines.push(`  console.log('Checking Constraint: ${c.description}');`);
+        lines.push(`  console.log('Checking Constraint: ${safeDesc}');`);
         // Simple heuristic execution based on keywords
         if (c.body.toLowerCase().includes('unique')) {
            lines.push(`  const set = new Set(['a', 'b']); assert(set.size === 2, 'Must be unique');`);
@@ -94,8 +97,9 @@ class SudoExecutor {
       lines.push("");
       lines.push("// Goal Scenarios");
       data.goals.forEach((g, i) => {
+        const safeDesc = s(g.description);
         lines.push(`{`);
-        lines.push(`  console.log('Simulating Goal: ${g.description}');`);
+        lines.push(`  console.log('Simulating Goal: ${safeDesc}');`);
         lines.push(`  const success = true; // Simulate goal achievement`);
         lines.push(`  assert(success, 'Goal ${i+1} failed');`);
         lines.push(`}`);
@@ -103,6 +107,10 @@ class SudoExecutor {
     }
 
     return lines.join('\n');
+  }
+
+  _sanitize(str) {
+    return String(str || '').replace(/[\\'"\n\r\${}]/g, '_');
   }
 
   prepareEnv() {

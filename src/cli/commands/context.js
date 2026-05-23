@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const chalk = require('chalk');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const { MemoryScanner } = require('./memory-scan');
 const { resolveWorkspace } = require('../../utils/workspace-detector');
 const { workspaceToScope } = require('../../utils/workspace-scope');
@@ -11,9 +11,9 @@ const logger = createLogger('context');
 const LAYERS = ['foundation', 'components', 'contracts'];
 
 const CLIP_COMMANDS = {
-  darwin: 'pbcopy',
-  win32: 'clip',
-  linux: 'xclip -selection clipboard',
+  darwin: { bin: 'pbcopy', args: [] },
+  win32: { bin: 'clip', args: [] },
+  linux: { bin: 'xclip', args: ['-selection', 'clipboard'] },
 };
 
 class ContextCommand {
@@ -108,10 +108,13 @@ class ContextCommand {
       const clipCmd = CLIP_COMMANDS[process.platform];
       if (clipCmd) {
         try {
-          execSync(clipCmd, { input: outputStr, timeout: 3000 });
+          const clip = CLIP_COMMANDS[process.platform];
+          if (!clip) throw new Error('Unsupported platform');
+          spawnSync(clip.bin, clip.args, { input: outputStr, timeout: 3000, encoding: 'utf8' });
           logger.info(`Copied to clipboard (${process.platform})`);
         } catch (err) {
-          logger.warn(`Clipboard copy failed on ${process.platform}. Try: echo '...' | ${clipCmd}`);
+          const clip = CLIP_COMMANDS[process.platform] || {};
+          logger.warn(`Clipboard copy failed on ${process.platform}. Try: echo '...' | ${clip.bin || 'pbcopy'}`);
           process.stdout.write(outputStr);
           return outputStr;
         }

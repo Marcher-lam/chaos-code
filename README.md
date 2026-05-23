@@ -340,7 +340,7 @@ stdd-copilot/
 │   ├── cli/commands/            # 75 个命令实现
 │   ├── cli/registry/            # 命令注册与动态加载
 │   ├── utils/                   # 21 个工具模块
-│   │   ├── graph-executor.js    #   Graph 执行引擎
+│   │   ├── parallel-executor.js #   DAG 分层并行执行
 │   │   ├── session-progress.js  #   实时进度追踪
 │   │   ├── file-walker.js      #   共享目录遍历
 │   │   ├── evidence-capture.js  #   证据采集

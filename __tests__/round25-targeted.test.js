@@ -15,21 +15,24 @@ describe('round25: ff.js', () => {
   test('workspaceContext null workspace', () => {
     const { FFCommand } = require('../src/cli/commands/ff');
     const cmd = new FFCommand(mkTmp());
-    expect(cmd.workspaceContext(null)).toBeNull();
+    const { workspaceContext: _wsCtx } = require('../src/utils/change-helpers');
+    expect(_wsCtx(null)).toBeNull();
   });
 
   test('toSafeFilename edge cases', () => {
     const { FFCommand } = require('../src/cli/commands/ff');
     const cmd = new FFCommand(mkTmp());
-    expect(cmd.toSafeFilename('')).toBe('');
-    expect(cmd.toSafeFilename(null)).toBe('');
-    expect(cmd.toSafeFilename('A-B C!')).toBe('a-b-c');
+    const { toSafeFilename: _toSafe } = require('../src/utils/change-helpers');
+    expect(_toSafe('')).toBe('');
+    expect(_toSafe(null)).toBe('');
+    expect(_toSafe('A-B C!')).toBe('a-b-c');
   });
 
   test('generateChangeName starts with ff-', () => {
     const { FFCommand } = require('../src/cli/commands/ff');
     const cmd = new FFCommand(mkTmp());
-    expect(cmd.generateChangeName()).toMatch(/^ff-\d{8}-\d{4}$/);
+    const { generateChangeName: _genChangeName } = require('../src/utils/change-helpers');
+    expect(_genChangeName('ff')).toMatch(/^ff-\d{8}-\d{4}$/);
   });
 });
 
@@ -38,19 +41,22 @@ describe('round25: issue.js', () => {
   test('generateChangeName starts with bugfix-', () => {
     const { IssueCommand } = require('../src/cli/commands/issue');
     const cmd = new IssueCommand();
-    expect(cmd.generateChangeName()).toMatch(/^bugfix-\d{8}-\d{4}$/);
+    const { generateChangeName: _genChangeName } = require('../src/utils/change-helpers');
+    expect(_genChangeName('bugfix')).toMatch(/^bugfix-\d{8}-\d{4}$/);
   });
 
   test('workspaceContext null', () => {
     const { IssueCommand } = require('../src/cli/commands/issue');
     const cmd = new IssueCommand();
-    expect(cmd.workspaceContext(null)).toBeNull();
+    const { workspaceContext: _wsCtx } = require('../src/utils/change-helpers');
+    expect(_wsCtx(null)).toBeNull();
   });
 
   test('toSafeFilename', () => {
+    const { toSafeFilename: _toSafe } = require('../src/utils/change-helpers');
     const { IssueCommand } = require('../src/cli/commands/issue');
     const cmd = new IssueCommand();
-    expect(cmd.toSafeFilename('Bug: Crash!')).toBe('bug-crash');
+    expect(_toSafe('Bug: Crash!')).toBe('bug-crash');
   });
 });
 

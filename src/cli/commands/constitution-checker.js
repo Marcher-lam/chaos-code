@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const { spawnSync, execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const { detectWorkspaces, collectSourceDirs } = require('../../utils/workspace-detector');
 const { parseCoverage } = require('../../utils/coverage-parser');
 const { findLatestMutationEvidence } = require('./mutation');
@@ -600,13 +600,15 @@ class ConstitutionChecker {
 
   _runNpmAudit() {
     try {
-      const result = execSync('npm audit --json', {
+      const proc = spawnSync('npm', ['audit', '--json'], {
         cwd: this.cwd,
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout: 30000,
       });
-      const audit = JSON.parse(result);
+      if (proc.error) return;
+      if (proc.status !== 0 && !proc.stdout) return;
+      const audit = JSON.parse(proc.stdout || '{}');
       const metadata = audit.metadata || {};
       const vulnerabilities = metadata.vulnerabilities || {};
 
@@ -643,13 +645,21 @@ class ConstitutionChecker {
 
   _runPipAudit() {
     try {
-      const result = execSync('pip audit --json', {
+      const proc = spawnSync('pip', ['audit', '--json'], {
         cwd: this.cwd,
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout: 30000,
       });
-      const audit = JSON.parse(result);
+      if (proc.error || (proc.status !== 0 && !proc.stdout)) {
+        this.issues.warning.push({
+          article: 7,
+          name: 'Security',
+          message: 'Python dependency audit skipped (pip-audit not available).'
+        });
+        return;
+      }
+      const audit = JSON.parse(proc.stdout || '{}');
       const vulns = audit.vulns || [];
 
       if (vulns.length === 0) return;
@@ -1304,11 +1314,12 @@ class ConstitutionChecker {
   _checkStagedChanges() {
     let numstatOutput;
     try {
-      numstatOutput = execSync('git diff --staged --numstat', {
+      const diffProc = spawnSync('git', ['diff', '--staged', '--numstat'], {
         cwd: this.cwd,
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
       });
+      numstatOutput = diffProc.stdout || '';
     } catch (_) {
       return;
     }
@@ -1346,7 +1357,12 @@ class ConstitutionChecker {
 
     let gitLog;
     try {
-      gitLog = execSync('git log --oneline -5', { cwd: this.cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+      const logProc = spawnSync('git', ['log', '--oneline', '-5'], { cwd: this.cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+      if (logProc.status !== 0) {
+        this.issues.skipped.push({ article: 3, name: 'Commits', reason: 'Not a git repository or no commits' });
+        return;
+      }
+      gitLog = logProc.stdout || '';
     } catch (_) {
       this.issues.skipped.push({ article: 3, name: 'Commits', reason: 'Not a git repository or no commits' });
       return;

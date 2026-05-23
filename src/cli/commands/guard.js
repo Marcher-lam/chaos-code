@@ -266,8 +266,7 @@ class GuardCommand {
       };
 
       if (deps.eslint) {
-        const result = spawnSync('npx eslint . --no-error-on-unmatched-pattern --format compact', {
-          shell: true,
+        const result = spawnSync('npx', ['eslint', '.', '--no-error-on-unmatched-pattern', '--format', 'compact'], {
           timeout: LINTER_TIMEOUT,
           stdio: ['pipe', 'pipe', 'pipe'],
           encoding: 'utf-8',

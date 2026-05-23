@@ -195,7 +195,6 @@ graph TB
 | **Tracker** | 追踪执行历史 | 执行事件 | 历史记录 | `src/cli/commands/graph-history.js` |
 | **Condition Engine** | 条件判断 | 条件表达式 | 布尔结果 | `stdd/graph/conditions.json` |
 | **Dynamic Router** | 意图自适应拓扑裁剪 | 用户意图 | 编译后 DAG | `src/utils/dynamic-router.js` |
-| **Graph Executor** | 生命周期执行 + 反向自愈 | DAG + 输入 | 执行结果 | `src/utils/graph-executor.js` |
 | **Graph Cache** | DAG 幂等断点缓存 | 节点+输入 | SHA256 指纹缓存 | `src/utils/graph-cache.js` |
 | **Evidence Capture** | 结构化错误证据采集 | 错误对象+上下文 | 证据链快照 | `src/utils/evidence-capture.js` |
 | **Error Propagator** | 多跳向上传播 + 决策点定位 | 失败节点 | 回炉目标+证据报告 | `src/utils/error-propagator.js` |
@@ -203,11 +202,11 @@ graph TB
 | **Parallel Executor** | DAG 分层并行执行 | DAG + 引擎适配器 | 并行执行结果 | `src/utils/parallel-executor.js` |
 | **Recommender** | 智能推荐 | 上下文、历史、workspace 状态 | 推荐列表 | `src/cli/commands/recommend.js`, `src/cli/commands/graph.js` |
 
-#### GraphExecutor 与 `stdd graph run`
+#### `stdd graph run` 与运行时工具
 
 `stdd graph run` 是用户可用的 CLI 编排入口，位于 `src/cli/commands/graph-run.js`。它通过 `DynamicGraphRouter` 编译 `feature`、`hotfix`、`repair`、`research` 等意图 DAG，并把节点映射到已实现 CLI 能力：`ff`、`spec`、`outside-in`、`fix-packet`、`apply`、`verify`、`archive` 等。
 
-`src/utils/graph-executor.js` 是更底层的可插拔 runtime：它保留生命周期钩子、缓存、自愈、异构/并行执行等扩展点。当前默认 fallback 偏演示执行和标准化结果返回，不等同于已内置真实 AI 自动编码 runtime。真实编码节点仍需要外部 AI 工具或 Skill 调用完成。
+底层运行时能力由 `graph-cache.js`、`evidence-capture.js`、`error-propagator.js`、`heterogeneous-adapter.js` 和 `parallel-executor.js` 组合提供：缓存、证据采集、失败传播、异构引擎适配和 DAG 分层并行执行。真实编码节点仍需要外部 AI 工具或 Skill 调用完成。
 
 ### 2. 核心 Skills (5 阶段工作流)
 
@@ -482,7 +481,6 @@ sequenceDiagram
 |------|------|----------|
 | **dynamic-router.js** | 意图自适应拓扑 | hotfix/feature/research 三条路径编译，DAG 动态裁剪 |
 | **graph-cache.js** | 幂等断点缓存 | SHA256 输入指纹化，JSON 持久化，缓存失效清理 |
-| **graph-executor.js** | 生命周期执行引擎 | 线性执行 + 反向自愈 + 异构并行调度集成，`shouldFailOn` 支持 |
 | **evidence-capture.js** | 结构化错误证据采集 | 错误快照、指纹去重、多跳链累积、指令合成 |
 | **error-propagator.js** | 多跳向上传播 | 智能决策点定位（planning/gate/扇出）、逐跳证据增强、根节点熔断 |
 | **heterogeneous-adapter.js** | 异构引擎适配层 | 22 引擎 Tier 分层、Skill 兼容映射、跨引擎结果标准化、Tier 降级链 |

@@ -5,13 +5,15 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const { getPackageRoot } = require('../../utils/path-resolver');
 const os = require('os');
 const chalk = require('chalk');
 
 const enginesConfig = require('../../config/engines.json');
 const ALL_SUPPORTED_AGENTS = enginesConfig.engines.map(e => e.value);
+
+const SETTINGS_BACKUP_SUFFIX = '.backup';
 
 const GIT_HOOK_SCRIPT = `#!/bin/sh
 echo "\\033[1m\\033[36m🛡️ Running STDD Guard...\\033[0m"
@@ -66,6 +68,15 @@ function writeSettings(settingsPath, settings) {
   const dir = path.dirname(settingsPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
+  }
+  // Backup existing settings before overwriting
+  if (fs.existsSync(settingsPath)) {
+    const backupPath = settingsPath + SETTINGS_BACKUP_SUFFIX;
+    try {
+      const existing = fs.readFileSync(settingsPath, 'utf8');
+      // Only keep one backup; overwrite previous backup
+      fs.writeFileSync(backupPath, existing);
+    } catch (_) { /* best effort */ }
   }
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 }
@@ -375,7 +386,7 @@ function disableHooks(options) {
     const settings = readSettings(settingsPath);
     if (!settings.hooks) continue;
 
-    const backupPath = settingsPath + '.backup';
+    const backupPath = settingsPath + SETTINGS_BACKUP_SUFFIX;
     fs.copyFileSync(settingsPath, backupPath);
     console.log(chalk.green(`📦 [备份] ${backupPath}`));
 
@@ -405,7 +416,7 @@ function enableHooks(options) {
   let needsReinstall = false;
 
   for (const settingsPath of settingsPaths) {
-    const backupPath = settingsPath + '.backup';
+    const backupPath = settingsPath + SETTINGS_BACKUP_SUFFIX;
     if (fs.existsSync(backupPath)) {
       fs.copyFileSync(backupPath, settingsPath);
       fs.unlinkSync(backupPath);
@@ -502,7 +513,10 @@ function installGitHooks(options) {
     if (!fs.existsSync(gitHooksDir)) {
       console.log(chalk.yellow('⚠️ .git/hooks 目录不存在，尝试初始化 git...'));
       try {
-        execSync('git init', { cwd, stdio: 'pipe' });
+        const result = spawnSync('git', ['init'], { cwd, stdio: 'pipe' });
+        if (result.status !== 0 || result.error) {
+          throw result.error || new Error(String(result.stderr || result.stdout || 'git init failed'));
+        }
       } catch (error) {
         console.log(chalk.red('❌ 无法初始化 git 仓库，请手动运行 git init'));
         return false;

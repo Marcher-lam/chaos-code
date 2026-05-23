@@ -157,6 +157,7 @@ Currently implemented: visualize, analyze, parallel --detect, history, replay, r
     .option('--format <format>', 'Output format: mermaid, json, or html', 'mermaid')
     .option('--output <file>', 'Write output to file')
     .action(async (options = {}) => {
+      try {
       const compiled = compileGraph(options.intent);
       const format = String(options.format || 'mermaid').toLowerCase();
 
@@ -195,6 +196,7 @@ Currently implemented: visualize, analyze, parallel --detect, history, replay, r
       }
 
       writeOrPrint(buildMermaid(compiled), options.output);
+      } catch (error) { logger.error(error.message); process.exitCode = 1; }
     });
 
   graph

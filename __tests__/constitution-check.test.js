@@ -4,18 +4,30 @@ const os = require('os');
 const childProcess = require('child_process');
 const { ConstitutionChecker } = require('../src/cli/commands/constitution-checker');
 
-jest.mock('child_process', () => ({
-  ...jest.requireActual('child_process'),
-  execSync: jest.fn(),
-  spawnSync: jest.requireActual('child_process').spawnSync,
-}));
+jest.mock('child_process', () => {
+  const actual = jest.requireActual('child_process');
+  const defaultGitLog = { stdout: 'abc1234 feat: init project\ndef5678 fix: minor tweak', status: 0, stderr: '' };
+  const mockFn = jest.fn();
+  mockFn._defaultImpl = (cmd, args, opts) => {
+    // Pass through eslint/version/node/npx checks to real implementation
+    if (typeof cmd === 'string' && ['eslint', 'npx', 'node', 'npm'].includes(cmd)) {
+      return actual.spawnSync(cmd, args, opts);
+    }
+    return defaultGitLog;
+  };
+  mockFn.mockImplementation(mockFn._defaultImpl);
+  return {
+    ...actual,
+    spawnSync: mockFn,
+  };
+});
 
 describe('ConstitutionChecker', () => {
   let tempDir;
 
   beforeEach(() => {
-    childProcess.execSync.mockReset();
-    childProcess.execSync.mockReturnValue('abc1234 feat: init project\ndef5678 fix: minor tweak');
+    childProcess.spawnSync.mockClear();
+    childProcess.spawnSync.mockImplementation(childProcess.spawnSync._defaultImpl);
   });
 
   function setup() {
@@ -343,7 +355,7 @@ describe('ConstitutionChecker', () => {
     it('should warn when commit message does not follow Conventional Commits spec', () => {
       setup();
 
-      childProcess.execSync.mockReturnValue('abc1234 fix bug\ndef5678 update\nghi9012 feat: add login\njkl3456 docs: update README\nmno7890 test: add unit tests');
+      childProcess.spawnSync.mockReturnValue({ stdout: 'abc1234 fix bug\ndef5678 update\nghi9012 feat: add login\njkl3456 docs: update README\nmno7890 test: add unit tests', status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -359,7 +371,7 @@ describe('ConstitutionChecker', () => {
     it('should pass when all commits follow Conventional Commits spec', () => {
       setup();
 
-      childProcess.execSync.mockReturnValue('abc1234 feat: add login\ndef5678 fix: resolve bug\nghi9012 docs: update README\njkl3456 test: add unit tests\nmno7890 refactor: clean up code');
+      childProcess.spawnSync.mockReturnValue({ stdout: 'abc1234 feat: add login\ndef5678 fix: resolve bug\nghi9012 docs: update README\njkl3456 test: add unit tests\nmno7890 refactor: clean up code', status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -376,7 +388,7 @@ describe('ConstitutionChecker', () => {
 
       const err = new Error('fatal: not a git repository');
       err.code = 'ENOENT';
-      childProcess.execSync.mockImplementation(() => { throw err; });
+      childProcess.spawnSync.mockImplementation(() => { throw err; });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -392,7 +404,7 @@ describe('ConstitutionChecker', () => {
       setup();
 
       const longSubject = 'feat: this is a very long commit message that exceeds the seventy two character limit for subject lines';
-      childProcess.execSync.mockReturnValue(`abc1234 ${longSubject}\ndef5678 fix: short message`);
+      childProcess.spawnSync.mockReturnValue({ stdout: `abc1234 ${longSubject}\ndef5678 fix: short message`, status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -409,7 +421,7 @@ describe('ConstitutionChecker', () => {
     it('should skip Article 3 when waived', () => {
       setup();
 
-      childProcess.execSync.mockReturnValue('abc1234 fix bug');
+      childProcess.spawnSync.mockReturnValue({ stdout: 'abc1234 fix bug', status: 0 });
 
       const waiverDir = path.join(tempDir, 'stdd', 'constitution');
       fs.mkdirSync(waiverDir, { recursive: true });
@@ -1833,9 +1845,9 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
-        .mockReturnValueOnce('300\t300\tfile1.js\n100\t0\tfile2.js')
-        .mockReturnValueOnce('abc1234 feat: init project');
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: '300\t300\tfile1.js\n100\t0\tfile2.js', status: 0 })
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -1859,9 +1871,9 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
-        .mockReturnValueOnce('50\t30\tfile1.js\n10\t5\tfile2.js')
-        .mockReturnValueOnce('abc1234 feat: init project');
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: '50\t30\tfile1.js\n10\t5\tfile2.js', status: 0 })
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -1885,9 +1897,9 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
+      childProcess.spawnSync
         .mockImplementationOnce(() => { throw new Error('not a git repo'); })
-        .mockReturnValueOnce('abc1234 feat: init project');
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -1917,12 +1929,12 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
-        .mockReturnValueOnce('')
-        .mockReturnValueOnce('abc1234 feat: init project')
-        .mockReturnValueOnce(JSON.stringify({
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: '', status: 0 })
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 })
+        .mockReturnValueOnce({ stdout: JSON.stringify({
           metadata: { vulnerabilities: { critical: 0, high: 0, moderate: 0, low: 0 } }
-        }));
+        }), status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -1951,12 +1963,12 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
-        .mockReturnValueOnce('')
-        .mockReturnValueOnce('abc1234 feat: init project')
-        .mockReturnValueOnce(JSON.stringify({
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: '', status: 0 })
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 })
+        .mockReturnValueOnce({ stdout: JSON.stringify({
           metadata: { vulnerabilities: { critical: 0, high: 0, moderate: 0, low: 0 } }
-        }));
+        }), status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -1985,12 +1997,12 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
-        .mockReturnValueOnce('')
-        .mockReturnValueOnce('abc1234 feat: init project')
-        .mockReturnValueOnce(JSON.stringify({
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: '', status: 0 })
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 })
+        .mockReturnValueOnce({ stdout: JSON.stringify({
           metadata: { vulnerabilities: { critical: 0, high: 0, moderate: 0, low: 0 } }
-        }));
+        }), status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -2018,9 +2030,9 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
-        .mockReturnValueOnce('')
-        .mockReturnValueOnce('abc1234 feat: init project');
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: '', status: 0 })
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -2049,11 +2061,11 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
-        .mockReturnValueOnce('abc1234 feat: init project')
-        .mockReturnValueOnce(JSON.stringify({
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 })
+        .mockReturnValueOnce({ stdout: JSON.stringify({
           metadata: { vulnerabilities: { critical: 0, high: 0, moderate: 0, low: 0 } }
-        }));
+        }), status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -2084,10 +2096,10 @@ describe('ConstitutionChecker', () => {
         metadata: { vulnerabilities: { critical: 2, high: 1, moderate: 3, low: 0 } }
       });
 
-      childProcess.execSync
-        .mockReturnValueOnce('')
-        .mockReturnValueOnce('abc1234 feat: init project')
-        .mockReturnValueOnce(auditOutput);
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: '', status: 0 })
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 })
+        .mockReturnValueOnce({ stdout: auditOutput, status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -2122,10 +2134,10 @@ describe('ConstitutionChecker', () => {
         metadata: { vulnerabilities: { critical: 0, high: 0, moderate: 1, low: 2 } }
       });
 
-      childProcess.execSync
-        .mockReturnValueOnce('')
-        .mockReturnValueOnce('abc1234 feat: init project')
-        .mockReturnValueOnce(auditOutput);
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: '', status: 0 })
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 })
+        .mockReturnValueOnce({ stdout: auditOutput, status: 0 });
 
       const checker = new ConstitutionChecker(tempDir);
       const issues = checker.run();
@@ -2156,8 +2168,8 @@ describe('ConstitutionChecker', () => {
       fs.writeFileSync(path.join(srcDir, 'index.js'), 'module.exports = {};\n');
       fs.writeFileSync(path.join(srcDir, '__tests__', 'index.test.js'), 'test("works", () => {});\n');
 
-      childProcess.execSync
-        .mockReturnValueOnce('abc1234 feat: init project')
+      childProcess.spawnSync
+        .mockReturnValueOnce({ stdout: 'abc1234 feat: init project', status: 0 })
         .mockImplementation(() => { throw new Error('npm audit failed'); });
 
       const checker = new ConstitutionChecker(tempDir);

@@ -2,6 +2,27 @@
 
 All notable changes to STDD Copilot will be documented in this file.
 
+## [1.0.5] - 2026-05-23
+
+### Added
+- Added project-local BDD template override coverage for `stdd/templates/bdd-templates.yaml`.
+- Added regression coverage for hotfix graph runs using generated and explicit change names.
+
+### Changed
+- Externalized BDD generation templates to `stdd/templates/bdd-templates.yaml` with project-local override support.
+- Clarified mutation quick mode as a heuristic score rather than real mutation testing.
+- Updated package metadata and documentation for the v1.0.5 release.
+
+### Fixed
+- Fixed `stdd graph run --intent hotfix` so the generated change name is passed through to `stdd issue`, `apply`, `verify`, and `archive` consistently.
+- Removed the last production `execSync` usage in hooks Git initialization and replaced it with `spawnSync('git', ['init'])`.
+- Unified hooks settings backups on `.backup` so install, disable, and enable use the same recovery file.
+- Removed failed `product-proposal` section-splitting dead code that was not wired into production.
+- Removed stale documentation references to the non-existent `src/utils/graph-executor.js`.
+
+### Security
+- Hardened hook installation by avoiding shell command execution for `git init`.
+
 ## [1.0.4-preview] - 2026-05-22
 
 ### Added
@@ -52,7 +73,6 @@ All notable changes to STDD Copilot will be documented in this file.
 ### Fixed
 - 修复文档中命令数量不一致的问题
 - 所有 122 个斜杠命令和 67 个 CLI 命令已完全覆盖
-
 ## [1.0.1] - 2026-05-19
 
 ### Added
@@ -88,7 +108,7 @@ All notable changes to STDD Copilot will be documented in this file.
 - **Constitution System**: 9 articles with Hook Enforcement and waiver tracking
 - **Ralph Loop TDD**: Red → Green → Refactor cycle with phase enforcement
 - **5-Level Defense System**: Human confirmation gates, micro-task isolation, failure rollback, static quality, mutation review
-- **Graph Runtime Modules**: Dynamic router, executor with self-healing, evidence capture, error propagator, heterogeneous adapter, parallel executor
+- **Graph Runtime Modules**: Dynamic router, graph cache, evidence capture, error propagator, heterogeneous adapter, parallel executor
 - **Multi-Agent Runtime**: Party Mode state machine, SudoLang parser/executor
 - **Browser Automation**: Built-in Playwright integration for E2E testing
 - **Workspace/Monorepo Support**: Registry, scope detection, per-package commands
@@ -115,14 +135,14 @@ All notable changes to STDD Copilot will be documented in this file.
 
 ### Changed
 - **apply.js/verify.js**: Extracted `getConfigTestCommand()` to shared module (`test-command-resolver.js`)
-- **graph-executor.js**: Restored noop fallback with `shouldFailOn` simulation support, aligned comments with actual fallback behavior
+- **Graph runtime docs**: Aligned graph runtime comments with actual fallback behavior
 - **config.yaml**: Calibrated test framework defaults from `vitest` to `jest` (3 locations)
 - **cli.js**: Removed duplicate base program configuration (`--version`, `--no-color`, help footer)
 - **7 command files**: Replaced local `walk`/`walkFiles` with shared `file-walker.js` utility
 - **CI/CD**: Added Node.js 18/20/22 matrix testing
 
 ### Fixed
-- Graph executor self-healing now preserves `_healingMeta` during rollback
+- Graph runtime self-healing now preserves `_healingMeta` during rollback
 - Integration tests aligned with actual CLI error messages
 - `new change` now creates valid tasks.md with sample tasks
 - **Progress tracking**: `stdd progress` no longer records itself in progress log (read-only observability)

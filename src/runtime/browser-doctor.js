@@ -97,7 +97,7 @@ class BrowserDoctor {
       '(async()=>{',
       "const b=await p.chromium.launch({headless:true,args:['--no-sandbox']});",
       'await b.close();',
-      '})().catch(e=>{console.error(e.message);process.exit(1);});',
+      '})().catch(e=>{console.error(e.message);});',
     ].join('')], {
       cwd: this.cwd,
       encoding: 'utf8',

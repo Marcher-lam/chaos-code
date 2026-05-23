@@ -818,6 +818,17 @@ describe('HooksCommand - Extended Coverage', () => {
       hooksCommand.writeSettings(filePath, { new: true });
       expect(readJson(filePath)).toEqual({ new: true });
     });
+
+    it('should create the same backup file used by disable and enable', () => {
+      const tempDir = createTempDir('stdd-writesettings-');
+      const filePath = path.join(tempDir, 'settings.json');
+      fs.writeFileSync(filePath, JSON.stringify({ hooks: { PreToolUse: [] } }));
+
+      hooksCommand.writeSettings(filePath, { theme: 'dark' });
+
+      expect(fs.existsSync(`${filePath}.backup`)).toBe(true);
+      expect(fs.existsSync(`${filePath}.stdd-backup`)).toBe(false);
+    });
   });
 
   // getSTDDHooksPath is tested indirectly via installHooks/verify tests

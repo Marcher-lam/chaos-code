@@ -84,7 +84,6 @@ describe('compileGraph()', () => {
     const graph = compileGraph('feature');
     expect(graph.name).toContain('FEATURE');
     const nodes = Object.keys(graph.skills);
-    expect(nodes).toContain('stdd-propose');
     expect(nodes).toContain('stdd-spec');
     expect(nodes).toContain('stdd-plan');
     expect(nodes).toContain('stdd-outside-in');
@@ -96,10 +95,10 @@ describe('compileGraph()', () => {
     const graph = compileGraph('hotfix');
     expect(graph.name).toContain('HOTFIX');
     const nodes = Object.keys(graph.skills);
-    expect(nodes).toContain('stdd-propose');
+    expect(nodes).toContain('stdd-issue');
     expect(nodes).toContain('stdd-apply');
     expect(nodes).toContain('stdd-verify');
-    expect(nodes).toContain('stdd-commit');
+    expect(nodes).toContain('stdd-archive');
   });
 
   it('compiles a research intent with correct pathway', () => {

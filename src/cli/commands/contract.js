@@ -32,7 +32,7 @@ class ContractCommand {
 
     const changeDir = resolveChangeDir(path.join(this.projectRoot, 'stdd'), changeName, { mustExist: false });
     const apiSpecFile = workspace
-      ? path.join(changeDir, 'specs', `api-spec.${this._toSafeFilename(workspace.name)}.yaml`)
+      ? path.join(changeDir, 'specs', `api-spec.${_toSafe(workspace.name)}.yaml`)
       : path.join(changeDir, 'specs', 'api-spec.yaml');
 
     try {
@@ -64,7 +64,7 @@ class ContractCommand {
     };
 
     const contractFileName = workspace
-      ? `contract.${this._toSafeFilename(workspace.name)}.json`
+      ? `contract.${_toSafe(workspace.name)}.json`
       : 'contract.json';
     const contractPath = path.join(contractsDir, contractFileName);
 
@@ -128,7 +128,7 @@ class ContractCommand {
     }
 
     const apiSpecFile = workspace
-      ? path.join(changeDir, 'specs', `api-spec.${this._toSafeFilename(workspace.name)}.yaml`)
+      ? path.join(changeDir, 'specs', `api-spec.${_toSafe(workspace.name)}.yaml`)
       : path.join(changeDir, 'specs', 'api-spec.yaml');
 
     try {
@@ -294,12 +294,6 @@ class ContractCommand {
     }
   }
 
-  _toSafeFilename(str) {
-    return String(str || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
 }
 
 module.exports = { ContractCommand };

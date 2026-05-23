@@ -36,10 +36,11 @@ describe('round27: issue.js', () => {
 
   test('toSafeFilename edge cases', () => {
     const { IssueCommand } = require('../src/cli/commands/issue');
+    const { toSafeFilename: _toSafe } = require('../src/utils/change-helpers');
     const cmd = new IssueCommand(mkTmp());
-    expect(cmd.toSafeFilename('')).toBe('');
-    expect(cmd.toSafeFilename(null)).toBe('');
-    expect(cmd.toSafeFilename('A B!')).toBe('a-b');
+    expect(_toSafe('')).toBe('');
+    expect(_toSafe(null)).toBe('');
+    expect(_toSafe('A B!')).toBe('a-b');
   });
 });
 

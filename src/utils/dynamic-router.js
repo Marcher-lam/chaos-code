@@ -7,7 +7,7 @@ class DynamicGraphRouter {
   constructor(configPath = 'stdd/graph/skills.yaml') {
     this.rawGraph = this.loadGraph(configPath);
     this.intentPathways = {
-      'hotfix': ['stdd-propose', 'stdd-apply', 'stdd-verify', 'stdd-commit'],
+      'hotfix': ['stdd-issue', 'stdd-apply', 'stdd-verify', 'stdd-archive'],
       'feature': ['stdd-propose', 'stdd-spec', 'stdd-plan', 'stdd-outside-in', 'stdd-apply', 'stdd-verify'],
       'brownfield': ['stdd-explore', 'stdd-init', 'stdd-propose', 'stdd-spec', 'stdd-plan', 'stdd-apply', 'stdd-verify'],
       'repair': ['stdd-fix-packet', 'stdd-apply', 'stdd-verify'],

@@ -244,7 +244,6 @@ class MutationCommand {
       cwd: root,
       stdio: ['pipe', 'pipe', 'pipe'],
       encoding: 'utf8',
-      shell: true,
     });
 
     const output = `${result.stdout || ''}\n${result.stderr || ''}`;
@@ -325,7 +324,7 @@ class MutationCommand {
     const scoreLabel = evidence.score === null ? 'n/a' : `${evidence.score}%`;
     const statusColor = evidence.status === 'pass' ? chalk.green : evidence.status === 'fail' ? chalk.red : chalk.yellow;
     console.log(chalk.bold('\nMutation Gate'));
-    console.log(`  Mode:        ${evidence.mode}`);
+    console.log(`  Mode:        ${evidence.mode}${evidence.mode === 'quick' ? chalk.dim(' (heuristic — not real mutation testing)') : ''}`);
     if (evidence.workspace) console.log(`  Workspace:   ${evidence.workspace.path}`);
     console.log(`  Score:       ${scoreLabel} (threshold ${evidence.threshold}%)`);
     console.log(`  Assertions:  ${evidence.assertions}`);

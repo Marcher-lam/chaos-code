@@ -8,162 +8,11 @@ const fsSync = require('fs');
 const path = require('path');
 const { resolveWorkspace } = require('../../utils/workspace-detector');
 const { resolveChangeDir } = require('../../utils/change-utils');
+const { toSafeFilename: _toSafe, toTitleCase: _toTitle, workspaceContext: _wsCtx } = require('../../utils/change-helpers');
 
 class SpecGenerator {
   constructor() {
-    this.keywordTemplates = {
-      login: {
-        feature: 'User Login',
-        given: [
-          'Given a valid user exists in the system',
-          'And the user is on the login page'
-        ],
-        when: [
-          'When the user enters valid credentials',
-          'And submits the login form'
-        ],
-        then: [
-          'Then the user is redirected to the dashboard',
-          'And an authentication token is issued'
-        ]
-      },
-      logout: {
-        feature: 'User Logout',
-        given: [
-          'Given a user is logged in'
-        ],
-        when: [
-          'When the user clicks the logout button'
-        ],
-        then: [
-          'Then the session is terminated',
-          'And the user is redirected to the login page'
-        ]
-      },
-      register: {
-        feature: 'User Registration',
-        given: [
-          'Given the user is on the registration page'
-        ],
-        when: [
-          'When the user fills in valid registration details',
-          'And submits the registration form'
-        ],
-        then: [
-          'Then a new user account is created',
-          'And a confirmation email is sent'
-        ]
-      },
-      create: {
-        feature: 'Create Resource',
-        given: [
-          'Given the user is authenticated',
-          'And the user has permission to create resources'
-        ],
-        when: [
-          'When the user submits valid creation data'
-        ],
-        then: [
-          'Then the resource is created successfully',
-          'And the resource ID is returned'
-        ]
-      },
-      delete: {
-        feature: 'Delete Resource',
-        given: [
-          'Given the user is authenticated',
-          'And the resource exists'
-        ],
-        when: [
-          'When the user requests to delete the resource'
-        ],
-        then: [
-          'Then the resource is deleted',
-          'And a success confirmation is returned'
-        ]
-      },
-      update: {
-        feature: 'Update Resource',
-        given: [
-          'Given the user is authenticated',
-          'And the resource exists'
-        ],
-        when: [
-          'When the user submits valid update data'
-        ],
-        then: [
-          'Then the resource is updated',
-          'And the updated resource is returned'
-        ]
-      },
-      list: {
-        feature: 'List Resources',
-        given: [
-          'Given the user is authenticated'
-        ],
-        when: [
-          'When the user requests the resource list'
-        ],
-        then: [
-          'Then a list of resources is returned',
-          'And the list is paginated'
-        ]
-      },
-      search: {
-        feature: 'Search Resources',
-        given: [
-          'Given resources exist in the system'
-        ],
-        when: [
-          'When the user searches with valid criteria'
-        ],
-        then: [
-          'Then matching resources are returned',
-          'And the results are sorted by relevance'
-        ]
-      },
-      payment: {
-        feature: 'Process Payment',
-        given: [
-          'Given the user has items in their cart',
-          'And the user proceeds to checkout'
-        ],
-        when: [
-          'When the user submits valid payment information'
-        ],
-        then: [
-          'Then the payment is processed',
-          'And an order confirmation is generated'
-        ]
-      },
-      upload: {
-        feature: 'Upload File',
-        given: [
-          'Given the user is authenticated',
-          'And the file is within size limits'
-        ],
-        when: [
-          'When the user uploads the file'
-        ],
-        then: [
-          'Then the file is stored successfully',
-          'And a download URL is returned'
-        ]
-      },
-      download: {
-        feature: 'Download File',
-        given: [
-          'Given the file exists',
-          'And the user has access permission'
-        ],
-        when: [
-          'When the user requests to download the file'
-        ],
-        then: [
-          'Then the file is downloaded successfully'
-        ]
-      }
-    };
+    this.keywordTemplates = this._loadTemplates();
     this.defaultTemplate = {
       feature: 'Feature',
       given: [
@@ -175,6 +24,27 @@ class SpecGenerator {
       then: [
         'Then the result is expected'
       ]
+    };
+  }
+
+  _loadTemplates() {
+    const yaml = require('js-yaml');
+    const path = require('path');
+    // Try project-local templates first, then fallback to built-in
+    const localPath = path.join(process.cwd(), 'stdd', 'templates', 'bdd-templates.yaml');
+    const builtinPath = path.join(__dirname, '..', '..', '..', 'stdd', 'templates', 'bdd-templates.yaml');
+    for (const p of [localPath, builtinPath]) {
+      try {
+        if (require('fs').existsSync(p)) {
+          const content = require('fs').readFileSync(p, 'utf8');
+          return yaml.load(content) || {};
+        }
+      } catch (_) { /* ignore */ }
+    }
+    // Fallback minimal templates
+    return {
+      login: { feature: 'User Login', given: ['Given a valid user exists'], when: ['When the user authenticates'], then: ['Then access is granted'] },
+      create: { feature: 'Create Resource', given: ['Given the user is authenticated'], when: ['When valid data is submitted'], then: ['Then the resource is created'] },
     };
   }
 
@@ -219,15 +89,6 @@ class SpecGenerator {
     return tasks;
   }
 
-  toTitleCase(str) {
-    return str
-      .trim()
-      .replace(/[-_]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (c) => c.toUpperCase())
-      .replace(/ /g, '');
-  }
 
   toFeatureTitle(str) {
     return str
@@ -235,23 +96,6 @@ class SpecGenerator {
       .replace(/[-_]/g, ' ')
       .replace(/\s+/g, ' ')
       .replace(/\b\w/g, (c) => c.toUpperCase());
-  }
-
-  toSafeFilename(str) {
-    return str
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
-
-  workspaceContext(workspace) {
-    if (!workspace) return null;
-    const root = path.relative(process.cwd(), workspace.root).replace(/\\/g, '/') || workspace.name;
-    return {
-      name: workspace.name,
-      path: root,
-      tag: this.toSafeFilename(root),
-    };
   }
 
   matchTemplate(description) {
@@ -268,7 +112,7 @@ class SpecGenerator {
     const template = this.matchTemplate(task.description);
     const featureTitle = this.toFeatureTitle(task.description);
     const scenarioTitle = featureTitle;
-    const workspaceMeta = this.workspaceContext(workspace);
+    const workspaceMeta = _wsCtx(workspace);
 
     let givenSteps;
     let whenSteps;
@@ -326,7 +170,7 @@ ${thenLines}
     if (options.workspace && !workspace) {
       throw new Error(`Workspace '${options.workspace}' not found.`);
     }
-    const workspaceMeta = this.workspaceContext(workspace);
+    const workspaceMeta = _wsCtx(workspace);
     const tasksPath = path.join(changeDir, 'tasks.md');
 
     let tasksContent;
@@ -351,7 +195,7 @@ ${thenLines}
     const skipped = [];
 
     for (const task of tasks) {
-      const baseFilename = this.toSafeFilename(task.description);
+      const baseFilename = _toSafe(task.description);
       const filename = workspaceMeta ? `${workspaceMeta.tag}-${baseFilename}` : baseFilename;
       const featurePath = path.join(specsDir, `${filename}.feature`);
 

@@ -116,6 +116,28 @@ describe('SpecGenerator', () => {
     expect(content).toContain('the user is redirected to the dashboard');
   });
 
+  it('should prefer project-local BDD templates over built-in templates', async () => {
+    const projectPath = createTempProject('local-template-project');
+    process.chdir(projectPath);
+    fs.mkdirSync(path.join(projectPath, 'stdd', 'templates'), { recursive: true });
+    fs.writeFileSync(path.join(projectPath, 'stdd', 'templates', 'bdd-templates.yaml'), `login:\n  feature: Custom Login\n  given:\n    - Given a local template user exists\n  when:\n    - When local login runs\n  then:\n    - Then local login succeeds\n`, 'utf8');
+
+    createTasksFile(projectPath, 'local-login-change', `# Tasks
+
+- [ ] TASK-001: User Login
+`);
+
+    const generator = new SpecGenerator();
+    await generator.generateFromTasks('local-login-change');
+
+    const featurePath = path.join(projectPath, 'stdd', 'changes', 'local-login-change', 'specs', 'user-login.feature');
+    const content = fs.readFileSync(featurePath, 'utf8');
+
+    expect(content).toContain('Given a local template user exists');
+    expect(content).toContain('When local login runs');
+    expect(content).toContain('Then local login succeeds');
+  });
+
   it('should use keyword-specific template for "Delete"', async () => {
     const projectPath = createTempProject('delete-template-project');
     process.chdir(projectPath);

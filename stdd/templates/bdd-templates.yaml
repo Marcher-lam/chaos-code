@@ -1,0 +1,110 @@
+# BDD Feature Templates for Spec Generator
+# Users can customize or add new templates.
+
+login:
+  feature: User Login
+  given:
+    - Given a valid user exists in the system
+    - And the user is on the login page
+  when:
+    - When the user enters valid credentials
+    - And submits the login form
+  then:
+    - Then the user is redirected to the dashboard
+    - And an authentication token is issued
+logout:
+  feature: User Logout
+  given:
+    - Given a user is logged in
+  when:
+    - When the user clicks the logout button
+  then:
+    - Then the session is terminated
+    - And the user is redirected to the login page
+register:
+  feature: User Registration
+  given:
+    - Given the user is on the registration page
+  when:
+    - When the user fills in valid registration details
+    - And submits the registration form
+  then:
+    - Then a new user account is created
+    - And a confirmation email is sent
+create:
+  feature: Create Resource
+  given:
+    - Given the user is authenticated
+    - And the user has permission to create resources
+  when:
+    - When the user submits valid creation data
+  then:
+    - Then the resource is created successfully
+    - And the resource ID is returned
+delete:
+  feature: Delete Resource
+  given:
+    - Given the user is authenticated
+    - And the resource exists
+  when:
+    - When the user requests to delete the resource
+  then:
+    - Then the resource is deleted
+    - And a success confirmation is returned
+update:
+  feature: Update Resource
+  given:
+    - Given the user is authenticated
+    - And the resource exists
+  when:
+    - When the user submits valid update data
+  then:
+    - Then the resource is updated
+    - And the updated resource is returned
+list:
+  feature: List Resources
+  given:
+    - Given the user is authenticated
+  when:
+    - When the user requests the resource list
+  then:
+    - Then a list of resources is returned
+    - And the list is paginated
+search:
+  feature: Search Resources
+  given:
+    - Given resources exist in the system
+  when:
+    - When the user searches with valid criteria
+  then:
+    - Then matching resources are returned
+    - And the results are sorted by relevance
+payment:
+  feature: Process Payment
+  given:
+    - Given the user has items in their cart
+    - And the user proceeds to checkout
+  when:
+    - When the user submits valid payment information
+  then:
+    - Then the payment is processed
+    - And an order confirmation is generated
+upload:
+  feature: Upload File
+  given:
+    - Given the user is authenticated
+    - And the file is within size limits
+  when:
+    - When the user uploads the file
+  then:
+    - Then the file is stored successfully
+    - And a download URL is returned
+download:
+  feature: Download File
+  given:
+    - Given the file exists
+    - And the user has access permission
+  when:
+    - When the user requests to download the file
+  then:
+    - Then the file is downloaded successfully

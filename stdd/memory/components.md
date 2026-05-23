@@ -33,7 +33,6 @@
         ├── error-propagator.js
         ├── evidence-capture.js
         ├── graph-cache.js
-        ├── graph-executor.js
         ├── heterogeneous-adapter.js
         ├── parallel-executor.js
         ├── path-resolver.js
@@ -72,9 +71,7 @@
 - [error-propagator.js](src/utils/error-propagator.js) - Utility functions
 - [evidence-capture.js](src/utils/evidence-capture.js) - Utility functions
 - [graph-cache.js](src/utils/graph-cache.js) - Utility functions
-- [graph-executor.js](src/utils/graph-executor.js) - Utility functions
 - [heterogeneous-adapter.js](src/utils/heterogeneous-adapter.js) - Utility functions
 - [parallel-executor.js](src/utils/parallel-executor.js) - Utility functions
 - [path-resolver.js](src/utils/path-resolver.js) - Utility functions
 - [tech-stack-detector.js](src/utils/tech-stack-detector.js) - Utility functions
-

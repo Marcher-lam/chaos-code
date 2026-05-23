@@ -9,7 +9,9 @@ const { VerifyCommand } = require('../src/cli/commands/verify');
 const { ArchiveCommand } = require('../src/cli/commands/archive');
 const { FixPacketCommand } = require('../src/cli/commands/fix-packet');
 const { OutsideInCommand } = require('../src/cli/commands/outside-in');
+const { IssueCommand } = require('../src/cli/commands/issue');
 
+jest.mock('../src/cli/commands/issue');
 jest.mock('../src/cli/commands/ff');
 jest.mock('../src/cli/commands/spec-generator');
 jest.mock('../src/cli/commands/apply');
@@ -70,6 +72,10 @@ describe('GraphRunCommand', () => {
     ArchiveCommand.mockImplementation(() => ({
       execute: jest.fn().mockResolvedValue(undefined),
     }));
+    IssueCommand.mockImplementation(() => ({
+      execute: jest.fn().mockResolvedValue({ changeName: 'hotfix-change' }),
+    }));
+    IssueCommand.mockClear();
     FixPacketCommand.mockImplementation(() => ({
       execute: jest.fn().mockReturnValue({ output: 'stdd/changes/test/evidence/fix-packet.md', jsonOutput: 'stdd/changes/test/evidence/fix-packet.json' }),
     }));
@@ -136,11 +142,26 @@ describe('GraphRunCommand', () => {
     expect(result.changeName).toBe('hotfix-change');
     const stepNames = result.steps.map(s => s.node);
     expect(stepNames).toEqual([
-      'stdd-propose',
+      'stdd-issue',
       'stdd-apply',
       'stdd-verify',
-      'stdd-commit',
+      'stdd-archive',
     ]);
+
+    const issueInstance = IssueCommand.mock.results[0].value;
+    expect(issueInstance.execute).toHaveBeenCalledWith('hotfix-change', expect.objectContaining({ changeName: 'hotfix-change' }));
+  });
+
+  it('should pass generated hotfix change name into issue command', async () => {
+    const projectPath = createTempProject('graph-run-hotfix-generated');
+    process.chdir(projectPath);
+
+    const command = new GraphRunCommand();
+    const result = await command.execute('hotfix');
+
+    expect(result.changeName).toMatch(/^graph-hotfix-\d{8}-\d{4}$/);
+    const issueInstance = IssueCommand.mock.results[0].value;
+    expect(issueInstance.execute).toHaveBeenCalledWith(result.changeName, expect.objectContaining({ changeName: result.changeName }));
   });
 
   it('should skip apply and verify when --skip-apply is passed', async () => {

@@ -8,9 +8,9 @@ describe('DynamicGraphRouter (自适应动态拓扑)', () => {
     
     expect(graph.name).toContain('HOTFIX');
     // Hotfix 模式应该只保留 4 个核心节点，不需要繁重的 spec 和 plan
-    expect(Object.keys(graph.skills)).toEqual(['stdd-propose', 'stdd-apply', 'stdd-verify', 'stdd-commit']);
+    expect(Object.keys(graph.skills)).toEqual(['stdd-issue', 'stdd-apply', 'stdd-verify', 'stdd-archive']);
     // 依赖必须自动重新首尾链接，apply 必须前置挂载 propose
-    expect(graph.skills['stdd-apply'].depends_on).toEqual(['stdd-propose']);
+    expect(graph.skills['stdd-apply'].depends_on).toEqual(['stdd-issue']);
   });
 
   it('should fallback to standard feature waterfall if intent is unknown', () => {

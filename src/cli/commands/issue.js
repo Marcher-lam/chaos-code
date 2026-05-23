@@ -8,6 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { resolveWorkspace } = require('../../utils/workspace-detector');
 const { validateChangeName } = require('../../utils/change-utils');
+const { generateChangeName: _genChangeName, toSafeFilename: _toSafe, workspaceContext: _wsCtx } = require('../../utils/change-helpers');
 
 class IssueCommand {
   constructor(spinner) {
@@ -27,30 +28,13 @@ class IssueCommand {
     return changesDir;
   }
 
-  generateChangeName() {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const MM = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const HH = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    return `bugfix-${yyyy}${MM}${dd}-${HH}${mm}`;
-  }
-
-  toSafeFilename(str) {
-    return String(str || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
-
   workspaceContext(workspace) {
     if (!workspace) return null;
     const root = path.relative(process.cwd(), workspace.root).replace(/\\/g, '/') || workspace.name;
     return {
       name: workspace.name,
       path: root,
-      tag: this.toSafeFilename(root),
+      tag: _toSafe(root),
     };
   }
 
@@ -144,9 +128,9 @@ ${workspaceHint}
     if (options.workspace && !workspace) {
       throw new Error(`Workspace '${options.workspace}' not found.`);
     }
-    const workspaceMeta = this.workspaceContext(workspace);
+    const workspaceMeta = _wsCtx(workspace);
 
-    const changeName = options.changeName || this.generateChangeName();
+    const changeName = options.changeName || _genChangeName('bugfix');
     validateChangeName(changeName);
     const changeDir = path.join(changesDir, changeName);
 

@@ -605,13 +605,12 @@ describe('round25 spec-generator.js branch coverage', () => {
     }
   });
 
-  // BRDA:249,4,1,0 — workspaceContext: path.relative || workspace.name when relative is empty
+  // change-helpers workspaceContext: path.relative || workspace.name when relative is empty
   it('workspaceContext uses workspace.name when relative path is empty (workspace at cwd)', () => {
-    const { SpecGenerator } = require('../src/cli/commands/spec-generator');
-    const gen = new SpecGenerator();
+    const { workspaceContext } = require('../src/utils/change-helpers');
 
     // Create a workspace whose root is process.cwd() — path.relative returns ''
-    const result = gen.workspaceContext({
+    const result = workspaceContext({
       name: 'my-workspace',
       root: process.cwd(),
     });
@@ -720,9 +719,10 @@ describe('round25 spec-generator.js branch coverage', () => {
     const { SpecGenerator } = require('../src/cli/commands/spec-generator');
     const gen = new SpecGenerator();
 
-    expect(gen.toTitleCase('hello-world')).toBe('HelloWorld');
-    expect(gen.toTitleCase('hello_world')).toBe('HelloWorld');
-    expect(gen.toTitleCase('  hello  world  ')).toBe('HelloWorld');
+    const { toTitleCase: _toTitle } = require('../src/utils/change-helpers');
+    expect(_toTitle('hello-world')).toBe('HelloWorld');
+    expect(_toTitle('hello_world')).toBe('HelloWorld');
+    expect(_toTitle('  hello  world  ')).toBe('HelloWorld');
   });
 
   it('toFeatureTitle handles multi-word strings with hyphens', () => {

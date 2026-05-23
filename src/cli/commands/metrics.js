@@ -332,11 +332,10 @@ class MetricsCommand {
 
     try {
       const execResult = spawnSync(lintCmd, lintArgs, {
-        shell: true,
         timeout: LINTER_TIMEOUT,
         stdio: ['pipe', 'pipe', 'pipe'],
         encoding: 'utf-8',
-          cwd: lintCwd
+        cwd: lintCwd
       });
 
       if (execResult.error) {
