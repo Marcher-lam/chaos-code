@@ -142,7 +142,7 @@
 | **CLI 命令** (含子命令) | **75** | `stdd xxx` 终端命令 |
 | **Skill 驱动入口** | **47** | 有 Skill 模板的命令 |
 | **Command 文件入口** | **75** | 有 Command 模板的命令 |
-| **总入口** | **123** | 76 Command + 47 Skill，去重后 76 个唯一入口 |
+| **总入口** | **127** | 80 Command + 47 Skill，去重后 80 个唯一入口 |
 | **AI 引擎适配** | **22** | 4 Tier 兼容体系 |
 | **Constitution 条例** | **9** | 3 Blocking + 4 Warning + 2 Suggestion |
 | **Agent 角色** | **12** | 4 基础 + 8 专用 |

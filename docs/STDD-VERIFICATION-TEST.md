@@ -2,7 +2,7 @@
 
 > **项目**: STDD Copilot CLI v1.0.5
 > **验证日期**: 2026-05-23
-> **覆盖范围**: 75 个 CLI 命令 + 76 个 Command 模板 + 47 个 Skill 模板 (全部审查完成 ✅)
+> **覆盖范围**: 75 个 CLI 命令 + 80 个 Command 模板 + 47 个 Skill 模板 (全部审查完成 ✅)
 > **质量基线**: `npm run premerge` (audit + zero-warning lint + docs + coverage)
 
 ---
@@ -92,7 +92,7 @@ stdd commands
 
 **验证点:**
 - [ ] 列出 47 个 Skill 模板
-- [ ] 列出 76 个 Command 模板
+- [ ] 列出 80 个 Command 模板
 
 ### T04 — `stdd list` / `stdd status`
 ```bash
@@ -871,7 +871,7 @@ T42-T44  → 进度追踪与辅助工具
 
 > **STDD Copilot v1.0.5**
 > - 75 个 CLI 命令 ✅
-> - 76 个 Command 模板 ✅
+> - 80 个 Command 模板 ✅
 > - 47 个 Skill 模板 ✅
 > - 171 测试套件，3810 测试用例，100% 通过率 ✅
 > - 97.33% 语句覆盖，91.03% 分支覆盖 ✅

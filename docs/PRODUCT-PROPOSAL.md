@@ -756,9 +756,9 @@ tdd-init, audit, continue, mutation, runtime, brainstorm, baby-steps,
 sudo, browser, progress, start, doctor
 ```
 
-### 15.2 完整斜杠命令列表（123 个入口，去重后 76 个唯一入口）
+### 15.2 完整斜杠命令列表（127 个入口，去重后 80 个唯一入口）
 
-**Command 模板 (76)**:
+**Command 模板 (80)**:
 
 ```
 /stdd:init  /stdd:new  /stdd:propose  /stdd:clarify  /stdd:confirm

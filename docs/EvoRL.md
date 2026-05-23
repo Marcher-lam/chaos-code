@@ -746,7 +746,7 @@ node --test
 
 > **STDD Copilot v1.0.4-preview**
 > - 75 个 CLI 命令
-> - 76 个 Command 模板
+> - 80 个 Command 模板
 > - 47 个 Skill 模板
 > - 171 测试套件，3810 测试用例，100% 通过率
 > - 97.33% 语句覆盖，91.03% 分支覆盖

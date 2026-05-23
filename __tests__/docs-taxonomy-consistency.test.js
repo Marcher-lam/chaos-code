@@ -15,7 +15,7 @@ describe('Documentation taxonomy consistency', () => {
     const commandEntries = getSlashEntriesFromCommandFiles();
     const skillEntries = getSlashEntriesFromSkillDirs();
 
-    expect(commandEntries).toHaveLength(76);
+    expect(commandEntries).toHaveLength(80);
     expect(skillEntries).toHaveLength(47);
   });
 
@@ -63,10 +63,10 @@ describe('Documentation taxonomy consistency', () => {
     const text = readFile('CLAUDE.md');
 
     expect(text).toContain('76 个 /stdd:* 会话入口');
-    expect(text).toContain('76 个 Command 模板文件');
+    expect(text).toContain('80 个 Command 模板文件');
     expect(text).toContain('47 个 Skill 模板目录');
     expect(text).toContain('入口 taxonomy（防漂移约定）');
-    expect(text).toContain('command-file-backed 入口（76）');
+    expect(text).toContain('command-file-backed 入口（80）');
     expect(text).toContain('skill-driven 入口（47）');
 
     for (const entry of [...COMMAND_ONLY_ENTRIES, ...COMMAND_FILE_BACKED_ENTRIES]) {
@@ -78,8 +78,8 @@ describe('Documentation taxonomy consistency', () => {
     const agents = readFile('AGENTS.md');
     const guide = readFile('CLAUDE_CODE_GUIDE.md');
 
-    expect(agents).toContain('全部能力入口 (76 个 = 76 Command 模板 + 47 Skill 模板，去重后)');
-    expect(agents).toContain('Command 模板入口 (76)');
+    expect(agents).toContain('全部能力入口 (80 个 = 80 Command 模板 + 47 Skill 模板，去重后)');
+    expect(agents).toContain('Command 模板入口 (80)');
     expect(agents).toContain('辅助功能');
     expect(agents).toContain('constitution');
 
