@@ -188,4 +188,4 @@ stdd new auth-flow
 - [README.md](../README.md) - 项目介绍
 - [USAGE.md](../USAGE.md) - 完整使用指南
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - 系统架构
-- [AGENTS.md](../AGENTS.md) - AI Agent 指令
+- [agent-protocol.md](./agent-protocol.md) - AI Agent 行为协议
