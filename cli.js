@@ -59,50 +59,10 @@ const { WaiverManager } = require('./src/cli/commands/waiver-manager');
 const program = new Command();
 const packageJson = require('./package.json');
 
-const CONSTITUTION_ARTICLES = [
-  { n: 1, name: 'Library-First', priority: 'Warning' },
-  { n: 2, name: 'TDD', priority: 'Blocking' },
-  { n: 3, name: 'Small Commits', priority: 'Warning' },
-  { n: 4, name: 'Code Style', priority: 'Warning' },
-  { n: 5, name: 'Documentation', priority: 'Suggestion' },
-  { n: 6, name: 'Error Handling', priority: 'Warning' },
-  { n: 7, name: 'Security', priority: 'Blocking' },
-  { n: 8, name: 'Performance', priority: 'Suggestion' },
-  { n: 9, name: 'CI/CD', priority: 'Blocking' },
-];
 
-// ─── Spinner helper ───
-function createSpinner(text) {
-  let interval;
-  const frames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
-  let i = 0;
-  return {
-    start() {
-      if (interval) clearInterval(interval);
-      process.stdout.write(`${frames[i]} ${text}`);
-      interval = setInterval(() => {
-        i = (i + 1) % frames.length;
-        process.stdout.write(`\r${frames[i]} ${text}`);
-      }, 80);
-      return this;
-    },
-    succeed(msg) {
-      if (interval) clearInterval(interval);
-      process.stdout.write(`\r${chalk.green('✓')} ${msg || text}\n`);
-    },
-    fail(msg) {
-      if (interval) clearInterval(interval);
-      process.stdout.write(`\r${chalk.red('✗')} ${msg || text}\n`);
-    },
-  };
-}
+const { CONSTITUTION_ARTICLES } = require('./src/cli/helpers/constitution-data');
+const { createSpinner, safeAction } = require('./src/cli/helpers/cli-utils');
 
-// ─── Safe action wrapper — eliminates repeated try/catch + process.exit(1) ───
-function safeAction(fn) {
-  return async (...args) => {
-    try { await fn(...args); } catch (e) { console.error(chalk.red(e.message)); process.exitCode = 1; }
-  };
-}
 
 program
   .name('stdd')

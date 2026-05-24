@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
-const { detectTechStack } = require('../../utils/tech-stack-detector');
+const { TechStackDetector, detectTechStack: _detectTechStack } = require('../../utils/tech-stack-detector');
 const logger = createLogger('design');
 
 const PRESETS = {
@@ -236,7 +236,7 @@ class DesignCommand {
       throw new Error(`DESIGN.md already exists. Use --force to overwrite.`);
     }
 
-    const techStack = await detectTechStack(this.cwd);
+    const techStack = _detectTechStack ? await _detectTechStack(this.cwd) : TechStackDetector.analyze(this.cwd);
     const preset = options.preset || options.p || 'modern';
 
     if (!PRESETS[preset]) {

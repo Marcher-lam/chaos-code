@@ -36,8 +36,9 @@ describe('Documentation CLI example consistency', () => {
     const cliGuide = readFile('docs/en/cli-guide.md');
     const gettingStarted = readFile('docs/en/getting-started.md');
 
-    expect(readme).toContain('[docs/en/cli-guide.md](./docs/en/cli-guide.md)');
-    expect(readme).toContain('[docs/en/getting-started.md](./docs/en/getting-started.md)');
+    expect(readme).toContain('[docs/cli-guide.md](./docs/cli-guide.md)');
+    expect(readme).toContain('[docs/getting-started.md](./docs/getting-started.md)');
+    expect(readme).toContain('[docs/en/](./docs/en/)');
 
     expect(docsIndex).toContain('[Getting Started](getting-started.md) | First-run workflow and quick CLI reference');
     expect(docsIndex).toContain('[CLI Guide](cli-guide.md) | Full CLI command reference');

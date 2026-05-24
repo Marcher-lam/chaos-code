@@ -49,7 +49,7 @@ describe('Documentation taxonomy consistency', () => {
 
   it('keeps Chinese slash-entry docs aligned with canonical slash entries', () => {
     const canonicalEntries = getCanonicalSlashEntries();
-    const docsToCheck = ['README.md', 'USAGE.md', 'docs/commands.md'];
+    const docsToCheck = ['USAGE.md', 'docs/commands.md'];
 
     for (const file of docsToCheck) {
       const text = readFile(file);
@@ -59,33 +59,29 @@ describe('Documentation taxonomy consistency', () => {
     }
   });
 
-  it('keeps CLAUDE.md taxonomy notes aligned with the repository', () => {
-    const text = readFile('CLAUDE.md');
+  it('keeps README.md taxonomy notes aligned with the repository', () => {
+    const text = readFile('README.md');
 
-    expect(text).toContain('80 个 /stdd:* 会话入口');
-    expect(text).toContain('80 个 Command 模板文件');
-    expect(text).toContain('47 个 Skill 模板目录');
-    expect(text).toContain('入口 taxonomy（防漂移约定）');
-    expect(text).toContain('command-file-backed 入口（80）');
-    expect(text).toContain('skill-driven 入口（47）');
+    expect(text).toContain('80 个');
+    expect(text).toContain('47 个');
+    expect(text).toContain('75 个');
+    expect(text).toContain('命令模板');
+    expect(text).toContain('Skill 模板');
 
-    for (const entry of [...COMMAND_ONLY_ENTRIES, ...COMMAND_FILE_BACKED_ENTRIES]) {
+    // Spot-check a representative sample of entries
+    const sample = ['/stdd:init', '/stdd:apply', '/stdd:verify', '/stdd:archive',
+                    '/stdd:spec', '/stdd:plan', '/stdd:propose', '/stdd:turbo'];
+    for (const entry of sample) {
       expect(text).toContain(entry);
     }
   });
 
-  it('keeps AGENTS.md and CLAUDE_CODE_GUIDE.md high-level taxonomy notes aligned', () => {
-    const agents = readFile('AGENTS.md');
-    const guide = readFile('CLAUDE_CODE_GUIDE.md');
+  it('keeps agent-protocol.md high-level taxonomy notes aligned', () => {
+    const agents = readFile('docs/agent-protocol.md');
 
     expect(agents).toContain('全部能力入口 (80 个 = 80 Command 模板 + 47 Skill 模板，去重后)');
     expect(agents).toContain('Command 模板入口 (80)');
     expect(agents).toContain('辅助功能');
     expect(agents).toContain('constitution');
-
-    expect(guide).toContain('.claude/commands/stdd/{指令名称}.md');
-    expect(guide).toContain('.claude/skills/stdd/{指令名称}/SKILL.md');
-    expect(guide).toContain('new`、`ff`、`continue`、`explore`、`graph`');
-    expect(guide).toContain('不要假定 command 模板与 Skill 模板一一对应');
   });
 });

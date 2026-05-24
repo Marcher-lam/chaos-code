@@ -2,6 +2,34 @@
 
 All notable changes to STDD Copilot will be documented in this file.
 
+## [1.0.7] - 2026-05-24
+
+### Added
+- Fixed and completed 4 zero-coverage batch test suites (batch1-4) — 88 tests covering all 23 previously 0%-coverage command modules (brainstorm, certainty, commit-tdd, complexity, design, execute, factory, final-doc, help, iterate, memory, mock, parallel, plan, propose, prp, spec, supervisor, vision, waiver-manager-command, constitution, clarify, confirm).
+- Added 3 targeted coverage test suites for low-branch-coverage modules:
+  - `cli-utils-coverage.test.js` (14 tests) — createSpinner + safeAction
+  - `change-helpers-coverage.test.js` (22 tests) — generateChangeName, toSafeFilename, toTitleCase, workspaceContext, resolveWorkspaceContext
+  - `api-spec-coverage.test.js` (78 tests) — 20+ standalone utility methods
+- `round34-coverage.test.js` (8 tests) — commit-msg (94.89%, +7pp) and constitution-status (93.22%, +5pp) branch coverage boost.
+- Test count: 4158 (+210), suites: 191 (+8).
+
+### Fixed
+- Fixed async `execute()` calls in batch test files using synchronous `try/finally` (missing `await` + `catch`) causing unhandled Promise rejections and process crashes.
+- Fixed `cap()` being erroneously defined as `async () =>` in batch3, breaking `c.r()` calls.
+- Fixed ConstitutionCommand constructor dependency failures in test environment with try/catch guards.
+
+## [1.0.6] - 2026-05-24
+
+### Changed
+- Extracted `createSpinner`, `safeAction`, and `CONSTITUTION_ARTICLES` from cli.js into `src/cli/helpers/` modules, reducing the CLI entry point from 555 to ~515 lines.
+- Audited all remaining `process.exit` calls in `src/` — confirmed all are legitimate (signal handlers and hook scripts).
+- Updated `fix.md` optimization tracker to reflect Round 31-32 progress.
+
+### Added
+- Added 12 targeted coverage test suites (`status-coverage-boost`, `shell-executor-coverage`, `update-coverage-boost`, `tdd-init-coverage-boost`, `commit-msg-coverage-boost`, `coverage-parser-coverage-boost`, `ff-coverage-boost`, `explore-coverage-boost`, `doctor-coverage-boost`, `guard-coverage-boost`, `validate-coverage-boost`, `skills-coverage-boost`) with 103 new test cases.
+- Test count grew from 3845 to 3948 (171 → 183 suites, 0 failures).
+- Created `src/cli/helpers/` directory with `cli-utils.js`, `constitution-data.js`, and `command-factories.js` modules.
+
 ## [1.0.5] - 2026-05-23
 
 ### Added
