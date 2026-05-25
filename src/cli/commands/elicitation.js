@@ -1,18 +1,34 @@
 /**
  * Elicitation Command
  * CLI interface for BMAD Advanced Elicitation methods.
+ * Enhanced: delegates 'swot' and 'adr' subcommands to BrainstormCommand.
  */
 const { ElicitationEngine } = require('../../runtime/elicitation-engine');
+const { BrainstormCommand } = require('./brainstorm');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const logger = createLogger('elicitation');
 
+const SUBCOMMANDS = ['swot', 'adr'];
+
 class ElicitationCommand {
   constructor() {
     this.engine = new ElicitationEngine();
+    this.brainstorm = new BrainstormCommand();
   }
 
   execute(args, options = {}) {
+    // Route subcommands to BrainstormCommand
+    const firstArg = args && args[0];
+    if (SUBCOMMANDS.includes(firstArg)) {
+      const topic = args.slice(1).join(' ');
+      if (!topic || topic.trim() === '') {
+        logger.error('Topic is required. Usage: stdd brainstorm swot "Design Auth System"');
+        return;
+      }
+      return this.brainstorm.execute(topic, { ...options, subcommand: firstArg });
+    }
+
     if (options.list) {
       return this.listMethods();
     }
@@ -46,6 +62,10 @@ class ElicitationCommand {
     console.log('');
     console.log('Usage: stdd brainstorm <topic> --method <id>');
     console.log('Example: stdd brainstorm "Secure Payment API" --method inversion');
+    console.log('');
+    console.log(chalk.bold(' Context-Aware Subcommands:'));
+    console.log(`  ${chalk.green('swot <topic>')}   - Generate SWOT analysis using project context`);
+    console.log(`  ${chalk.green('adr <topic>')}    - Generate Architecture Decision Record`);
   }
 
   runMethod(methodId, topic) {

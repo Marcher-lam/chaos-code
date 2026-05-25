@@ -40,6 +40,7 @@ const {
   // Skill-based workflow commands
   ProposeCommand, ClarifyCommand, ConfirmCommand, PlanCommand,
   ExecuteCommand, FinalDocCommand, CommitTddCommand,
+  ProfileCommand,
 } = require('./src/cli/commands/index');
 
 const { ProgressCommand } = require('./src/cli/commands/progress');
@@ -127,12 +128,13 @@ const commandFactories = {
   ExecuteCommand,
   FinalDocCommand,
   CommitTddCommand,
+  ProfileCommand,
 };
 
 const loader = new CommandLoader(program, {
   commandFactories,
   createSpinner,
-  skipNames: ['constitution [action] [target]', 'hooks', 'graph', 'runtime', 'recommend', 'doctor', 'start', 'memory <action> [args...]', 'baby-steps [task]', 'sudo run [file]', 'list', 'status [change]', 'progress', 'vision [action]', 'prp [action]', 'design [action]', 'certainty [action]', 'complexity [action]', 'factory [action]', 'iterate [action]', 'help [topic]', 'parallel [action]', 'supervisor [action]', 'memory-scan [action]', 'graph-history [action] [id]'],
+  skipNames: ['constitution [action] [target]', 'hooks', 'graph', 'runtime', 'recommend', 'doctor', 'start', 'memory <action> [args...]', 'baby-steps [task]', 'sudo run [file]', 'list', 'status [change]', 'progress', 'vision [action]', 'prp [action]', 'design [action]', 'certainty [action]', 'complexity [action]', 'factory [action]', 'iterate [action]', 'help [topic]', 'parallel [action]', 'supervisor [action]', 'memory-scan [action]', 'graph-history [action] [id]', 'profile [action]'],
 });
 loader.registerAll();
 
@@ -482,6 +484,16 @@ program.command('supervisor [action] [args...]')
   .action(safeAction(async (action, args, options) => {
     const cmd = new SupervisorCommand(process.cwd());
     await cmd.execute(action || 'status', args, options);
+  }));
+
+program.command('profile [action]')
+  .description('Detect and manage planning depth profiles for adaptive workflows')
+  .option('--json', 'JSON output')
+  .option('--change <name>', 'Change type for specific profiling')
+  .option('--force', 'Force overwrite')
+  .action(safeAction(async (action, options) => {
+    const cmd = new ProfileCommand(process.cwd());
+    await cmd.execute(action || 'detect', [], options);
   }));
 
 // ─── Parse with progress tracking ───

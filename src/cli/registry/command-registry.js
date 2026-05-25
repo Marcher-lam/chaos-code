@@ -709,6 +709,17 @@ const commandRegistry = [
     action: 'CommitTddCommand',
     helpText: `Actions: commit, check, amend, status\n\nExamples:\n  stdd commit-tdd commit\n  stdd commit-tdd check\n  stdd commit-tdd commit --phase green\n\nCreates atomic commits with red:/green:/refactor: prefix.`,
   },
+  {
+    name: 'profile [action]',
+    description: 'Detect and manage planning depth profiles for adaptive workflows',
+    options: [
+      { flags: '--change <name>', description: 'Change type for specific profiling (hotfix, feature, refactor, compliance)' },
+      { flags: '--json', description: 'JSON output' },
+      { flags: '--force', description: 'Force overwrite' },
+    ],
+    action: 'ProfileCommand',
+    helpText: `Actions: detect, set, list, recommend\n\nExamples:\n  stdd profile detect\n  stdd profile set thorough\n  stdd profile list\n  stdd profile recommend --change feature\n\nProfiles: quick (depth 1), standard (depth 2), thorough (depth 3), enterprise (depth 4)`,
+  },
 ];
 
 module.exports = { commandRegistry };

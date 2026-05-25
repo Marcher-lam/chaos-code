@@ -20,7 +20,7 @@ describe('commands/index.js re-exports', () => {
     // New CLI commands for previously Skill-only features
     'VisionCommand', 'PrpCommand', 'DesignCommand', 'CertaintyCommand', 'ComplexityCommand',
     'FactoryCommand', 'MockCommand', 'MemoryCommand', 'IterateCommand', 'HelpCommand',
-    'ParallelCommand', 'SupervisorCommand',
+    'ParallelCommand', 'SupervisorCommand', 'ProfileCommand',
     // Skill-based workflow commands
     'ProposeCommand', 'ClarifyCommand', 'ConfirmCommand', 'PlanCommand',
     'ExecuteCommand', 'FinalDocCommand', 'CommitTddCommand',
