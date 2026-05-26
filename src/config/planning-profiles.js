@@ -126,4 +126,41 @@ const STANDARD_PHASES = [
   'archive',
 ];
 
-module.exports = { PROFILES, CHANGE_TYPE_OVERRIDES, STANDARD_PHASES };
+
+
+// Condition engine for profile-adaptive workflow branching
+const CONDITION_ENGINE = {
+  evaluate(condition, context) {
+    if (!condition) return true;
+    const checks = {
+      'complexity>30': () => (context.complexityScore || 0) > 30,
+      'complexity>60': () => (context.complexityScore || 0) > 60,
+      'complexity>80': () => (context.complexityScore || 0) > 80,
+      'certainty<70': () => (context.certaintyScore || 80) < 70,
+      'certainty>90': () => (context.certaintyScore || 80) > 90,
+      'files>50': () => (context.fileCount || 0) > 50,
+      'files>100': () => (context.fileCount || 0) > 100,
+      'tests<10': () => (context.testFileCount || 0) < 10,
+      'hasDesignMD': () => context.hasDesignMD === true,
+      'noDesignMD': () => context.hasDesignMD === false,
+      'profile:quick': () => context.profileId === 'quick',
+      'profile:standard': () => context.profileId === 'standard',
+      'profile:thorough': () => context.profileId === 'thorough',
+      'profile:enterprise': () => context.profileId === 'enterprise',
+      'changeType:bugfix': () => context.changeType === 'bugfix',
+      'changeType:feature': () => context.changeType === 'feature',
+      'changeType:refactor': () => context.changeType === 'refactor',
+    };
+    if (checks[condition]) return checks[condition]();
+    // Logical operators: AND, OR
+    if (condition.includes('&&')) {
+      return condition.split('&&').every(c => CONDITION_ENGINE.evaluate(c.trim(), context));
+    }
+    if (condition.includes('||')) {
+      return condition.split('||').some(c => CONDITION_ENGINE.evaluate(c.trim(), context));
+    }
+    return true;
+  },
+};
+
+module.exports = { PROFILES, CHANGE_TYPE_OVERRIDES, STANDARD_PHASES, CONDITION_ENGINE };

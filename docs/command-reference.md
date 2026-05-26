@@ -110,7 +110,19 @@
 | `/stdd:certainty` | — | 5 维度置信度评分 (需求清晰度/技术可行性/风险/测试覆盖/愿景对齐)，低于阈值暂停 |
 | `/stdd:vision` | — | 项目愿景文档管理 (同第 8 类) |
 
-## 10. 辅助工具 (15 个)
+## 10. 生成与预览（Phase 2-4 新增，7 个）
+
+| 斜杠命令 | CLI 命令 | 功能 |
+|---------|---------|------|
+| `/stdd:builder` | `stdd builder <action>` | 自定义 Agent、工作流、Skill 构建器：agent/workflow/skill/list/validate/test/share/export |
+| `/stdd:ui` | `stdd ui <action>` | 多框架 UI 页面/组件生成（React / Vue / Angular / Svelte），支持 component/page 类型 |
+| `/stdd:modules` | `stdd modules <action>` | 模块市场管理：list/install/info/uninstall/registry |
+| `/stdd:dashboard` | `stdd dashboard <action>` | 项目健康仪表板（静态 HTML）：generate/open/serve |
+| `/stdd:docs` | `stdd docs <action>` | 文档站点生成（Astro + Starlight 风格）：generate/serve |
+| `/stdd:profile` | `stdd profile <action>` | 规划配置文件管理：create/select/show/list/edit，自适应规划深度 |
+| — | `stdd adapt <action>` | IDE 配置适配生成（多引擎自动配置）：generate/setup/list |
+
+## 11. 辅助工具 (15 个)
 
 | CLI 命令 | 功能 |
 |---------|------|
@@ -136,18 +148,18 @@
 
 | 指标 | 数量 | 说明 |
 |------|------|------|
-| **Skill 模板** (SKILL.md) | **47** | `src/templates/skills/stdd/{name}/SKILL.md` |
-| **Command 模板** (.md) | **75** | `src/templates/commands/{name}.md` |
-| **唯一斜杠命令** (`/stdd:*`) | **76** | 去重后的 Skill + Command 入口 |
-| **CLI 命令** (含子命令) | **75** | `stdd xxx` 终端命令 |
-| **Skill 驱动入口** | **47** | 有 Skill 模板的命令 |
-| **Command 文件入口** | **75** | 有 Command 模板的命令 |
-| **总入口** | **127** | 80 Command + 47 Skill，去重后 80 个唯一入口 |
-| **AI 引擎适配** | **22** | 4 Tier 兼容体系 |
+| **Skill 模板** (SKILL.md) | **53** | `src/templates/skills/stdd/{name}/SKILL.md` |
+| **Command 模板** (.md) | **86** | `src/templates/commands/{name}.md` |
+| **唯一斜杠命令** (`/stdd:*`) | **86** | 去重后的 Skill + Command 入口 |
+| **CLI 命令** (含子命令) | **86** | `stdd xxx` 终端命令 |
+| **Skill 驱动入口** | **53** | 有 Skill 模板的命令 |
+| **Command 文件入口** | **86** | 有 Command 模板的命令 |
+| **总入口** | **139** | 86 Command + 53 Skill，去重后 86 个唯一入口 |
+| **AI 引擎适配** | **24** | 4 Tier 兼容体系 |
 | **Constitution 条例** | **9** | 3 Blocking + 4 Warning + 2 Suggestion |
 | **Agent 角色** | **12** | 4 基础 + 8 专用 |
 | **Graph Intent** | **4** | feature/hotfix/repair/research |
-| **测试基线** | **171 套件 / 3810 测试** | Branch 91.03%，`npm test` 全部通过 |
+| **测试基线** | **191 套件 / 4158 测试** | Branch 93.2%，`npm test` 全部通过 |
 
 ---
 

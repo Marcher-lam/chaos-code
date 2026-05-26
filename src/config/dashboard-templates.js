@@ -422,6 +422,25 @@ function generateDashboardHTML(data) {
   </div>
 
   <script>
+    function renderTrendChart(progressData) {
+      const svg = document.getElementById('trend-svg');
+      if (!svg || !progressData || progressData.length < 2) return;
+      const w = 580, h = 160, padX = 20, padY = 10;
+      const maxVal = Math.max(...progressData.map(p => p.quality || 50), 100);
+      const points = progressData.map((p, i) => {
+        const x = padX + (i / (progressData.length - 1)) * w;
+        const y = padY + h - ((p.quality || 50) / maxVal) * h;
+        return x + ',' + y;
+      });
+      svg.innerHTML = '<polyline points="' + points.join(' ') + '" fill="none" stroke="var(--color-primary,#3b82f6)" stroke-width="2"/>' +
+        progressData.map((p, i) => {
+          const x = padX + (i / (progressData.length - 1)) * w;
+          const y = padY + h - ((p.quality || 50) / maxVal) * h;
+          return '<circle cx="' + x + '" cy="' + y + '" r="3" fill="var(--color-primary,#3b82f6)"/>' +
+            '<text x="' + x + '" y="' + (y - 6) + '" font-size="9" fill="var(--color-text-muted,#6b7280)">' + (p.quality || 0) + '</text>';
+        }).join('') +
+        '<line x1="' + padX + '" y1="' + (padY + h) + '" x2="' + (padX + w) + '" y2="' + (padY + h) + '" stroke="var(--color-border,#e5e7eb)" stroke-width="1"/>';
+    }
     function switchTab(name) {
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));

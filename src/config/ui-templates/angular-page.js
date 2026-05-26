@@ -1,0 +1,74 @@
+/**
+ * Angular Standalone Page Component Templates
+ */
+
+const { tokensToCSS } = require('./css-tokens');
+
+function pascalCase(str) {
+  return str.replace(/(^|[-_]\w)/g, m => m.replace(/[-_]/, '').toUpperCase());
+}
+
+function kebabCase(str) {
+  return str.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase();
+}
+
+function generateAngularPage(name, options = {}, tokens = {}) {
+  const pascalName = pascalCase(name);
+  const kebabName = kebabCase(name);
+  const layout = options.layout || 'full';
+  const sections = options.sections || ['Overview', 'Details', 'Configuration'];
+
+  const tokenCSS = tokensToCSS(tokens);
+
+  const layoutStyle = layout === 'sidebar'
+    ? '.page-layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }\n.page-sidebar { padding: 20px; border-right: 1px solid var(--color-border, #e5e7eb); }\n.page-main { padding: 24px; }'
+    : layout === 'centered'
+    ? '.page-layout { display: flex; justify-content: center; padding: 40px 20px; min-height: 100vh; }\n.page-main { max-width: 800px; width: 100%; }'
+    : '.page-layout { min-height: 100vh; }\n.page-main { padding: 24px; max-width: 1200px; margin: 0 auto; }';
+
+  const sidebarBlock = layout === 'sidebar'
+    ? '\n    <aside class="page-sidebar">\n      <ng-content select="[sidebar]"></ng-content>\n    </aside>'
+    : '';
+
+  const sectionBlocks = sections.map(s =>
+    '    <section class="page-section">\n      <h2>' + s + '</h2>\n      <ng-content select="[section-' + kebabCase(s) + ']"></ng-content>\n    </section>'
+  ).join('\n\n');
+
+  const css = tokenCSS + '\n'
+    + '.page-header { padding: 16px 24px; border-bottom: 1px solid var(--color-border, #e5e7eb); }\n'
+    + '.page-header h1 { margin: 0; font-size: 1.5rem; }\n'
+    + '.page-section { margin-bottom: 32px; }\n'
+    + '.page-section h2 { font-size: 1.2rem; border-bottom: 1px solid var(--color-border, #e5e7eb); padding-bottom: 8px; }\n'
+    + '.page-footer { padding: 16px 24px; border-top: 1px solid var(--color-border, #e5e7eb); color: var(--color-text-muted, #6b7280); font-size: 0.8rem; }\n'
+    + layoutStyle;
+
+  const template = '<div class="page-layout">\n'
+    + sidebarBlock + '\n'
+    + '  <div class="page-main">\n'
+    + '    <header class="page-header">\n'
+    + '      <h1>' + pascalName + '</h1>\n'
+    + '    </header>\n\n'
+    + sectionBlocks + '\n\n'
+    + '    <footer class="page-footer">\n'
+    + '      &copy; ' + new Date().getFullYear() + '\n'
+    + '    </footer>\n'
+    + '  </div>\n'
+    + '</div>';
+
+  const ts = "import { Component } from '@angular/core';\n"
+    + "import { RouterModule } from '@angular/router';\n\n"
+    + "@Component({\n  selector: 'app-" + kebabName + "-page',\n  standalone: true,\n  imports: [RouterModule],\n  template: `\n"
+    + template.split('\n').map(l => '    ' + l).join('\n')
+    + "\n  `,\n  styles: [`\n"
+    + css.split('\n').map(l => '    ' + l).join('\n')
+    + "\n  `],\n})\nexport class " + pascalName + "PageComponent {}\n";
+
+  return {
+    ts,
+    html: template,
+    css,
+    cssFileName: kebabName + '-page.component.css',
+  };
+}
+
+module.exports = { generateAngularPage };

@@ -28,7 +28,7 @@ STDD Copilot 是一个 **CLI 工具 + 模板框架**，它本身不提供 AI 编
 | `stdd workspace` | 工作区管理 | ✅ 完全实现 |
 | `stdd metrics` | 质量指标 | ✅ 完全实现 |
 | `stdd graph run` | Graph 引擎执行 | ⚠️ 需要外部执行器 |
-| CommandLoader 模式 | 66 个命令统一注册/发现/加载 | ✅ 完全实现 |
+| CommandLoader 模式 | 86 个命令统一注册/发现/加载 | ✅ 完全实现 |
 
 ### Constitution 检查（9 篇条例）
 
@@ -63,6 +63,16 @@ STDD Copilot 是一个 **CLI 工具 + 模板框架**，它本身不提供 AI 编
 - ✅ 自动检测 npm/pnpm workspaces
 - ✅ `--workspace` 作用域
 - ✅ Workspace registry 管理
+
+### 生成与预览（Phase 2-4）
+
+- ✅ **Builder**：自定义 Agent、工作流、Skill 构建器
+- ✅ **UI Generator**：多框架页面/组件生成（React / Vue / Angular / Svelte）
+- ✅ **Dashboard**：项目健康仪表板（静态 HTML + 实时预览）
+- ✅ **Docs Site**：文档站点生成（含搜索索引）
+- ✅ **Modules**：模块市场管理
+- ✅ **Profile**：规划配置文件管理 + 自适应规划深度
+- ✅ **IDE Adapt**：多引擎 IDE 配置适配生成
 
 ---
 
@@ -120,13 +130,16 @@ STDD Copilot 是一个 **CLI 工具 + 模板框架**，它本身不提供 AI 编
 4. **质量门禁**：9 篇 Constitution 条例检查
 5. **证据收集**：结构化证据、审计追踪
 6. **工作区管理**：Monorepo 支持
+7. **页面/组件生成**：多框架 UI 模板生成（React / Vue / Angular / Svelte）
+8. **自定义工作流构建**：Agent、工作流、Skill 可视化构建
+9. **项目仪表板**：HTML 仪表板生成与预览
+10. **文档站点生成**：自动生成/服务文档站点
 
 ### 工具不能做什么
 
-1. **AI 编码**：不能自动写代码
-2. **需求分析**：不能自动分析需求
-3. **Spec 生成**：不能自动生成规格文档
-4. **任务拆解**：不能自动拆解任务
+1. **AI 编码**：不能自动写代码（业务逻辑需人工或 AI 协作完成）
+2. **真实变异测试**：Quick 模式是启发式检查，真实变异需 Stryker 外部工具
+3. **视觉回归测试**：尚无 baseline 截图 diff 比对能力
 
 ### 需要配合的 AI 工具
 

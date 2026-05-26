@@ -55,6 +55,12 @@ class BuilderCommand {
         return this.list(options);
       case 'validate':
         return this.validate(args[0], options);
+      case 'test':
+      case 'dry-run':
+        return this.dryRun(args[0], options);
+      case 'share':
+      case 'publish':
+        return this.share(args[0], options);
       case 'export':
         return await this.export(args[0], options);
       default:
@@ -774,6 +780,117 @@ class BuilderCommand {
     }
 
     return result;
+  }
+  /**
+   * Dry-run test a custom builder artifact without executing actual commands.
+   */
+  dryRun(name, options = {}) {
+    if (!name) throw new Error('Artifact name required. Usage: stdd builder test <name>');
+
+    const buildersDir = path.join(this.cwd, 'stdd', 'builders');
+    const results = { name, valid: true, errors: [], warnings: [], steps: [] };
+
+    // Test agent
+    const agentPath = path.join(buildersDir, 'agents', name + '.json');
+    if (fs.existsSync(agentPath)) {
+      try {
+        const agent = JSON.parse(fs.readFileSync(agentPath, 'utf8'));
+        if (!agent.name) results.errors.push('Agent missing "name" field');
+        if (!agent.expertise || agent.expertise.length === 0) results.warnings.push('Agent has no expertise defined');
+        if (!agent.lens) results.warnings.push('Agent has no lens defined');
+        results.steps.push({ type: 'agent', name: agent.name || name, status: 'simulated' });
+      } catch (e) {
+        results.errors.push('Invalid JSON: ' + e.message);
+        results.valid = false;
+      }
+    }
+
+    // Test workflow
+    const workflowPath = path.join(buildersDir, 'workflows', name + '.yaml');
+    if (fs.existsSync(workflowPath)) {
+      try {
+        const yaml = require('js-yaml');
+        const wf = yaml.load(fs.readFileSync(workflowPath, 'utf8'));
+        if (!wf.phases || wf.phases.length === 0) results.errors.push('Workflow has no phases');
+        // Simulate phase execution
+        for (const phase of (wf.phases || [])) {
+          const conditionMet = phase.condition ? evalCondition(phase.condition) : true;
+          results.steps.push({
+            phase: phase.name || phase.skill || 'unknown',
+            condition: phase.condition || null,
+            conditionMet,
+            status: conditionMet ? 'would-execute' : 'would-skip',
+          });
+        }
+      } catch (e) {
+        results.errors.push('Invalid YAML: ' + e.message);
+        results.valid = false;
+      }
+    }
+
+    if (results.steps.length === 0 && results.errors.length === 0) {
+      results.errors.push('No artifact found with name: ' + name);
+      results.valid = false;
+    }
+
+    if (!options.json) {
+      console.log(chalk.bold('\\n  Dry-Run Test: ' + name + '\\n'));
+      console.log('  Status: ' + (results.valid ? chalk.green('PASS') : chalk.red('FAIL')));
+      for (const e of results.errors) console.log('  ' + chalk.red('ERROR') + ' ' + e);
+      for (const w of results.warnings) console.log('  ' + chalk.yellow('WARN') + ' ' + w);
+      for (const s of results.steps) {
+        const icon = s.status === 'would-execute' ? chalk.green('>>') : s.status === 'would-skip' ? chalk.yellow('--') : chalk.cyan('??');
+        console.log('  ' + icon + ' ' + (s.phase || s.name) + (s.condition ? ' (condition: ' + s.condition + ')' : ''));
+      }
+      console.log('');
+    }
+    return results;
+  }
+
+  /**
+   * Share a builder artifact as a packaged extension.
+   */
+  share(name, options = {}) {
+    if (!name) throw new Error('Artifact name required. Usage: stdd builder share <name>');
+
+    const buildersDir = path.join(this.cwd, 'stdd', 'builders');
+    const outputPath = path.join(this.cwd, 'stdd', 'exports');
+    fs.mkdirSync(outputPath, { recursive: true });
+
+    const manifest = {
+      name,
+      version: options.version || '1.0.0',
+      author: options.author || 'anonymous',
+      description: options.description || '',
+      exportedAt: new Date().toISOString(),
+      artifacts: [],
+    };
+
+    // Package all matching artifacts
+    for (const subdir of ['agents', 'workflows', 'skills']) {
+      const dir = path.join(buildersDir, subdir);
+      if (!fs.existsSync(dir)) continue;
+      const files = fs.readdirSync(dir).filter(f => f.startsWith(name) || f === name + '.json' || f === name + '.yaml' || f === name + '.md');
+      for (const file of files) {
+        const srcPath = path.join(dir, file);
+        const destDir = path.join(outputPath, name, subdir);
+        fs.mkdirSync(destDir, { recursive: true });
+        fs.copyFileSync(srcPath, path.join(destDir, file));
+        manifest.artifacts.push({ type: subdir.slice(0, -1), file });
+      }
+    }
+
+    // Write manifest
+    fs.writeFileSync(path.join(outputPath, name, 'extension.json'), JSON.stringify(manifest, null, 2), 'utf8');
+
+    if (!options.json) {
+      console.log(chalk.bold('\\n  Artifact Packaged\\n'));
+      console.log('  Name: ' + chalk.cyan(name));
+      console.log('  Artifacts: ' + manifest.artifacts.length);
+      console.log('  Output: ' + chalk.cyan(path.join('stdd', 'exports', name)));
+      console.log('');
+    }
+    return manifest;
   }
 }
 

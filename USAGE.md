@@ -10,8 +10,8 @@ STDD Copilot 提供双入口设计：CLI 命令行工具 (`stdd`) 和 Claude Cod
 
 | 概念 | 路径 | 说明 |
 |------|------|------|
-| **Commands** | `.claude/commands/stdd/` | 75 个 `/stdd:*` 斜杠命令模板初始化后的副本 |
-| **Skills** | `.claude/skills/stdd/` | 47 个可被命令调用的技能模块 |
+| **Commands** | `.claude/commands/stdd/` | 86 个 `/stdd:*` 斜杠命令模板初始化后的副本 |
+| **Skills** | `.claude/skills/stdd/` | 53 个可被命令调用的技能模块 |
 | **Changes** | `stdd/changes/` | 变更管理 (提案→规格→实现→归档) |
 | **Specs** | `stdd/specs/` | BDD 规格文件 (Source of Truth) |
 | **Memory** | `stdd/memory/` | 持久化记忆库 |
@@ -20,13 +20,13 @@ STDD Copilot 提供双入口设计：CLI 命令行工具 (`stdd`) 和 Claude Cod
 
 ### 斜杠命令完整列表
 
-STDD Copilot 提供 127 个斜杠命令（80 个 Command 模板 + 47 个 Skill 模板，去重后 80 个唯一入口）：
+STDD Copilot 提供斜杠命令（86 个 Command 模板 + 53 个 Skill 模板，去重后 86 个唯一入口）：
 
 **核心流程**: `/stdd:init` `/stdd:new` `/stdd:propose` `/stdd:clarify` `/stdd:confirm` `/stdd:spec` `/stdd:plan` `/stdd:apply` `/stdd:execute` `/stdd:verify` `/stdd:archive` `/stdd:final-doc` `/stdd:brainstorm` `/stdd:issue` `/stdd:constitution` `/stdd:ff` `/stdd:continue` `/stdd:explore` `/stdd:graph` `/stdd:turbo`
 
-**辅助功能**: `/stdd:api-spec` `/stdd:audit` `/stdd:baby-steps` `/stdd:browser` `/stdd:certainty` `/stdd:ci` `/stdd:ci-generator` `/stdd:clarify` `/stdd:commands` `/stdd:commit` `/stdd:commit-msg` `/stdd:commit-tdd` `/stdd:complexity` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:depcheck` `/stdd:design` `/stdd:doctor` `/stdd:elicitation` `/stdd:execute` `/stdd:explore` `/stdd:extensions` `/stdd:factory` `/stdd:fix-packet` `/stdd:graph-history` `/stdd:graph-run` `/stdd:guard` `/stdd:help` `/stdd:hooks` `/stdd:init` `/stdd:issue` `/stdd:iterate` `/stdd:learn` `/stdd:list` `/stdd:memory` `/stdd:memory-scan` `/stdd:metrics` `/stdd:mock` `/stdd:mock-gen` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:parallel` `/stdd:pipeline` `/stdd:plan` `/stdd:prp` `/stdd:product-proposal` `/stdd:progress` `/stdd:propose` `/stdd:recommend` `/stdd:roles` `/stdd:runtime` `/stdd:schema` `/stdd:skills` `/stdd:spec` `/stdd:spec-generator` `/stdd:start` `/stdd:starters` `/stdd:status` `/stdd:story` `/stdd:sudo` `/stdd:supervisor` `/stdd:tdd-init` `/stdd:turbo` `/stdd:update` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:vision` `/stdd:waiver-manager` `/stdd:workspace`
+**辅助功能**: `/stdd:adapt` `/stdd:api-spec` `/stdd:audit` `/stdd:baby-steps` `/stdd:browser` `/stdd:builder` `/stdd:certainty` `/stdd:ci` `/stdd:ci-generator` `/stdd:clarify` `/stdd:commands` `/stdd:commit` `/stdd:commit-msg` `/stdd:commit-tdd` `/stdd:complexity` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:dashboard` `/stdd:depcheck` `/stdd:design` `/stdd:docs` `/stdd:doctor` `/stdd:elicitation` `/stdd:execute` `/stdd:explore` `/stdd:extensions` `/stdd:factory` `/stdd:fix-packet` `/stdd:graph-history` `/stdd:graph-run` `/stdd:guard` `/stdd:help` `/stdd:hooks` `/stdd:init` `/stdd:issue` `/stdd:iterate` `/stdd:learn` `/stdd:list` `/stdd:memory` `/stdd:memory-scan` `/stdd:metrics` `/stdd:mock` `/stdd:mock-gen` `/stdd:modules` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:parallel` `/stdd:pipeline` `/stdd:plan` `/stdd:prp` `/stdd:product-proposal` `/stdd:profile` `/stdd:progress` `/stdd:propose` `/stdd:recommend` `/stdd:roles` `/stdd:runtime` `/stdd:schema` `/stdd:skills` `/stdd:spec` `/stdd:spec-generator` `/stdd:start` `/stdd:starters` `/stdd:status` `/stdd:story` `/stdd:sudo` `/stdd:supervisor` `/stdd:tdd-init` `/stdd:turbo` `/stdd:ui` `/stdd:update` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:vision` `/stdd:waiver-manager` `/stdd:workspace`
 
-**技能模块**: `/stdd:api-spec` `/stdd:apply` `/stdd:archive` `/stdd:brainstorm` `/stdd:certainty` `/stdd:clarify` `/stdd:commit` `/stdd:complexity` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:design` `/stdd:execute` `/stdd:explore` `/stdd:factory` `/stdd:ff` `/stdd:final-doc` `/stdd:fix-packet` `/stdd:graph` `/stdd:guard` `/stdd:help` `/stdd:init` `/stdd:issue` `/stdd:iterate` `/stdd:learn` `/stdd:memory` `/stdd:metrics` `/stdd:mock` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:parallel` `/stdd:plan` `/stdd:product-proposal` `/stdd:propose` `/stdd:prp` `/stdd:roles` `/stdd:schema` `/stdd:spec` `/stdd:supervisor` `/stdd:turbo` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:vision`
+**技能模块**: `/stdd:api-spec` `/stdd:apply` `/stdd:archive` `/stdd:brainstorm` `/stdd:builder` `/stdd:certainty` `/stdd:clarify` `/stdd:commit` `/stdd:complexity` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:dashboard` `/stdd:design` `/stdd:docs` `/stdd:execute` `/stdd:explore` `/stdd:factory` `/stdd:ff` `/stdd:final-doc` `/stdd:fix-packet` `/stdd:graph` `/stdd:guard` `/stdd:help` `/stdd:init` `/stdd:issue` `/stdd:iterate` `/stdd:learn` `/stdd:memory` `/stdd:metrics` `/stdd:mock` `/stdd:modules` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:parallel` `/stdd:plan` `/stdd:product-proposal` `/stdd:profile` `/stdd:propose` `/stdd:prp` `/stdd:roles` `/stdd:schema` `/stdd:spec` `/stdd:supervisor` `/stdd:turbo` `/stdd:ui` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:vision`
 
 ---
 
@@ -402,6 +402,13 @@ stdd/changes/change-YYYYMMDD-HHMMSS/
 | `stdd outside-in init/scaffold/status` | 管理外向内 TDD layer registry，并生成 E2E/集成/单元测试骨架 |
 | `stdd extensions list/install/validate/publish` | 管理 extension catalog、本地安装与发布校验 |
 | `stdd graph run/history/recommend` | CLI Graph 执行、历史和推荐 |
+| `stdd builder agent/workflow/skill/list/validate/share/export` | 自定义 Agent、工作流、Skill 构建器 |
+| `stdd ui generate <type> <name>` | 多框架 UI 页面/组件生成（React / Vue / Angular / Svelte） |
+| `stdd modules list/install/info/uninstall/registry` | 模块市场管理 |
+| `stdd dashboard generate/open/serve` | 项目健康仪表板（静态 HTML） |
+| `stdd docs generate/serve` | 文档站点生成（Astro + Starlight 风格） |
+| `stdd profile create/select/show/list/edit` | 规划配置文件管理 |
+| `stdd adapt generate/list` | IDE 配置适配生成（多引擎自动配置） |
 | `stdd recommend [change]` | 基于当前状态推荐下一步 |
 | `stdd skills` | 列出所有技能 (`--phase <1-5>`) |
 | `stdd commands` | 列出 Claude Code 斜杠命令 |
@@ -522,6 +529,30 @@ stdd hooks enable            # 恢复 Hooks
 stdd product-proposal        # 聚合所有产物生成产品方案报告 (15 章节)
 stdd product-proposal --json # JSON 结构化输出
 stdd product-proposal --output my-report.md  # 自定义输出路径
+
+stdd builder list            # 列出所有自定义构建产物
+stdd builder agent my-agent  # 创建自定义 Agent
+stdd builder workflow my-wf  # 创建自定义工作流
+stdd builder skill my-skill  # 创建自定义 Skill
+
+stdd ui generate component Button --framework react  # 生成 React 组件
+stdd ui generate page Dashboard --framework vue  # 生成 Vue 页面
+
+stdd modules list            # 列出可用模块
+stdd modules install <name>  # 安装模块
+
+stdd dashboard generate      # 生成项目健康仪表板
+stdd dashboard open          # 在浏览器中打开仪表板
+
+stdd docs generate           # 生成文档站点
+stdd docs serve              # 启动文档站点预览服务
+
+stdd profile list            # 列出所有规划配置
+stdd profile select <name>   # 选择规划配置文件
+
+stdd adapt list              # 列出可用 IDE 适配器
+stdd adapt generate          # 生成所有 IDE 配置
+stdd adapt setup <ide>       # 为特定 IDE 生成配置
 ```
 
 ### 核心流程 (斜杠命令)
@@ -607,6 +638,12 @@ stdd product-proposal --output my-report.md  # 自定义输出路径
 | Final Doc | `/stdd:final-doc` | 生成最终文档 |
 | Commit | `/stdd:commit` | 原子化提交 (red:/green:/refactor: 前缀) |
 | Fix Packet | `/stdd:fix-packet` | 失败任务诊断修复包 (Golden Packet) |
+| Builder | `/stdd:builder` | 自定义 Agent/工作流/Skill 构建器 |
+| UI Generator | `/stdd:ui` | 多框架 UI 页面/组件生成 |
+| Modules | `/stdd:modules` | 模块市场管理 |
+| Dashboard | `/stdd:dashboard` | 项目健康仪表板 |
+| Docs Site | `/stdd:docs` | 文档站点生成 |
+| Profile | `/stdd:profile` | 规划配置文件管理 |
 
 ---
 

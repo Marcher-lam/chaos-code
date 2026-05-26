@@ -64,6 +64,8 @@ class DocsCommand {
         return this.open(options);
       case 'sources':
         return this.listSources(options);
+      case 'deploy':
+        return this.deploy(options);
       default:
         return this.generate(options);
     }
@@ -375,6 +377,100 @@ class DocsCommand {
     }
 
     return listing;
+  }
+
+  /**
+   * Deploy the generated docs site.
+   * Supports: gh-pages (default), netlify, custom.
+   */
+  async deploy(options = {}) {
+    const provider = options.provider || 'gh-pages';
+    const outputDir = options.output || path.join(this.cwd, 'stdd', 'docs-site');
+
+    if (!fs.existsSync(path.join(outputDir, 'index.html'))) {
+      console.log(chalk.dim('  Generating docs site first...'));
+      this.generate({ ...options, output: outputDir });
+    }
+
+    if (!fs.existsSync(path.join(outputDir, 'index.html'))) {
+      throw new Error('Docs site generation failed. Cannot deploy.');
+    }
+
+    console.log(chalk.bold('\n  Deploying docs site\n'));
+    console.log(chalk.cyan('  Provider: ' + provider));
+    console.log(chalk.cyan('  Directory: ' + path.relative(this.cwd, outputDir)));
+
+    if (provider === 'gh-pages') {
+      return this._deployGHPages(outputDir, options);
+    } else if (provider === 'netlify') {
+      return this._deployNetlify(outputDir, options);
+    } else if (provider === 'custom') {
+      return this._deployCustom(outputDir, options);
+    }
+    throw new Error('Unknown provider: ' + provider + '. Use: gh-pages, netlify, or custom.');
+  }
+
+  _deployGHPages(outputDir, options = {}) {
+    const branch = options.branch || 'gh-pages';
+    const message = options.message || 'Deploy docs site';
+    try {
+      const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+      try {
+        execSync('git rev-parse --verify ' + branch, { encoding: 'utf8', stdio: 'pipe' });
+        execSync('git checkout ' + branch, { encoding: 'utf8', stdio: 'pipe' });
+      } catch (_) {
+        execSync('git checkout --orphan ' + branch, { encoding: 'utf8', stdio: 'pipe' });
+      }
+      try { execSync('git rm -rf .', { encoding: 'utf8', stdio: 'pipe' }); } catch (_) {}
+      const files = fs.readdirSync(outputDir);
+      for (const file of files) {
+        fs.copyFileSync(path.join(outputDir, file), path.join(this.cwd, file));
+        execSync('git add ' + file, { encoding: 'utf8', stdio: 'pipe' });
+      }
+      execSync('git commit -m "' + message + '"', { encoding: 'utf8', stdio: 'pipe' });
+      execSync('git push origin ' + branch + ' --force', { encoding: 'utf8', stdio: 'pipe' });
+      execSync('git checkout ' + currentBranch, { encoding: 'utf8', stdio: 'pipe' });
+      const remoteUrl = execSync('git remote get-url origin', { encoding: 'utf8' }).trim();
+      const repoMatch = remoteUrl.match(/[:/]([^/]+\/[^.]+)/);
+      const repoPath = repoMatch ? repoMatch[1] : '';
+      console.log(chalk.green('\n  Deployed to GitHub Pages!'));
+      console.log(chalk.cyan('  URL: https://' + repoPath.replace('/', '.github.io/')));
+      return { deployed: true, provider: 'gh-pages', branch };
+    } catch (err) {
+      try { execSync('git checkout -', { encoding: 'utf8', stdio: 'pipe' }); } catch (_) {}
+      throw new Error('GitHub Pages deploy failed: ' + err.message);
+    }
+  }
+
+  _deployNetlify(outputDir) {
+    try { execSync('which netlify', { encoding: 'utf8', stdio: 'pipe' }); }
+    catch (_) { throw new Error('Netlify CLI not found. Install: npm install -g netlify-cli'); }
+    try {
+      const result = execSync('netlify deploy --prod --dir="' + outputDir + '"', {
+        encoding: 'utf8', cwd: this.cwd, stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      const urlMatch = result.match(/https:\/\/[a-z0-9-]+\.netlify\.app/);
+      const deployUrl = urlMatch ? urlMatch[0] : 'unknown';
+      console.log(chalk.green('\n  Deployed to Netlify!'));
+      console.log(chalk.cyan('  URL: ' + deployUrl));
+      return { deployed: true, provider: 'netlify', url: deployUrl };
+    } catch (err) {
+      throw new Error('Netlify deploy failed: ' + err.message);
+    }
+  }
+
+  _deployCustom(outputDir, options = {}) {
+    const command = options.deployCommand;
+    if (!command) {
+      throw new Error('--deploy-command is required for custom provider.');
+    }
+    try {
+      execSync(command + ' "' + outputDir + '"', { encoding: 'utf8', cwd: this.cwd, stdio: 'inherit' });
+      console.log(chalk.green('\n  Deployed via custom command!'));
+      return { deployed: true, provider: 'custom', command };
+    } catch (err) {
+      throw new Error('Custom deploy failed: ' + err.message);
+    }
   }
 }
 

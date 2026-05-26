@@ -50,9 +50,9 @@ It unifies three dimensions:
 
 | Metric | Value |
 |--------|-------|
-| CLI Commands | 75 |
-| Command Templates | 80 (`/stdd:*` slash commands) |
-| Skill Templates | 47 |
+| CLI Commands | 86 |
+| Command Templates | 86 (`/stdd:*` slash commands) |
+| Skill Templates | 53 |
 | Test Suites | **191** suites, **4,158** tests, 100% passing |
 | Statement Coverage | **97.7%** |
 | Branch Coverage | **93.2%** |
@@ -319,6 +319,18 @@ init → new → propose → clarify → confirm → spec → plan → apply →
 | `stdd graph recommend` | Smart next-step recommendation |
 | `stdd graph analyze` | Bottleneck analysis and path optimization |
 
+### Generation & Preview (Ultra Phase 2-4)
+
+| CLI | Purpose |
+|-----|---------|
+| `stdd builder agent / workflow / skill / list / validate / share / export` | Custom agent, workflow, and skill builder |
+| `stdd ui generate <type> <name>` | Multi-framework UI page/component generation (React / Vue / Angular / Svelte) |
+| `stdd modules list / install / info / uninstall / registry` | Module marketplace management |
+| `stdd dashboard generate / open / serve` | Project health dashboard (static HTML) |
+| `stdd docs generate / serve` | Documentation site generation (Astro + Starlight style) |
+| `stdd profile create / select / show / list / edit` | Planning profile management |
+| `stdd adapt generate / list` | IDE config adapter generation (multi-engine auto-config) |
+
 ### Collaboration & Extensions
 
 | CLI | Purpose |
@@ -378,7 +390,7 @@ STDD Copilot Ultra fuses exploration, specification, and TDD via a **Skill Graph
 │  DAG Runner  │  Visualizer  │  Analyzer  │  Recommender   │
 ├──────────────────────────────────────────────────────────┤
 │              Core Executors                                │
-│  75 Commands  │  21 Utilities  │  Agent Simulator  │  RT   │
+│  86 Commands  │  21 Utilities  │  Agent Simulator  │  RT   │
 ├──────────────────────────────────────────────────────────┤
 │              Infrastructure                                │
 │  Templates  │  Hooks  │  Logger  │  Security  │  Memory   │
@@ -396,15 +408,15 @@ stdd-copilot-ultra/
 ├── cli.js                          # CLI entry point (Commander.js)
 ├── src/
 │   ├── cli/
-│   │   ├── commands/               # 75 command implementations (one class each)
+│   │   ├── commands/               # 86 command implementations (one class each)
 │   │   ├── helpers/                # Shared CLI utilities (spinner, safe wrappers)
 │   │   └── registry/               # CommandRegistry + CommandLoader
 │   ├── utils/                      # 21 shared utility modules
 │   ├── runtime/                    # Agent simulator, SudoLang, browser
 │   └── types/                      # JSDoc type definitions
 ├── src/templates/
-│   ├── commands/                   # 80 slash-command templates (Markdown)
-│   └── skills/stdd/                # 47 skill template directories
+│   ├── commands/                   # 86 slash-command templates (Markdown)
+│   └── skills/stdd/                # 53 skill template directories
 ├── stdd/                           # Runtime working directory (generated in user projects)
 │   ├── changes/                    # Change lifecycle
 │   ├── specs/                      # BDD source of truth

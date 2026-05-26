@@ -4,9 +4,9 @@
 
 ---
 
-## 全部能力入口 (80 个 = 80 Command 模板 + 47 Skill 模板，去重后)
+## 全部能力入口 (86 个 = 86 Command 模板 + 53 Skill 模板，去重后)
 
-### Command 模板入口 (80)
+### Command 模板入口 (86)
 - `/stdd:init` `/stdd:new` `/stdd:propose` `/stdd:clarify` `/stdd:confirm`
 - `/stdd:spec` `/stdd:plan` `/stdd:apply` `/stdd:execute` `/stdd:verify` `/stdd:archive`
 - `/stdd:final-doc` `/stdd:brainstorm` `/stdd:issue` `/stdd:constitution`
@@ -14,6 +14,7 @@
 - `/stdd:vision` `/stdd:supervisor` `/stdd:prp` `/stdd:parallel` `/stdd:mock`
 - `/stdd:memory` `/stdd:iterate` `/stdd:help` `/stdd:factory` `/stdd:design`
 - `/stdd:complexity` `/stdd:certainty` `/stdd:metrics`
+- `/stdd:builder` `/stdd:ui` `/stdd:modules` `/stdd:dashboard` `/stdd:docs` `/stdd:profile` `/stdd:adapt`
 
 ---
 
@@ -517,3 +518,4 @@ cat stdd/changes/<change>/evidence/fix-packet-*.md  # 分析失败原因
 `/stdd:commands` `/stdd:workspace` `/stdd:extensions` `/stdd:story`
 `/stdd:pipeline` `/stdd:baby-steps` `/stdd:starters` `/stdd:tdd-init`
 `/stdd:fix-packet` `/stdd:update` `/stdd:audit` `/stdd:runtime`
+`/stdd:builder` `/stdd:ui` `/stdd:modules` `/stdd:dashboard` `/stdd:docs` `/stdd:profile` `/stdd:adapt`

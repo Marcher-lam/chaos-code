@@ -3,6 +3,7 @@ const yaml = require('js-yaml');
 const path = require('path');
 const { getPackageRoot } = require('./path-resolver');
 const { ProfileEngine } = require('./profile-engine');
+const { CONDITION_ENGINE } = require('../config/planning-profiles');
 
 class DynamicGraphRouter {
   constructor(configPath = 'stdd/graph/skills.yaml') {
@@ -75,7 +76,7 @@ class DynamicGraphRouter {
     const skillNames = Object.keys(baseGraph.skills);
 
     // Build a set of phases to skip from the profile definition
-    const { PROFILES } = require('../config/planning-profiles');
+    const { PROFILES, CONDITION_ENGINE } = require('../config/planning-profiles');
     const profile = PROFILES[profileId];
     const skipPhases = new Set((profile && profile.phases && profile.phases.skip) || []);
 
@@ -193,6 +194,35 @@ class DynamicGraphRouter {
     }
 
     return dynamicGraph;
+  }
+  compileConditional(intent = 'feature', context = {}) {
+    const profileId = context.profileId || 'standard';
+    const profileGraph = this.compileWithProfile(intent, profileId);
+    const phases = profileGraph.skills ? Object.keys(profileGraph.skills) : [];
+    const evaluatedPhases = [];
+
+    for (const phase of phases) {
+      const condition = this._getPhaseCondition(phase);
+      const shouldExecute = CONDITION_ENGINE.evaluate(condition, context);
+      evaluatedPhases.push({
+        phase, status: shouldExecute ? 'execute' : 'skip',
+        condition: condition || null,
+        skill: shouldExecute ? profileGraph.skills[phase] : null,
+      });
+    }
+
+    return { ...profileGraph, conditionalPhases: evaluatedPhases, context, compilationType: 'conditional' };
+  }
+
+  _getPhaseCondition(phase) {
+    const map = {
+      'stdd-clarify': 'profile:thorough || profile:enterprise',
+      'stdd-mutation': 'complexity>30',
+      'stdd-adr': 'complexity>60',
+      'stdd-security-audit': 'complexity>80',
+      'stdd-multi-role-review': 'complexity>60',
+    };
+    return map[phase] || null;
   }
 }
 

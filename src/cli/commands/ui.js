@@ -31,6 +31,10 @@ class UICommand {
         return this.scaffold(args[0] || options.framework, options);
       case 'preview':
         return this.preview(options);
+      case 'test':
+        return this.generateTests(args[0], options);
+      case 'diff':
+        return this.visualDiff(args[0], options);
       case 'list':
       default:
         return this.list(options);

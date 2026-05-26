@@ -1,11 +1,11 @@
 # STDD Copilot 系统架构
 
-version: "2.5"
-last_updated: "2026-05-24"
+version: "3.0"
+last_updated: "2026-05-26"
 
 ## 概述
 
-STDD Copilot 基于 Skill Graph (技能图谱) 将 Spec-First 与 TDD 深度融合。包含 47 个 Skills、12 个 Agent 角色、9 篇 Constitution 条例、Hook Enforcement System，以及 75 个 CLI 命令。
+STDD Copilot 基于 Skill Graph (技能图谱) 将 Spec-First 与 TDD 深度融合。包含 53 个 Skills、12 个 Agent 角色、9 篇 Constitution 条例、Hook Enforcement System，以及 86 个 CLI 命令。
 
 **架构边界**: CLI 负责产物生成、测试执行、mutation evidence、证据采集、质量门禁和工作区编排。真实 AI 自动编码、多 Agent runtime、contract/mock/factory 等仍由 Skill 和外部 AI 执行器承载。Quick mutation 是启发式 anti-fake-green 检查；真实 mutation 依赖项目安装并配置 Stryker。
 
@@ -87,6 +87,15 @@ graph TB
         VISION[stdd-vision]
         UTEST[stdd-user-test]
         HELP[stdd-help]
+    end
+
+    subgraph GenSkills["生成与预览 Skills（Phase 2-4）"]
+        BUILDER[stdd-builder]
+        UI[stdd-ui]
+        MODULES[stdd-modules]
+        DASH[stdd-dashboard]
+        DOCS[stdd-docs]
+        PROFILE[stdd-profile]
     end
 
     subgraph Storage["存储层"]
@@ -270,6 +279,17 @@ graph TB
 | `/stdd:help` | 帮助 | 上下文感知帮助系统 |
 | `/stdd:product-proposal` | 文档 | 聚合所有产物生成 15 章产品方案报告 (`stdd product-proposal`) |
 
+### 6. 生成与预览 Skills（Phase 2-4 新增）
+
+| Skill | 类型 | 职责 |
+|------|------|------|
+| `/stdd:builder` | 构建 | 自定义 Agent、工作流、Skill 构建器（create/list/validate/share/export） |
+| `/stdd:ui` | 生成 | 多框架 UI 页面/组件生成（React / Vue / Angular / Svelte） |
+| `/stdd:modules` | 生态 | 模块市场管理（list/install/info/uninstall/registry） |
+| `/stdd:dashboard` | 可视化 | 项目健康仪表板生成（generate/open/serve） |
+| `/stdd:docs` | 文档 | 文档站点生成（generate/serve），支持 Astro + Starlight 风格 |
+| `/stdd:profile` | 规划 | 规划配置文件管理（create/select/show/list/edit） |
+
 ---
 
 ## 存储架构
@@ -293,7 +313,7 @@ stdd/
 │   ├── contracts.md            # 接口契约
 │   └── arch-evolution.md       # 架构演进日志
 ├── graph/                      # Skill Graph 配置
-│   ├── skills.yaml             # Graph 节点定义 (28 Skills)
+│   ├── skills.yaml             # Graph 节点定义 (34 Skills)
 │   ├── config.json             # 引擎配置
 │   ├── conditions.json         # 条件引擎配置
 │   └── cache/                  # DAG 幂等执行缓存
@@ -306,10 +326,15 @@ stdd/
 │   └── IMPLEMENTATION_ORDER.md # 实现顺序模板
 ├── presets/                    # 预设配置 (react/express/fastapi)
 ├── extensions/                 # 扩展系统 + Marketplace
+├── builders/                   # 自定义构建产物 (agents/workflows/skills)
+├── exports/                    # 构建器导出产物
 ├── runtime/                    # **核心运行时引擎 (Party Mode / SudoLang)**
 ├── reporters/                  # 测试报告器 (vitest/jest/pytest/go/rust/php)
 ├── explorations/               # 探索文档
 ├── evidence/                   # guard/verify 全局证据
+├── dashboard/                  # 项目仪表板 (静态 HTML)
+├── docs-site/                  # 文档站点静态输出
+├── profile/                    # 规划配置文件 (planning profiles)
 ├── history/                    # 执行历史
 ├── progress.jsonl              # 实时进度日志 (断点续传)
 ├── constitution/               # Constitution 豁免管理

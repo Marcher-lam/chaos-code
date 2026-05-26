@@ -4,6 +4,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
+const { URL } = require('url');
 
 class ModuleRegistry {
   /**
@@ -14,6 +16,161 @@ class ModuleRegistry {
   constructor(options = {}) {
     this.registryUrl = options.registryUrl || null;
     this.cachePath = options.cachePath || null;
+    this._remoteCache = new Map();
+    this._cacheTTL = 5 * 60 * 1000; // 5 minutes
+  }
+
+  /**
+   * Official module catalog - pre-seeded with built-in modules.
+   */
+  static OFFICIAL_MODULES = [
+    {
+      name: 'stdd-tea',
+      version: '1.0.0',
+      description: 'Test Architecture module - risk-based test strategy, test matrix generation, coverage governance',
+      category: 'testing',
+      official: true,
+      author: 'STDD',
+      keywords: ['test', 'architecture', 'strategy', 'coverage', 'tea'],
+      dependencies: [],
+    },
+    {
+      name: 'stdd-security-audit',
+      version: '1.0.0',
+      description: 'Security audit module - OWASP Top 10 scanning, dependency vulnerability check, compliance verification',
+      category: 'security',
+      official: true,
+      author: 'STDD',
+      keywords: ['security', 'owasp', 'audit', 'compliance', 'vulnerability'],
+      dependencies: [],
+    },
+    {
+      name: 'stdd-design-system',
+      version: '1.0.0',
+      description: 'Design system module - DESIGN.md token management, component library scaffolding, visual regression baselines',
+      category: 'design',
+      official: true,
+      author: 'STDD',
+      keywords: ['design', 'tokens', 'ui', 'components', 'visual'],
+      dependencies: [],
+    },
+    {
+      name: 'stdd-ci-pipeline',
+      version: '1.0.0',
+      description: 'CI/CD integration module - GitHub Actions workflow generation, pre-commit hooks, quality gate enforcement',
+      category: 'ci',
+      official: true,
+      author: 'STDD',
+      keywords: ['ci', 'cd', 'github-actions', 'pipeline', 'hooks'],
+      dependencies: ['stdd-tea'],
+    },
+    {
+      name: 'stdd-brownfield',
+      version: '1.0.0',
+      description: 'Brownfield onboarding module - legacy code analysis, incremental TDD adoption, migration planning',
+      category: 'onboarding',
+      official: true,
+      author: 'STDD',
+      keywords: ['brownfield', 'legacy', 'migration', 'onboarding', 'incremental'],
+      dependencies: [],
+    },
+    {
+      name: 'stdd-agile-workflow',
+      version: '1.0.0',
+      description: 'Agile workflow module - story/epic management, sprint planning, retrospective templates, velocity tracking',
+      category: 'agile',
+      official: true,
+      author: 'STDD',
+      keywords: ['agile', 'scrum', 'story', 'epic', 'sprint', 'retrospective'],
+      dependencies: [],
+    },
+    {
+      name: 'stdd-enterprise-governance',
+      version: '1.0.0',
+      description: 'Enterprise governance module - RBAC roles, audit trail, compliance reporting, multi-team coordination',
+      category: 'enterprise',
+      official: true,
+      author: 'STDD',
+      keywords: ['enterprise', 'governance', 'rbac', 'audit', 'compliance'],
+      dependencies: ['stdd-security-audit', 'stdd-ci-pipeline'],
+    },
+  ];
+
+  /**
+   * Seed the catalog with official modules if it's empty or new.
+   */
+  seedOfficialCatalog(catalogPath) {
+    const catalog = this._readCatalog(catalogPath);
+    if (catalog.extensions.length > 0) return catalog;
+
+    catalog.extensions = ModuleRegistry.OFFICIAL_MODULES.map(m => ({ ...m }));
+    this._writeCatalog(catalogPath, catalog);
+    return catalog;
+  }
+
+  /**
+   * Install a module and its dependencies recursively.
+   */
+  async installWithDependencies(moduleName, targetDir, options = {}) {
+    const catalogPath = options.catalogPath;
+    const catalog = catalogPath ? this._readCatalog(catalogPath) : { extensions: ModuleRegistry.OFFICIAL_MODULES };
+    const module = catalog.extensions.find(e => e.name === moduleName);
+    if (!module) throw new Error('Module not found: ' + moduleName);
+
+    // Install dependencies first
+    if (module.dependencies && module.dependencies.length > 0) {
+      for (const dep of module.dependencies) {
+        try {
+          await this.install(dep, targetDir, options);
+        } catch (_) {
+          // Dependency may already be installed
+        }
+      }
+    }
+
+    // Install the module itself
+    return this.install(moduleName, targetDir, options);
+  }
+
+  /**
+   * Fetch data from remote registry. Best-effort: returns [] on failure.
+   * @param {string} endpoint API endpoint path (e.g. '/api/modules?q=test')
+   * @returns {Promise<Array>}
+   */
+  async _fetchRemote(endpoint) {
+    if (!this.registryUrl) return [];
+
+    // Check cache
+    const cacheKey = endpoint;
+    const cached = this._remoteCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < this._cacheTTL) {
+      return cached.data;
+    }
+
+    return new Promise((resolve) => {
+      try {
+        const fullUrl = new URL(endpoint, this.registryUrl);
+        const req = https.get(fullUrl.href, { timeout: 5000 }, (res) => {
+          let body = '';
+          res.on('data', (chunk) => { body += chunk; });
+          res.on('end', () => {
+            try {
+              const data = JSON.parse(body);
+              const results = Array.isArray(data) ? data : (data.extensions || data.modules || []);
+              this._remoteCache.set(cacheKey, { data: results, timestamp: Date.now() });
+              resolve(results);
+            } catch {
+              resolve([]);
+            }
+          });
+        });
+
+        req.on('error', () => resolve([]));
+        req.on('timeout', () => { req.destroy(); resolve([]); });
+      } catch {
+        resolve([]);
+      }
+    });
   }
 
   // ─── Catalog helpers ───
@@ -46,7 +203,7 @@ class ModuleRegistry {
    * @param {string} [options.category]     Filter by category
    * @returns {Array<object>} Matching module entries
    */
-  search(query, options = {}) {
+  async search(query, options = {}) {
     const catalogPath = options.catalogPath;
     const catalog = catalogPath ? this._readCatalog(catalogPath) : { extensions: [] };
     const q = (query || '').toLowerCase();

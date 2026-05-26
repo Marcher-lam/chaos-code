@@ -125,8 +125,8 @@ stdd doctor --deep
 ## 1.4 查看可用命令
 
 ```bash
-stdd skills        # 列出 47 个 Skill 模板
-stdd commands      # 列出 75 个斜杠命令模板
+stdd skills        # 列出 53 个 Skill 模板
+stdd commands      # 列出 86 个斜杠命令模板
 stdd --help        # 列出全部 CLI 命令
 ```
 
@@ -744,11 +744,11 @@ node --test
 
 ---
 
-> **STDD Copilot v1.0.5**
-> - 75 个 CLI 命令
-> - 80 个 Command 模板
-> - 47 个 Skill 模板
-> - 171 测试套件，3810 测试用例，100% 通过率
-> - 97.33% 语句覆盖，91.03% 分支覆盖
+> **STDD Copilot Ultra v1.1.0**
+> - 86 个 CLI 命令
+> - 86 个 Command 模板
+> - 53 个 Skill 模板
+> - 191 测试套件，4158 测试用例，100% 通过率
+> - 97.7% 语句覆盖，93.2% 分支覆盖
 >
 > 完整列表见 `stdd --help`、`stdd skills`、`stdd commands`。

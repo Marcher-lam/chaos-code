@@ -6,6 +6,7 @@
 const chalk = require('chalk');
 const { FFCommand } = require('./ff');
 const { SpecGenerator } = require('./spec-generator');
+const { ProfileEngine } = require('../../utils/profile-engine');
 
 class TurboCommand {
   constructor(spinner) {
@@ -15,6 +16,16 @@ class TurboCommand {
   async execute(description, options = {}) {
     if (!description || typeof description !== 'string') {
       throw new Error('Description is required.');
+    }
+
+    // Auto-detect profile
+    let profileId = options.profile || null;
+    let profileSource = 'cli-override';
+    if (!profileId) {
+      const engine = new ProfileEngine();
+      const detected = engine.detectFromProject(process.cwd());
+      profileId = detected.profileId;
+      profileSource = detected.source;
     }
 
     const noSpec = options.noSpec === true;
@@ -29,7 +40,7 @@ class TurboCommand {
     };
 
     const ffCommand = new FFCommand(silentSpinner);
-    const ffResult = await ffCommand.execute(description, options);
+    const ffResult = await ffCommand.execute(description, { ...options, profile: profileId });
 
     const changeName = ffResult.changeName;
     const workspace = ffResult.workspace;
@@ -51,6 +62,7 @@ class TurboCommand {
     }
 
     console.log(chalk.green.bold('\n  Turbo Mode Completed\n'));
+    console.log(chalk.cyan(`  Profile: ${profileId} (${profileSource})`));
     console.log(chalk.cyan(`  Change: ${changeName}`));
     console.log(chalk.cyan(`  Description: ${description}`));
     if (workspace) {

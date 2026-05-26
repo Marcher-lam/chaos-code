@@ -27,6 +27,13 @@ stdd hooks enable
 stdd doctor
 stdd doctor --deep
 stdd apply <name> --allow-no-tests
+stdd builder agent <name>
+stdd ui generate component Button --framework react
+stdd modules list
+stdd dashboard generate
+stdd docs generate
+stdd profile list
+stdd adapt list
 
 ## Docker 快速启动
 

@@ -2,6 +2,33 @@
 
 All notable changes to STDD Copilot will be documented in this file.
 
+## [1.1.0] - 2026-05-26
+
+### Added — Phase 2-4: Builder, UI Generator, Modules, Dashboard, Docs Site
+- **Builder command** (`stdd builder`): Create custom agents, workflows, and skills with validation, export, and sharing support.
+- **UI Generator** (`stdd ui`): Multi-framework component/page generation support (React, Vue, Angular, Svelte) with project-specific templates.
+- **Dashboard command** (`stdd dashboard`): Generate static HTML project health dashboard (generate/open/serve) showing changes, constitution health, and evidence.
+- **Docs Site command** (`stdd docs`): Generate static documentation site from project markdown files with search index and section pages.
+- **Modules command** (`stdd modules`): Module marketplace management with install, info, uninstall, and registry subcommands.
+- **Profile command** (`stdd profile`): Planning profile management (create/select/show/list/edit) via ProfileEngine.
+- **Adapt command** (`stdd adapt`): IDE configuration adapter generator for cross-platform support (generate/setup/list).
+- **IDE Adapters** (`src/config/ide-adapters/`): Multi-IDE configuration generation framework.
+- **UI Templates**: Extended support for Angular component/page, Svelte component/page, Vue component/page templates.
+- **Dashboard Templates**: Configuration-driven dashboard HTML generation with project scanning.
+- **Docs Templates**: Static site generation with CSS, index, section pages, and search index support.
+- **Module Registry** (`src/config/module-registry.js`): Extensible module catalog with install/uninstall/registry operations.
+- **Planning Profiles** (`src/config/planning-profiles.js`): Self-assessment questionnaire with adaptive planning depth profiles.
+- **Profile Engine** (`src/utils/profile-engine.js`): Profile lifecycle management with score calculation and profile selection.
+- **Dynamic Router**: Enhanced intent routing with profile-aware path selection.
+
+### Changed
+- **brainstorm.js**: Expanded reasoning methods and structured output formats (+156 lines).
+- **roles.js**: Enhanced 12-role agent collaboration with adversarial review support (+241 lines).
+- **story.js**: Extended Story Mapping with BDD conversion and journey YAML support (+336 lines).
+- **ff.js / turbo.js**: Enhanced with profile-aware planning depth.
+- **Command count**: 75 → 86 CLI commands, Skill templates 47 → 53.
+- **Skill Graph**: Added new skill nodes for builder, ui, modules, dashboard, docs, profile.
+
 ## [1.0.7] - 2026-05-24
 
 ### Added

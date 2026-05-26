@@ -113,6 +113,14 @@ class BrainstormCommand {
       const context = await this.gatherContext(topic, this.cwd || process.cwd());
       return this.executeADR(topic, context, options);
     }
+    if (options.subcommand === 'product') {
+      const context = await this.gatherContext(topic, this.cwd || process.cwd());
+      return this.executeProductBrief(topic, context, options);
+    }
+    if (options.subcommand === 'workshop') {
+      const context = await this.gatherContext(topic, this.cwd || process.cwd());
+      return this.executeWorkshop(topic, context, options);
+    }
 
     const selectedAngles = options.angles
       ? options.angles.split(',').map(a => a.trim().toLowerCase())
@@ -745,6 +753,154 @@ class BrainstormCommand {
     console.log(chalk.dim('   5. For SWOT analysis: stdd brainstorm swot "<topic>"'));
     console.log(chalk.dim('   6. For architecture decision: stdd brainstorm adr "<topic>"'));
     console.log('');
+  }
+  /**
+   * Product Brief: role-driven product exploration.
+   * Uses PO, BA, UX roles to produce a structured product brief.
+   */
+  executeProductBrief(topic, context, options = {}) {
+    const { ROLE_DEFINITIONS } = require('../../config/role-definitions');
+    const productRoles = ['po', 'architect', 'developer'].map(id => ROLE_DEFINITIONS[id]).filter(Boolean);
+
+    const sections = {
+      valueProposition: '',
+      userStories: [],
+      businessRules: [],
+      constraints: [],
+      successMetrics: [],
+    };
+
+    for (const role of productRoles) {
+      const prompt = role.promptTemplate(topic, context);
+      if (role.id === 'po') {
+        sections.valueProposition = prompt;
+        sections.successMetrics = role.checklist.slice(0, 5);
+      } else if (role.id === 'architect') {
+        sections.constraints = role.reviewFocus.slice(0, 5);
+      } else if (role.id === 'developer') {
+        sections.userStories = role.checklist.slice(0, 5).map((c, i) => 'US-' + (i+1) + ': As a user, I want ' + c.toLowerCase() + ', so that I can achieve my goal.');
+        sections.businessRules = role.expertise.slice(0, 3);
+      }
+    }
+
+    const brief = '# Product Brief: ' + topic + '\n\n'
+      + '## Value Proposition\n' + sections.valueProposition.slice(0, 1000) + '\n\n'
+      + '## User Stories\n' + sections.userStories.map(s => '- ' + s).join('\n') + '\n\n'
+      + '## Business Rules\n' + sections.businessRules.map(r => '- ' + r).join('\n') + '\n\n'
+      + '## Constraints\n' + sections.constraints.map(c => '- ' + c).join('\n') + '\n\n'
+      + '## Success Metrics\n' + sections.successMetrics.map(m => '- [ ] ' + m).join('\n') + '\n\n'
+      + '---\nGenerated at ' + new Date().toISOString() + '\n';
+
+    // Save to stdd/changes/ if --to-proposal flag
+    if (options.toProposal) {
+      const fs = require('fs');
+      const path = require('path');
+      const changeName = 'product-' + Date.now();
+      const changeDir = path.join(this.cwd || process.cwd(), 'stdd', 'changes', changeName);
+      try {
+        fs.mkdirSync(changeDir, { recursive: true });
+        fs.writeFileSync(path.join(changeDir, 'proposal.md'), brief, 'utf8');
+        console.log(chalk.green('\n  Product brief saved to stdd/changes/' + changeName + '/proposal.md'));
+        console.log(chalk.dim('  Next: stdd clarify ' + changeName));
+      } catch (_) {}
+    }
+
+    const result = {
+      type: 'product-brief',
+      topic,
+      sections,
+      raw: brief,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (!options.json && !options.toProposal) {
+      console.log(chalk.bold('\n  Product Brief\n'));
+      console.log(brief);
+    } else if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    }
+    return result;
+  }
+
+  /**
+   * Workshop: multi-round interactive session with rotating role panels.
+   */
+  executeWorkshop(topic, context, options = {}) {
+    const { ROLE_DEFINITIONS } = require('../../config/role-definitions');
+    const rounds = parseInt(options.rounds, 10) || 3;
+    const allRoleIds = Object.keys(ROLE_DEFINITIONS);
+    const roundResults = [];
+
+    for (let round = 1; round <= rounds; round++) {
+      // Select 3 roles per round, rotating through all available
+      const startIdx = ((round - 1) * 3) % allRoleIds.length;
+      const panelRoleIds = [];
+      for (let j = 0; j < 3 && j < allRoleIds.length; j++) {
+        panelRoleIds.push(allRoleIds[(startIdx + j) % allRoleIds.length]);
+      }
+      const panel = panelRoleIds.map(id => ROLE_DEFINITIONS[id]).filter(Boolean);
+
+      const previousContext = roundResults.length > 0
+        ? '\n## Insights from Round ' + (round - 1) + ':\n' + roundResults[roundResults.length - 1].map(r =>
+            '- **' + r.name + '**: ' + r.insight.slice(0, 200)
+          ).join('\n')
+        : '';
+
+      const contributions = panel.map(def => ({
+        role: def.id,
+        name: def.name,
+        insight: def.promptTemplate(topic + ' (Workshop Round ' + round + ')' + previousContext, context).slice(0, 500),
+        focus: def.reviewFocus.slice(0, 2),
+      }));
+
+      roundResults.push(contributions);
+    }
+
+    // Final synthesis
+    const allInsights = roundResults.flat();
+    const keyThemes = [];
+    const focusCounts = {};
+    for (const insight of allInsights) {
+      for (const f of insight.focus) {
+        focusCounts[f] = (focusCounts[f] || 0) + 1;
+      }
+    }
+    const sortedThemes = Object.entries(focusCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    for (const [theme, count] of sortedThemes) {
+      keyThemes.push(theme + ' (mentioned by ' + count + ' roles)');
+    }
+
+    const report = {
+      type: 'workshop',
+      topic,
+      rounds,
+      roundResults: roundResults.map(r => r.map(c => ({ role: c.role, name: c.name, insight: c.insight.slice(0, 200) }))),
+      keyThemes,
+      totalContributions: allInsights.length,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (!options.json) {
+      console.log(chalk.bold('\n  Workshop Results\n'));
+      console.log('  Topic: ' + chalk.cyan(topic));
+      console.log('  Rounds: ' + rounds);
+      console.log('  Total contributions: ' + allInsights.length + '\n');
+      for (const round of roundResults) {
+        console.log(chalk.bold('  Round ' + (roundResults.indexOf(round) + 1)));
+        for (const c of round) {
+          console.log('    ' + chalk.yellow(c.name) + ': ' + c.insight.slice(0, 100) + '...');
+        }
+        console.log('');
+      }
+      console.log(chalk.bold('  Key Themes'));
+      for (const t of keyThemes) {
+        console.log('    ' + chalk.cyan(t));
+      }
+      console.log('');
+    } else {
+      console.log(JSON.stringify(report, null, 2));
+    }
+    return report;
   }
 }
 

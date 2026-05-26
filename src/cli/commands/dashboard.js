@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
+const http = require('http');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const { generateDashboardHTML, generateEmptyDashboard } = require('../../config/dashboard-templates');
@@ -27,6 +28,9 @@ class DashboardCommand {
       case 'open':
       case 'view':
         return this.open(options);
+      case 'serve':
+      case 'watch':
+        return this.serve(options);
       default:
         return this.generate(options);
     }
@@ -382,6 +386,78 @@ class DashboardCommand {
 
     return result;
   }
-}
 
+  /**
+   * Serve the dashboard with live reload on a local HTTP server.
+   * Watches stdd/ directory for changes and auto-regenerates.
+   */
+  async serve(options = {}) {
+    const port = options.port || 3456;
+    const outputPath = path.join(this.stddDir, 'dashboard', 'index.html');
+    let lastRegenerate = 0;
+
+    // Initial generation
+    try {
+      this.generate({ ...options, silent: true });
+    } catch (_) {}
+
+    const server = http.createServer((req, res) => {
+      // Re-generate on each request for fresh data
+      const now = Date.now();
+      if (now - lastRegenerate > 3000) {
+        try { this.generate({ ...options, silent: true }); lastRegenerate = now; }
+        catch (_) {}
+      }
+
+      let html;
+      try {
+        html = fs.readFileSync(outputPath, 'utf8');
+      } catch (_) {
+        html = '<html><body><h1>Dashboard not generated yet. Run stdd init first.</h1></body></html>';
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache',
+      });
+      res.end(html);
+    });
+
+    // Watch stdd/ directory for changes
+    let debounceTimer = null;
+    try {
+      fs.watch(this.stddDir, { recursive: true }, (eventType, filename) => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          try {
+            this.generate({ ...options, silent: true });
+            logger.info('Dashboard auto-regenerated');
+          } catch (_) {}
+        }, 300);
+      });
+    } catch (_) {
+      // fs.watch may fail if stdd dir doesn't exist
+    }
+
+    server.listen(port, () => {
+      console.log(chalk.green.bold('\n  Dashboard Server\n'));
+      console.log(chalk.cyan(`  URL: http://localhost:${port}`));
+      console.log(chalk.dim('  Watching stdd/ for changes...'));
+      console.log(chalk.dim('  Press Ctrl+C to stop\n'));
+    });
+
+    // Graceful shutdown
+    const shutdown = () => {
+      console.log(chalk.dim('\n  Shutting down dashboard server...'));
+      server.close();
+      process.exit(0);
+    };
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+
+    return { serving: true, port, url: `http://localhost:${port}` };
+  }
+
+
+}
 module.exports = { DashboardCommand };

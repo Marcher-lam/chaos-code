@@ -15,8 +15,8 @@ describe('Documentation taxonomy consistency', () => {
     const commandEntries = getSlashEntriesFromCommandFiles();
     const skillEntries = getSlashEntriesFromSkillDirs();
 
-    expect(commandEntries).toHaveLength(80);
-    expect(skillEntries).toHaveLength(47);
+    expect(commandEntries).toHaveLength(86);
+    expect(skillEntries).toHaveLength(53);
   });
 
   it('keeps the slash-entry taxonomy aligned with the repository', () => {
@@ -62,9 +62,9 @@ describe('Documentation taxonomy consistency', () => {
   it('keeps README.md taxonomy notes aligned with the repository', () => {
     const text = readFile('README.md');
 
-    expect(text).toContain('80 个');
-    expect(text).toContain('47 个');
-    expect(text).toContain('75 个');
+    expect(text).toContain('86 个');
+    expect(text).toContain('53 个');
+    expect(text).toContain('86 个');
     expect(text).toContain('命令模板');
     expect(text).toContain('Skill 模板');
 
@@ -79,8 +79,8 @@ describe('Documentation taxonomy consistency', () => {
   it('keeps agent-protocol.md high-level taxonomy notes aligned', () => {
     const agents = readFile('docs/agent-protocol.md');
 
-    expect(agents).toContain('全部能力入口 (80 个 = 80 Command 模板 + 47 Skill 模板，去重后)');
-    expect(agents).toContain('Command 模板入口 (80)');
+    expect(agents).toContain('全部能力入口 (86 个 = 86 Command 模板 + 53 Skill 模板，去重后)');
+    expect(agents).toContain('Command 模板入口 (86)');
     expect(agents).toContain('辅助功能');
     expect(agents).toContain('constitution');
   });

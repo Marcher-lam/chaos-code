@@ -191,6 +191,94 @@ class ProfileEngine {
       certaintyScore,
     };
   }
+
+  /**
+   * Automatically select the optimal profile by analyzing the project.
+   * Counts source files, test files, reads complexity/certainty, and checks config.
+   * Respects user_skill_level from stdd/config.yaml when present.
+   */
+  autoSelectProfile(cwd) {
+    const metrics = this._gatherProjectMetrics(cwd);
+    const config = this._readConfig(cwd);
+    const skillLevel = config.user_skill_level || null;
+    const projectKnowledge = config.project_knowledge || null;
+
+    const composite = metrics.complexityScore !== null && metrics.certaintyScore !== null
+      ? (metrics.complexityScore * 0.6 + (100 - metrics.certaintyScore) * 0.4)
+      : metrics.fileCount > 100 ? 65 : metrics.fileCount > 30 ? 40 : 20;
+
+    let profileId;
+    if (composite < 30) profileId = 'quick';
+    else if (composite < 55) profileId = 'standard';
+    else if (composite < 80) profileId = 'thorough';
+    else profileId = 'enterprise';
+
+    if (skillLevel === 'beginner') {
+      if (profileId === 'quick') profileId = 'standard';
+      else if (profileId === 'standard') profileId = 'thorough';
+    } else if (skillLevel === 'expert') {
+      if (profileId === 'thorough') profileId = 'standard';
+      else if (profileId === 'enterprise') profileId = 'thorough';
+    }
+
+    if (projectKnowledge === 'existing-unfamiliar') {
+      if (profileId === 'quick') profileId = 'standard';
+      if (profileId === 'standard') profileId = 'thorough';
+    }
+
+    return {
+      profileId,
+      profile: PROFILES[profileId],
+      source: 'auto:composite=' + Math.round(composite) + ',skill=' + (skillLevel || 'auto') + ',knowledge=' + (projectKnowledge || 'auto'),
+      metrics,
+    };
+  }
+
+  _gatherProjectMetrics(cwd) {
+    let fileCount = 0;
+    let testFileCount = 0;
+    const self = this;
+
+    function countDir(dir) {
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'stdd') continue;
+          const full = path.join(dir, entry.name);
+          if (entry.isDirectory()) { countDir(full); }
+          else if (entry.isFile() && /\.(js|ts|jsx|tsx|py|java|go|rs|rb|php)$/.test(entry.name)) {
+            fileCount++;
+            if (entry.name.includes('.test.') || entry.name.includes('.spec.')) testFileCount++;
+          }
+        }
+      } catch (_) {}
+    }
+    countDir(cwd);
+
+    let complexityScore = null;
+    let certaintyScore = null;
+    const detected = self.detectFromProject(cwd);
+    complexityScore = detected.complexityScore;
+    certaintyScore = detected.certaintyScore;
+
+    return { fileCount, testFileCount, complexityScore, certaintyScore };
+  }
+
+  _readConfig(cwd) {
+    const configPath = path.join(cwd, 'stdd', 'config.yaml');
+    if (!fs.existsSync(configPath)) return {};
+    try {
+      const yaml = require('js-yaml');
+      const raw = fs.readFileSync(configPath, 'utf8');
+      const config = yaml.load(raw) || {};
+      return {
+        user_skill_level: config.user_skill_level || null,
+        project_knowledge: config.project_knowledge || null,
+      };
+    } catch (_) {
+      return {};
+    }
+  }
 }
 
 module.exports = { ProfileEngine };
