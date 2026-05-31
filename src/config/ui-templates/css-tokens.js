@@ -1,16 +1,11 @@
 /**
  * CSS Token Extraction
  * Reads DESIGN.md and extracts design tokens for CSS generation.
+ * Supports both Markdown table format and embedded JSON blocks.
  */
 
 const fs = require('fs');
-const _path = require('path');
 
-/**
- * Extract design tokens from a DESIGN.md file.
- * @param {string} designPath - Absolute path to DESIGN.md
- * @returns {{ colors: object, fonts: object, spacing: object, radius: object }}
- */
 function extractTokensFromDesignMD(designPath) {
   const result = {
     colors: {
@@ -21,8 +16,8 @@ function extractTokensFromDesignMD(designPath) {
       error: '#EF4444',
     },
     fonts: {
-      familyBase: "Inter, system-ui, -apple-system, sans-serif",
-      familyMono: "JetBrains Mono, monospace",
+      familyBase: 'Inter, system-ui, -apple-system, sans-serif',
+      familyMono: 'JetBrains Mono, monospace',
     },
     spacing: {
       xs: '0.25rem',
@@ -48,7 +43,41 @@ function extractTokensFromDesignMD(designPath) {
 
   const content = fs.readFileSync(designPath, 'utf8');
 
-  // Extract semantic color tokens
+  // Priority 1: Try to parse embedded JSON block
+  // Supports ```json (design-tokens) or <!-- design-tokens --> blocks
+  const jsonBlockRe = /```json\s*\n([\s\S]*?)```/g;
+  let jsonMatch;
+  while ((jsonMatch = jsonBlockRe.exec(content)) !== null) {
+    try {
+      const parsed = JSON.parse(jsonMatch[1].trim());
+      if (parsed.colors) Object.assign(result.colors, parsed.colors);
+      if (parsed.fonts) Object.assign(result.fonts, parsed.fonts);
+      if (parsed.spacing) Object.assign(result.spacing, parsed.spacing);
+      if (parsed.radius) Object.assign(result.radius, parsed.radius);
+      return result;
+    } catch (_) {
+      // Not valid JSON, continue to next block
+    }
+  }
+
+  // Priority 2: Try HTML comment-delimited JSON block
+  const commentJsonRe = /<!--\s*design-tokens\s*-->\s*\n([\s\S]*?)\n\s*<!--\s*\/design-tokens\s*-->/g;
+  let commentMatch;
+  while ((commentMatch = commentJsonRe.exec(content)) !== null) {
+    try {
+      const parsed = JSON.parse(commentMatch[1].trim());
+      if (parsed.colors) Object.assign(result.colors, parsed.colors);
+      if (parsed.fonts) Object.assign(result.fonts, parsed.fonts);
+      if (parsed.spacing) Object.assign(result.spacing, parsed.spacing);
+      if (parsed.radius) Object.assign(result.radius, parsed.radius);
+      return result;
+    } catch (_) {
+      // Not valid JSON, fallback to regex
+    }
+  }
+
+  // Priority 3: Fallback to regex-based Markdown table extraction
+  // Extract semantic color tokens (table format: | `--color-xxx` | `#hex` | role |)
   const colorTokenRe = /`--color-(\w+)`\s*\|\s*`([^`]+)`/g;
   let match;
   while ((match = colorTokenRe.exec(content)) !== null) {
@@ -105,23 +134,19 @@ function extractTokensFromDesignMD(designPath) {
 function tokensToCSS(tokens) {
   const lines = [':root {'];
 
-  // Colors
   for (const [key, value] of Object.entries(tokens.colors || {})) {
     lines.push(`  --color-${key}: ${value};`);
   }
 
-  // Fonts
   for (const [key, value] of Object.entries(tokens.fonts || {})) {
     const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
     lines.push(`  --font-${cssKey}: ${value};`);
   }
 
-  // Spacing
   for (const [key, value] of Object.entries(tokens.spacing || {})) {
     lines.push(`  --spacing-${key}: ${value};`);
   }
 
-  // Radius
   for (const [key, value] of Object.entries(tokens.radius || {})) {
     lines.push(`  --radius-${key}: ${value};`);
   }

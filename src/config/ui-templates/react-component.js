@@ -46,21 +46,25 @@ function generateButton(pascal, kebab, importPath) {
     `import React from 'react';`,
     `import '${importPath}';`,
     ``,
-    `export default function ${pascal}({ children, variant = 'primary', size = 'md', disabled = false, onClick, ...props }) {`,
+    `export default function ${pascal}({ children, variant = 'primary', size = 'md', disabled = false, loading = false, onClick, ...props }) {`,
     `  const classNames = [`,
     `    '${kebab}',`,
     `    '${kebab}--' + variant,`,
     `    '${kebab}--' + size,`,
+    `    loading && '${kebab}--loading',`,
     `  ].filter(Boolean).join(' ');`,
     ``,
     `  return (`,
     `    <button`,
     `      className={classNames}`,
-    `      disabled={disabled}`,
+    `      disabled={disabled || loading}`,
+    `      aria-busy={loading || undefined}`,
+    `      aria-disabled={disabled || loading || undefined}`,
     `      onClick={onClick}`,
     `      {...props}`,
     `    >`,
-    `      {children}`,
+    `      {loading && <span className="${kebab}__spinner" aria-hidden="true" />}`,
+    `      <span className={loading ? '${kebab}__text ${kebab}__text--loading' : '${kebab}__text'}>{children}</span>`,
     `    </button>`,
     `  );`,
     `}`,
@@ -77,6 +81,25 @@ function generateButton(pascal, kebab, importPath) {
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s;
+  position: relative;
+  gap: 0.5rem;
+}
+
+.${kebab}__spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ${kebab}-spin 0.6s linear infinite;
+}
+
+.${kebab}__text--loading {
+  opacity: 0.7;
+}
+
+@keyframes ${kebab}-spin {
+  to { transform: rotate(360deg); }
 }
 
 .${kebab}--primary {
@@ -129,7 +152,7 @@ function generateCard(pascal, kebab, importPath) {
     ``,
     `export default function ${pascal}({ title, children, footer, className = '', ...props }) {`,
     `  return (`,
-    `    <div className={\`${kebab} \${className}\`.trim()} {...props}>`,
+    `    <div className={\`${kebab} \${className}\`.trim()} role="region" aria-label={title || 'Card'} {...props}>`,
     `      {title && (`,
     `        <div className="${kebab}__header">`,
     `          <h3 className="${kebab}__title">{title}</h3>`,
@@ -195,13 +218,13 @@ function generateForm(pascal, kebab, importPath) {
     `  };`,
     ``,
     `  return (`,
-    `    <form className={\`${kebab} \${className}\`.trim()} onSubmit={handleSubmit} {...props}>`,
+    `    <form className={\`${kebab} \${className}\`.trim()} onSubmit={handleSubmit} aria-label={title || 'Form'} noValidate {...props}>`,
     `      {title && <h2 className="${kebab}__title">{title}</h2>}`,
     `      <div className="${kebab}__fields">`,
     `        {children}`,
     `      </div>`,
     `      <div className="${kebab}__actions">`,
-    `        <button type="submit" className="${kebab}__submit">Submit</button>`,
+    `        <button type="submit" className="${kebab}__submit" aria-label={title ? 'Submit ' + title : 'Submit form'}>Submit</button>`,
     `      </div>`,
     `    </form>`,
     `  );`,
@@ -263,6 +286,7 @@ function generateInput(pascal, kebab, importPath) {
     ``,
     `export default function ${pascal}({ label, error, type = 'text', id, className = '', ...props }) {`,
     `  const inputId = id || label?.toLowerCase().replace(/\\s+/g, '-');`,
+    `  const errorId = inputId + '-error';`,
     `  const classNames = [`,
     `    '${kebab}',`,
     `    error && '${kebab}--error',`,
@@ -277,9 +301,10 @@ function generateInput(pascal, kebab, importPath) {
     `        type={type}`,
     `        className="${kebab}__input"`,
     `        aria-invalid={!!error}`,
+    `        aria-describedby={error ? errorId : undefined}`,
     `        {...props}`,
     `      />`,
-    `      {error && <span className="${kebab}__error" role="alert">{error}</span>}`,
+    `      {error && <span id={errorId} className="${kebab}__error" role="alert">{error}</span>}`,
     `    </div>`,
     `  );`,
     `}`,
@@ -331,27 +356,53 @@ function generateInput(pascal, kebab, importPath) {
 
 function generateModal(pascal, kebab, importPath) {
   const jsx = [
-    `import React, { useEffect } from 'react';`,
+    `import React, { useEffect, useRef, useCallback } from 'react';`,
     `import '${importPath}';`,
     ``,
     `export default function ${pascal}({ isOpen, onClose, title, children, actions, className = '' }) {`,
+    `  const overlayRef = useRef(null);`,
+    `  const modalRef = useRef(null);`,
+    `  const previousFocusRef = useRef(null);`,
+    `  const titleId = '${kebab}-title';`,
+    ``,
     `  useEffect(() => {`,
     `    if (isOpen) {`,
+    `      previousFocusRef.current = document.activeElement;`,
     `      document.body.style.overflow = 'hidden';`,
+    `      modalRef.current?.focus();`,
     `    } else {`,
     `      document.body.style.overflow = '';`,
+    `      previousFocusRef.current?.focus();`,
     `    }`,
     `    return () => { document.body.style.overflow = ''; };`,
     `  }, [isOpen]);`,
     ``,
+    `  const handleKeyDown = useCallback((e) => {`,
+    `    if (e.key === 'Escape') { onClose(); return; }`,
+    `    if (e.key !== 'Tab' || !modalRef.current) return;`,
+    `    const focusable = modalRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');`,
+    `    const first = focusable[0];`,
+    `    const last = focusable[focusable.length - 1];`,
+    `    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }`,
+    `    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }`,
+    `  }, [onClose]);`,
+    ``,
     `  if (!isOpen) return null;`,
     ``,
     `  return (`,
-    `    <div className="${kebab}__overlay" onClick={onClose} role="dialog" aria-modal="true">`,
-    `      <div className={\`${kebab} \${className}\`.trim()} onClick={e => e.stopPropagation()}>`,
+    `    <div`,
+    `      ref={overlayRef}`,
+    `      className="${kebab}__overlay"`,
+    `      onClick={e => { if (e.target === overlayRef.current) onClose(); }}`,
+    `      onKeyDown={handleKeyDown}`,
+    `      role="dialog"`,
+    `      aria-modal="true"`,
+    `      aria-labelledby={titleId}`,
+    `    >`,
+    `      <div ref={modalRef} className={\`${kebab} \${className}\`.trim()} tabIndex={-1}>`,
     `        <div className="${kebab}__header">`,
-    `          <h2 className="${kebab}__title">{title}</h2>`,
-    `          <button className="${kebab}__close" onClick={onClose} aria-label="Close">&times;</button>`,
+    `          <h2 id={titleId} className="${kebab}__title">{title}</h2>`,
+    `          <button className="${kebab}__close" onClick={onClose} aria-label="Close dialog">&times;</button>`,
     `        </div>`,
     `        <div className="${kebab}__content">`,
     `          {children}`,
@@ -442,18 +493,24 @@ function generateNav(pascal, kebab, importPath) {
     `  ].filter(Boolean).join(' ');`,
     ``,
     `  return (`,
-    `    <nav className={\`${kebab} \${className}\`.trim()} role="navigation">`,
+    `    <nav className={\`${kebab} \${className}\`.trim()} role="navigation" aria-label="Main navigation">`,
     `      <div className="${kebab}__inner">`,
     `        <div className="${kebab}__brand">{brand || 'App'}</div>`,
-    `        <button className="${kebab}__toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">`,
+    `        <button`,
+    `          className="${kebab}__toggle"`,
+    `          onClick={() => setMenuOpen(!menuOpen)}`,
+    `          aria-expanded={menuOpen}`,
+    `          aria-controls="${kebab}-menu"`,
+    `          aria-label="Toggle navigation menu"`,
+    `        >`,
     `          <span className="${kebab}__bar" />`,
     `          <span className="${kebab}__bar" />`,
     `          <span className="${kebab}__bar" />`,
     `        </button>`,
-    `        <ul className={menuClasses}>`,
+    `        <ul id="${kebab}-menu" className={menuClasses} role="menubar">`,
     `          {items.map((item, i) => (`,
-    `            <li key={i} className="${kebab}__item">`,
-    `              <a href={item.href || '#'} className="${kebab}__link">{item.label}</a>`,
+    `            <li key={i} className="${kebab}__item" role="none">`,
+    `              <a href={item.href || '#'} className="${kebab}__link" role="menuitem">{item.label}</a>`,
     `            </li>`,
     `          ))}`,
     `        </ul>`,
@@ -548,14 +605,15 @@ function generateTable(pascal, kebab, importPath) {
     `import React from 'react';`,
     `import '${importPath}';`,
     ``,
-    `export default function ${pascal}({ headers = [], rows = [], className = '' }) {`,
+    `export default function ${pascal}({ caption, headers = [], rows = [], className = '' }) {`,
     `  return (`,
     `    <div className={\`${kebab}__wrapper \${className}\`.trim()}>`,
     `      <table className="${kebab}">`,
+    `        {caption && <caption className="${kebab}__caption">{caption}</caption>}`,
     `        <thead>`,
     `          <tr>`,
     `            {headers.map((h, i) => (`,
-    `              <th key={i} className="${kebab}__th">{h}</th>`,
+    `              <th key={i} scope="col" className="${kebab}__th">{h}</th>`,
     `            ))}`,
     `          </tr>`,
     `        </thead>`,
@@ -567,6 +625,11 @@ function generateTable(pascal, kebab, importPath) {
     `              ))}`,
     `            </tr>`,
     `          ))}`,
+    `          {rows.length === 0 && (`,
+    `            <tr>`,
+    `              <td colSpan={headers.length} className="${kebab}__empty">No data available</td>`,
+    `            </tr>`,
+    `          )}`,
     `        </tbody>`,
     `      </table>`,
     `    </div>`,
@@ -587,6 +650,17 @@ function generateTable(pascal, kebab, importPath) {
   font-size: var(--text-sm, 0.875rem);
 }
 
+.${kebab}__caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
 .${kebab}__th {
   padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
   text-align: left;
@@ -604,6 +678,12 @@ function generateTable(pascal, kebab, importPath) {
   padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
   border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
   color: var(--color-gray-800, #1f2937);
+}
+
+.${kebab}__empty {
+  padding: var(--spacing-xl, 2rem);
+  text-align: center;
+  color: var(--color-gray-400, #9ca3af);
 }`;
 
   return { jsx, cssBody };
@@ -616,10 +696,10 @@ function generateList(pascal, kebab, importPath) {
     `import React from 'react';`,
     `import '${importPath}';`,
     ``,
-    `export default function ${pascal}({ items = [], ordered = false, className = '', renderItem }) {`,
+    `export default function ${pascal}({ items = [], ordered = false, className = '', renderItem, label }) {`,
     `  const Tag = ordered ? 'ol' : 'ul';`,
     `  return (`,
-    `    <Tag className={\`${kebab} \${className}\`.trim()}>`,
+    `    <Tag className={\`${kebab} \${className}\`.trim()} aria-label={label || undefined}>`,
     `      {items.map((item, i) => (`,
     `        <li key={i} className="${kebab}__item">`,
     `          {renderItem ? renderItem(item, i) : item}`,
