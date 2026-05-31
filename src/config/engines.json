@@ -1,10 +1,26 @@
 {
   "engines": [
     { "name": "Claude Code (.claude)", "value": ".claude", "checked": true },
+    { "name": "Cursor (.cursor)", "value": ".cursor" },
+    { "name": "Windsurf (.windsurf)", "value": ".windsurf" },
+    { "name": "GitHub Copilot", "value": ".github" },
+    { "name": "Aider", "value": ".aider" },
+    { "name": "Cline (.cline)", "value": ".cline" },
+    { "name": "Continue.dev (.continue)", "value": ".continue" },
+    { "name": "Amazon Q (.amazonq)", "value": ".amazonq" },
     { "name": "OpenCode (.opencode)", "value": ".opencode" },
     { "name": "Codex (.codex)", "value": ".codex" },
-    { "name": "Qwen Code (.qwen)", "value": ".qwen" },
+    { "name": "Qwen Code (.tongyi)", "value": ".tongyi" },
+    { "name": "Doubao MarsCode (.marscode)", "value": ".marscode" },
+    { "name": "Baidu Comate (.comate)", "value": ".comate" },
+    { "name": "Gemini Code Assist (.gemini)", "value": ".gemini" },
+    { "name": "ChatGPT Codex", "value": "AGENTS.md" },
     { "name": "Kiro (.kiro)", "value": ".kiro" },
-    { "name": "CodeBuddy (.codebuddy)", "value": ".codebuddy" }
+    { "name": "CodeBuddy (.codebuddy)", "value": ".codebuddy" },
+    { "name": "Augment Code (.augment)", "value": ".augment" },
+    { "name": "PearAI (.pearai)", "value": ".pearai" },
+    { "name": "Sourcegraph Cody (.cody)", "value": ".cody" },
+    { "name": "Tabnine (.tabnine)", "value": ".tabnine" },
+    { "name": "Bolt.new (bolt.md)", "value": "bolt.md" }
   ]
 }

@@ -511,6 +511,209 @@ skills:
       priority: low
       category: learning
 
+  # ========== 新增 Skills (Phase 2-4) ==========
+  stdd-archive:
+    description: "Delta Spec Merge 归档并合并规格"
+    phase: archive
+    inputs:
+      - "stdd/changes/*/evidence/"
+    outputs:
+      - "stdd/specs/"
+    metadata:
+      priority: required
+      category: lifecycle
+
+  stdd-brainstorm:
+    description: "多策略头脑风暴与需求探索"
+    phase: propose
+    outputs:
+      - "stdd/reports/brainstorm.md"
+    metadata:
+      priority: medium
+      category: exploration
+
+  stdd-builder:
+    description: "创建自定义 Agent、工作流和 Skill"
+    phase: all
+    outputs:
+      - "stdd/builders/"
+    metadata:
+      priority: medium
+      category: generation
+
+  stdd-certainty:
+    description: "5 维度信心评分"
+    phase: propose
+    outputs:
+      - "stdd/reports/certainty.json"
+    metadata:
+      priority: medium
+      category: assessment
+
+  stdd-complexity:
+    description: "代码复杂度分析"
+    phase: verify
+    outputs:
+      - "stdd/reports/complexity.json"
+    metadata:
+      priority: medium
+      category: metrics
+
+  stdd-constitution:
+    description: "9 篇质量宪法检查与管理"
+    phase: all
+    outputs:
+      - "stdd/reports/constitution.json"
+    metadata:
+      priority: high
+      category: governance
+
+  stdd-continue:
+    description: "断点续传，继续中断的工作"
+    phase: all
+    metadata:
+      priority: high
+      category: lifecycle
+
+  stdd-dashboard:
+    description: "生成静态 HTML 仪表板"
+    phase: verify
+    outputs:
+      - "stdd/dashboard/index.html"
+    metadata:
+      priority: low
+      category: visualization
+
+  stdd-design:
+    description: "设计系统文档与 Design Token 生成"
+    phase: propose
+    outputs:
+      - "DESIGN.md"
+    metadata:
+      priority: medium
+      category: design
+
+  stdd-docs:
+    description: "静态文档站点生成与部署"
+    phase: document
+    outputs:
+      - "stdd/docs-site/"
+    metadata:
+      priority: medium
+      category: documentation
+
+  stdd-explore:
+    description: "深度项目探索与分析"
+    phase: init
+    outputs:
+      - "stdd/memory/exploration.md"
+    metadata:
+      priority: high
+      category: exploration
+
+  stdd-ff:
+    description: "Fast-Forward 快速提案→规格→任务"
+    phase: all
+    metadata:
+      priority: high
+      category: convenience
+
+  stdd-graph:
+    description: "Skill Graph 可视化与分析"
+    phase: all
+    metadata:
+      priority: low
+      category: visualization
+
+  stdd-help:
+    description: "上下文感知帮助系统"
+    phase: all
+    metadata:
+      priority: low
+      category: assistance
+
+  stdd-issue:
+    description: "Bug 修复变更创建"
+    phase: propose
+    outputs:
+      - "stdd/changes/bugfix-*/"
+    metadata:
+      priority: high
+      category: lifecycle
+
+  stdd-modules:
+    description: "STDD 模块市场浏览与管理"
+    phase: all
+    metadata:
+      priority: low
+      category: marketplace
+
+  stdd-new:
+    description: "创建新变更"
+    phase: propose
+    outputs:
+      - "stdd/changes/new-*/"
+    metadata:
+      priority: required
+      category: lifecycle
+
+  stdd-product-proposal:
+    description: "产品提案文档生成"
+    phase: propose
+    outputs:
+      - "stdd/product-proposal.md"
+    metadata:
+      priority: medium
+      category: exploration
+
+  stdd-profile:
+    description: "自适应规划深度检测"
+    phase: plan
+    outputs:
+      - "stdd/profile.json"
+    metadata:
+      priority: medium
+      category: planning
+
+  stdd-ui:
+    description: "前端页面与组件生成"
+    phase: execute
+    outputs:
+      - "stdd/ui/"
+    metadata:
+      priority: medium
+      category: generation
+
+  stdd-user-test:
+    description: "用户测试脚本与框架骨架生成"
+    phase: verify
+    outputs:
+      - "stdd/changes/*/user-test/"
+    metadata:
+      priority: medium
+      category: testing
+
+  stdd-verify:
+    description: "变更验证与宪法检查"
+    phase: verify
+    inputs:
+      - "stdd/changes/*/tasks.md"
+      - "stdd/changes/*/evidence/"
+    outputs:
+      - "stdd/changes/*/evidence/verify.json"
+    metadata:
+      priority: required
+      category: verification
+
+  stdd-vision:
+    description: "项目愿景文档管理"
+    phase: propose
+    outputs:
+      - "stdd/vision.md"
+    metadata:
+      priority: medium
+      category: exploration
+
 # 依赖关系
 dependencies:
   stdd-spec:

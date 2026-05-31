@@ -237,7 +237,7 @@ class MemoryCommand extends MemoryScanner {
     const memoryType = options.type || 'note';
     const timestamp = new Date().toISOString();
     const memory = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
       type: memoryType,
       content,
       timestamp,
@@ -401,12 +401,20 @@ class MemoryCommand extends MemoryScanner {
     let imported = 0;
 
     for (const [file, content] of Object.entries(data.memoryFiles || {})) {
-      fs.writeFileSync(path.join(this.memoryDir, file), content, 'utf8');
+      const resolved = path.resolve(this.memoryDir, file);
+      if (!resolved.startsWith(this.memoryDir)) {
+        throw new Error(`Path traversal detected in import file key: ${file}`);
+      }
+      fs.writeFileSync(resolved, content, 'utf8');
       imported++;
     }
 
     for (const [file, lines] of Object.entries(data.notes || {})) {
-      fs.appendFileSync(path.join(this.memoryDir, file), lines.join('\n') + '\n', 'utf8');
+      const resolved = path.resolve(this.memoryDir, file);
+      if (!resolved.startsWith(this.memoryDir)) {
+        throw new Error(`Path traversal detected in import note key: ${file}`);
+      }
+      fs.appendFileSync(resolved, lines.join('\n') + '\n', 'utf8');
       imported++;
     }
 

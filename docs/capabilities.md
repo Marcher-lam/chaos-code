@@ -28,7 +28,7 @@ STDD Copilot 是一个 **CLI 工具 + 模板框架**，它本身不提供 AI 编
 | `stdd workspace` | 工作区管理 | ✅ 完全实现 |
 | `stdd metrics` | 质量指标 | ✅ 完全实现 |
 | `stdd graph run` | Graph 引擎执行 | ⚠️ 需要外部执行器 |
-| CommandLoader 模式 | 86 个命令统一注册/发现/加载 | ✅ 完全实现 |
+| CommandLoader 模式 | 88 个命令实现，86 个命令模板统一注册/发现/加载 | ✅ 完全实现 |
 
 ### Constitution 检查（9 篇条例）
 

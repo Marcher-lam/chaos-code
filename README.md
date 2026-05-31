@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20.0.0-green.svg)](https://nodejs.org/)
 [![npm](https://img.shields.io/npm/v/@marcher-lam/stdd-copilot-ultra)](https://www.npmjs.com/package/@marcher-lam/stdd-copilot-ultra)
-[![Tests](https://img.shields.io/badge/tests-4150%2F4150%20passing-brightgreen.svg)](CONTRIBUTING.md)
+[![Tests](https://img.shields.io/badge/tests-4151%2F4151%20passing-brightgreen.svg)](CONTRIBUTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-97%25%20stmts%20%7C%2093%25%20branch-brightgreen.svg)](CONTRIBUTING.md)
 
 [简体中文](./README.md) · [English](./README_EN.md)
@@ -50,10 +50,10 @@
 
 | 指标 | 数值 |
 |------|------|
-| CLI 命令 | 86 个 |
+| CLI 命令 | 88 个（含子命令入口） |
 | 命令模板 | 86 个（`/stdd:*` 斜杠命令） |
 | Skill 模板 | 53 个 |
-| 测试套件 | **191** 套，**4150** 条用例，100% 通过 |
+| 测试套件 | **196** 套，**4151** 条用例，100% 通过 |
 | 语句覆盖率 | **97.7%** |
 | 分支覆盖率 | **93.2%** |
 | 支持的 AI 引擎 | 24 种（Claude Code、Cursor、Windsurf 等 4 层兼容） |
@@ -478,7 +478,7 @@ stdd-copilot-ultra/
 │   ├── memory/                     # 项目记忆存储
 │   ├── config/                     # 额外配置（engines.yaml 等）
 │   └── reporters/                  # 测试报告器插件
-├── __tests__/                      # 196 套件 / 4150 个测试
+├── __tests__/                      # 196 套件 / 4151 个测试
 ├── docs/                           # 文档
 │   ├── agent-protocol.md           # AI Agent 行为协议
 │   ├── cli-guide.md                # 完整 CLI 参考
@@ -502,7 +502,7 @@ stdd-copilot-ultra/
 |------|------|
 | [docs/getting-started.md](./docs/getting-started.md) | 首次运行工作流与快速参考 |
 | [docs/cli-guide.md](./docs/cli-guide.md) | 完整 CLI 命令参考 |
-| [docs/command-reference.md](./docs/command-reference.md) | 全部 80 个命令详细说明 |
+| [docs/command-reference.md](./docs/command-reference.md) | 全部 86 个命令模板详细说明 |
 | [docs/concepts.md](./docs/concepts.md) | 核心理念：Spec-First、Ralph Loop、Constitution |
 | [docs/workflows.md](./docs/workflows.md) | 工作流详解：Greenfield / Brownfield / 快速修复 |
 | [docs/capabilities.md](./docs/capabilities.md) | 全部能力清单 |
@@ -539,7 +539,7 @@ docker compose up -d
 ### 开发和测试
 
 ```bash
-npm test                # 运行 196 套件 / 4150 个测试
+npm test                # 运行 196 套件 / 4151 个测试
 npm run lint            # ESLint 检查
 npm run premerge        # 合并前全量检查（audit + lint + docs + coverage）
 npm run test:coverage   # 带覆盖率报告运行

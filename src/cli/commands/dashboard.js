@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const http = require('http');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
@@ -369,19 +369,14 @@ class DashboardCommand {
 
     const filePath = result.path;
 
-    const command = process.platform === 'darwin'
-      ? `open "${filePath}"`
-      : process.platform === 'win32'
-        ? `start "" "${filePath}"`
-        : `xdg-open "${filePath}"`;
+    const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'cmd' : 'xdg-open';
+    const args = process.platform === 'win32' ? ['/c', 'start', '""', filePath] : [filePath];
 
-    exec(command, (err) => {
-      if (err) {
-        logger.warn(`Failed to open browser: ${err.message}`);
-        console.log(chalk.yellow(`  Could not open browser. Open manually: ${filePath}`));
-      } else {
-        console.log(chalk.green(`  Opened in browser: ${path.relative(this.cwd, filePath)}`));
-      }
+    spawn(cmd, args, { stdio: 'ignore' }).on('error', (err) => {
+      logger.warn(`Failed to open browser: ${err.message}`);
+      console.log(chalk.yellow(`  Could not open browser. Open manually: ${filePath}`));
+    }).on('exit', (code) => {
+      if (code === 0) console.log(chalk.green(`  Opened in browser: ${path.relative(this.cwd, filePath)}`));
     });
 
     return result;

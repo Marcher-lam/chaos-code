@@ -745,10 +745,10 @@ node --test
 ---
 
 > **STDD Copilot Ultra v1.1.0**
-> - 86 个 CLI 命令
+> - 88 个 CLI 命令
 > - 86 个 Command 模板
 > - 53 个 Skill 模板
-> - 191 测试套件，4158 测试用例，100% 通过率
+> - 196 测试套件，4151 测试用例，100% 通过率
 > - 97.7% 语句覆盖，93.2% 分支覆盖
 >
 > 完整列表见 `stdd --help`、`stdd skills`、`stdd commands`。

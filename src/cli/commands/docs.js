@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const { createLogger } = require('../../utils/logger');
 const {
   generateDocsCSS,
@@ -336,13 +336,9 @@ class DocsCommand {
 
     try {
       const platform = process.platform;
-      if (platform === 'darwin') {
-        execSync(`open "${indexPath}"`, { stdio: 'ignore' });
-      } else if (platform === 'win32') {
-        execSync(`start "" "${indexPath}"`, { stdio: 'ignore' });
-      } else {
-        execSync(`xdg-open "${indexPath}"`, { stdio: 'ignore' });
-      }
+      const cmd = platform === 'darwin' ? 'open' : platform === 'win32' ? 'cmd' : 'xdg-open';
+      const args = platform === 'win32' ? ['/c', 'start', '""', indexPath] : [indexPath];
+      spawnSync(cmd, args, { stdio: 'ignore' });
       console.log(chalk.dim('  Opened in browser.'));
     } catch (err) {
       console.log(chalk.yellow(`  Could not open browser: ${err.message}`));
@@ -410,46 +406,56 @@ class DocsCommand {
     throw new Error('Unknown provider: ' + provider + '. Use: gh-pages, netlify, or custom.');
   }
 
+  _git(args, options = {}) {
+    const result = spawnSync('git', args, { cwd: options.cwd || this.cwd, encoding: 'utf8', stdio: options.stdio || 'pipe' });
+    if (result.status !== 0 && !options.allowFail) {
+      throw new Error(result.stderr || ('git ' + args.join(' ') + ' failed'));
+    }
+    return (result.stdout || '').trim();
+  }
+
   _deployGHPages(outputDir, options = {}) {
     const branch = options.branch || 'gh-pages';
     const message = options.message || 'Deploy docs site';
     try {
-      const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+      const currentBranch = this._git(['rev-parse', '--abbrev-ref', 'HEAD']);
       try {
-        execSync('git rev-parse --verify ' + branch, { encoding: 'utf8', stdio: 'pipe' });
-        execSync('git checkout ' + branch, { encoding: 'utf8', stdio: 'pipe' });
+        this._git(['rev-parse', '--verify', branch]);
+        this._git(['checkout', branch]);
       } catch (_) {
-        execSync('git checkout --orphan ' + branch, { encoding: 'utf8', stdio: 'pipe' });
+        this._git(['checkout', '--orphan', branch]);
       }
-      try { execSync('git rm -rf .', { encoding: 'utf8', stdio: 'pipe' }); } catch (_) {}
+      try { this._git(['rm', '-rf', '.'], { allowFail: true }); } catch (_) {}
       const files = fs.readdirSync(outputDir);
       for (const file of files) {
         fs.copyFileSync(path.join(outputDir, file), path.join(this.cwd, file));
-        execSync('git add ' + file, { encoding: 'utf8', stdio: 'pipe' });
+        this._git(['add', file]);
       }
-      execSync('git commit -m "' + message + '"', { encoding: 'utf8', stdio: 'pipe' });
-      execSync('git push origin ' + branch + ' --force', { encoding: 'utf8', stdio: 'pipe' });
-      execSync('git checkout ' + currentBranch, { encoding: 'utf8', stdio: 'pipe' });
-      const remoteUrl = execSync('git remote get-url origin', { encoding: 'utf8' }).trim();
+      this._git(['commit', '-m', message]);
+      this._git(['push', 'origin', branch, '--force']);
+      this._git(['checkout', currentBranch]);
+      const remoteUrl = this._git(['remote', 'get-url', 'origin']);
       const repoMatch = remoteUrl.match(/[:/]([^/]+\/[^.]+)/);
       const repoPath = repoMatch ? repoMatch[1] : '';
       console.log(chalk.green('\n  Deployed to GitHub Pages!'));
       console.log(chalk.cyan('  URL: https://' + repoPath.replace('/', '.github.io/')));
       return { deployed: true, provider: 'gh-pages', branch };
     } catch (err) {
-      try { execSync('git checkout -', { encoding: 'utf8', stdio: 'pipe' }); } catch (_) {}
+      try { this._git(['checkout', '-'], { allowFail: true }); } catch (_) {}
       throw new Error('GitHub Pages deploy failed: ' + err.message);
     }
   }
 
   _deployNetlify(outputDir) {
-    try { execSync('which netlify', { encoding: 'utf8', stdio: 'pipe' }); }
-    catch (_) { throw new Error('Netlify CLI not found. Install: npm install -g netlify-cli'); }
+    const check = spawnSync('which', ['netlify'], { encoding: 'utf8', stdio: 'pipe' });
+    if (check.status !== 0) throw new Error('Netlify CLI not found. Install: npm install -g netlify-cli');
     try {
-      const result = execSync('netlify deploy --prod --dir="' + outputDir + '"', {
+      const result = spawnSync('netlify', ['deploy', '--prod', '--dir=' + outputDir], {
         encoding: 'utf8', cwd: this.cwd, stdio: ['pipe', 'pipe', 'pipe'],
       });
-      const urlMatch = result.match(/https:\/\/[a-z0-9-]+\.netlify\.app/);
+      if (result.status !== 0) throw new Error(result.stderr || 'netlify deploy failed');
+      const output = result.stdout;
+      const urlMatch = output.match(/https:\/\/[a-z0-9-]+\.netlify\.app/);
       const deployUrl = urlMatch ? urlMatch[0] : 'unknown';
       console.log(chalk.green('\n  Deployed to Netlify!'));
       console.log(chalk.cyan('  URL: ' + deployUrl));
@@ -465,7 +471,13 @@ class DocsCommand {
       throw new Error('--deploy-command is required for custom provider.');
     }
     try {
-      execSync(command + ' "' + outputDir + '"', { encoding: 'utf8', cwd: this.cwd, stdio: 'inherit' });
+      const parts = command.split(/\s+/);
+      const bin = parts[0];
+      const cmdArgs = [...parts.slice(1), outputDir];
+      const result = spawnSync(bin, cmdArgs, {
+        encoding: 'utf8', cwd: this.cwd, stdio: 'inherit',
+      });
+      if (result.status !== 0) throw new Error('Custom deploy command exited non-zero');
       console.log(chalk.green('\n  Deployed via custom command!'));
       return { deployed: true, provider: 'custom', command };
     } catch (err) {

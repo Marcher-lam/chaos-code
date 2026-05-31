@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20.0.0-green.svg)](https://nodejs.org/)
 [![npm](https://img.shields.io/npm/v/@marcher-lam/stdd-copilot-ultra)](https://www.npmjs.com/package/@marcher-lam/stdd-copilot-ultra)
-[![Tests](https://img.shields.io/badge/tests-4158%2F4158%20passing-brightgreen.svg)](CONTRIBUTING.md)
+[![Tests](https://img.shields.io/badge/tests-4151%2F4151%20passing-brightgreen.svg)](CONTRIBUTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-97%25%20stmts%20%7C%2093%25%20branch-brightgreen.svg)](CONTRIBUTING.md)
 
 [简体中文](./README.md) · [English](./README_EN.md)
@@ -50,10 +50,10 @@ It unifies three dimensions:
 
 | Metric | Value |
 |--------|-------|
-| CLI Commands | 86 |
+| CLI Commands | 88 (including subcommand entries) |
 | Command Templates | 86 (`/stdd:*` slash commands) |
 | Skill Templates | 53 |
-| Test Suites | **191** suites, **4,158** tests, 100% passing |
+| Test Suites | **196** suites, **4,151** tests, 100% passing |
 | Statement Coverage | **97.7%** |
 | Branch Coverage | **93.2%** |
 | Supported AI Engines | 24 (Claude Code, Cursor, Windsurf, etc. across 4 tiers) |
@@ -390,7 +390,7 @@ STDD Copilot Ultra fuses exploration, specification, and TDD via a **Skill Graph
 │  DAG Runner  │  Visualizer  │  Analyzer  │  Recommender   │
 ├──────────────────────────────────────────────────────────┤
 │              Core Executors                                │
-│  86 Commands  │  21 Utilities  │  Agent Simulator  │  RT   │
+│  88 Commands  │  28 Utilities  │  Agent Simulator  │  RT   │
 ├──────────────────────────────────────────────────────────┤
 │              Infrastructure                                │
 │  Templates  │  Hooks  │  Logger  │  Security  │  Memory   │
@@ -408,10 +408,10 @@ stdd-copilot-ultra/
 ├── cli.js                          # CLI entry point (Commander.js)
 ├── src/
 │   ├── cli/
-│   │   ├── commands/               # 86 command implementations (one class each)
+│   │   ├── commands/               # 88 command implementations (one class each)
 │   │   ├── helpers/                # Shared CLI utilities (spinner, safe wrappers)
 │   │   └── registry/               # CommandRegistry + CommandLoader
-│   ├── utils/                      # 21 shared utility modules
+│   ├── utils/                      # 28 shared utility modules
 │   ├── runtime/                    # Agent simulator, SudoLang, browser
 │   └── types/                      # JSDoc type definitions
 ├── src/templates/
@@ -425,7 +425,7 @@ stdd-copilot-ultra/
 │   ├── memory/                     # Project memory store
 │   ├── config/                     # Additional config (engines.yaml, etc.)
 │   └── reporters/                  # Test reporter plugins
-├── __tests__/                      # 191 suites / 4,158 tests
+├── __tests__/                      # 196 suites / 4,151 tests
 ├── docs/                           # Documentation
 ├── schemas/                        # JSON / YAML Schemas
 └── tools/                          # Utility scripts
@@ -439,7 +439,7 @@ stdd-copilot-ultra/
 |----------|---------|
 | [docs/getting-started.md](./docs/getting-started.md) | First-run workflow and quick reference |
 | [docs/cli-guide.md](./docs/cli-guide.md) | Complete CLI command reference |
-| [docs/command-reference.md](./docs/command-reference.md) | Detailed descriptions for all 80 commands |
+| [docs/command-reference.md](./docs/command-reference.md) | Detailed descriptions for all 86 command templates |
 | [docs/concepts.md](./docs/concepts.md) | Core concepts: Spec-First, Ralph Loop, Constitution |
 | [docs/workflows.md](./docs/workflows.md) | Workflow details: Greenfield / Brownfield / Quick Fix |
 | [docs/capabilities.md](./docs/capabilities.md) | Full capability catalog |
@@ -473,7 +473,7 @@ docker compose up -d
 ### Development & Testing
 
 ```bash
-npm test                # Run 191 suites / 4,158 tests
+npm test                # Run 196 suites / 4,151 tests
 npm run lint            # ESLint check
 npm run premerge        # Full pre-merge check (audit + lint + docs + coverage)
 npm run test:coverage   # Run with coverage report

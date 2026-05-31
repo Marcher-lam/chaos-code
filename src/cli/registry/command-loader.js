@@ -31,7 +31,7 @@ class CommandLoader {
   _wireAction(cmd, def) {
     const className = def.action;
     const Factory = className ? this.commandFactories[className] : null;
-    if (!Factory) return;
+    if (!Factory && !def.create) return;
 
     const spinnerText = def.spinner || null;
     const successText = def.success || null;

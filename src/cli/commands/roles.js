@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const { walkFiles } = require('../../utils/file-walker');
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 const { createLogger } = require('../../utils/logger');
 const { TechStackDetector } = require('../../utils/tech-stack-detector');
 const { ROLE_DEFINITIONS, ROLES: RICH_ROLES } = require('../../config/role-definitions');
@@ -569,13 +569,11 @@ class RolesCommand {
    */
   _executePrompt(prompt, cliName) {
     try {
-      // Truncate extremely long prompts to avoid shell limits
       const truncated = prompt.length > 4000 ? prompt.slice(0, 4000) + '...' : prompt;
-      const escaped = truncated.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
 
       let output;
       if (cliName === 'claude') {
-        output = execSync('claude -p "' + escaped + '" --output-format text 2>/dev/null', {
+        output = execFileSync('claude', ['-p', truncated, '--output-format', 'text'], {
           encoding: 'utf8',
           timeout: 60000,
           maxBuffer: 1024 * 1024,

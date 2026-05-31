@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const { findActiveChange, parseTasks } = require('../../utils/change-utils');
 const { createLogger } = require('../../utils/logger');
 const { 
@@ -126,8 +126,8 @@ class CommitTddCommand {
 
     // Execute commit
     try {
-      const commitCmd = `git commit -m "${subject.replace(/"/g, '\\"')}" -m "${body.replace(/"/g, '\\"')}"`;
-      execSync(commitCmd, { cwd: this.cwd, stdio: 'pipe' });
+      const result = spawnSync('git', ['commit', '-m', subject, '-m', body], { cwd: this.cwd, stdio: 'pipe', encoding: 'utf8' });
+      if (result.status !== 0) throw new Error(result.stderr || 'git commit failed');
 
       console.log(chalk.bold('\n✓ Commit Created\n'));
       console.log(chalk.green(`  ${phase}: ${actualName}`));
@@ -207,8 +207,9 @@ class CommitTddCommand {
     }
 
     try {
-      execSync(`git commit --amend -m "${subject.replace(/"/g, '\\"')}" -m "${body.replace(/"/g, '\\"')}"`, 
-        { cwd: this.cwd, stdio: 'pipe' });
+      const result = spawnSync('git', ['commit', '--amend', '-m', subject, '-m', body],
+        { cwd: this.cwd, stdio: 'pipe', encoding: 'utf8' });
+      if (result.status !== 0) throw new Error(result.stderr || 'git commit --amend failed');
 
       console.log(chalk.bold('\n✓ Commit Amended\n'));
       return { amended: true, phase, change: actualName };

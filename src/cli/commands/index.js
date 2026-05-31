@@ -88,5 +88,4 @@ module.exports = {
   ModulesCommand: require('./modules').ModulesCommand,
   DocsCommand: require('./docs').DocsCommand,
   DashboardCommand: require('./dashboard').DashboardCommand,
-  AdaptCommand: require('./adapt').AdaptCommand,
 };

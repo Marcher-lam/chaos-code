@@ -42,6 +42,11 @@ const {
   ExecuteCommand, FinalDocCommand, CommitTddCommand,
   ProfileCommand,
   ModulesCommand,
+  DashboardCommand,
+  BuilderCommand,
+  UICommand,
+  DocsCommand,
+  MemoryCommand,
 } = require('./src/cli/commands/index');
 
 const { ProgressCommand } = require('./src/cli/commands/progress');
@@ -101,7 +106,7 @@ const commandFactories = {
   RuntimeSudoCommand: SudoLangParser,
   SpecGenerator,
   ApiSpecCommand,
-  MemoryCommand: MemoryScanner,
+  MemoryCommand,
   GraphHistoryCommand,
   GraphRunCommand,
   WaiverManagerCommand,
@@ -131,12 +136,16 @@ const commandFactories = {
   CommitTddCommand,
   ProfileCommand,
   ModulesCommand,
+  DashboardCommand,
+  BuilderCommand,
+  UICommand,
+  DocsCommand,
 };
 
 const loader = new CommandLoader(program, {
   commandFactories,
   createSpinner,
-  skipNames: ['constitution [action] [target]', 'hooks', 'graph', 'runtime', 'recommend', 'doctor', 'start', 'memory <action> [args...]', 'baby-steps [task]', 'sudo run [file]', 'list', 'status [change]', 'progress', 'vision [action]', 'prp [action]', 'design [action]', 'certainty [action]', 'complexity [action]', 'factory [action]', 'iterate [action]', 'help [topic]', 'parallel [action]', 'supervisor [action]', 'memory-scan [action]', 'graph-history [action] [id]', 'profile [action]']
+  skipNames: ['constitution [action] [target]', 'hooks', 'graph', 'runtime', 'recommend', 'doctor', 'start', 'memory <action> [args...]', 'baby-steps [task]', 'sudo run [file]', 'list', 'status [change]', 'progress', 'vision [action]', 'prp [action]', 'design [action]', 'certainty [action]', 'complexity [action]', 'factory [action]', 'iterate [action]', 'help [topic]', 'parallel [action]', 'supervisor [action]', 'memory-scan [action]', 'graph-history [action] [id]', 'profile [action]', 'modules [action] [args...]']
 });
 loader.registerAll();
 

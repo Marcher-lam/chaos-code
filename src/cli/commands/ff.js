@@ -8,7 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { resolveWorkspace } = require('../../utils/workspace-detector');
 const { validateChangeName } = require('../../utils/change-utils');
-const { generateChangeName: _genChangeName, toSafeFilename: _toSafe, workspaceContext: _wsCtx } = require('../../utils/change-helpers');
+const { generateChangeName: _genChangeName, workspaceContext: _wsCtx } = require('../../utils/change-helpers');
 const { ProfileEngine } = require('../../utils/profile-engine');
 
 const PROFILE_TASK_LIMITS = { quick: 2, standard: 3, thorough: 5, enterprise: 8 };

@@ -313,7 +313,7 @@ stdd/
 │   ├── contracts.md            # 接口契约
 │   └── arch-evolution.md       # 架构演进日志
 ├── graph/                      # Skill Graph 配置
-│   ├── skills.yaml             # Graph 节点定义 (34 Skills)
+│   ├── skills.yaml             # Graph 节点定义 (53 Skills)
 │   ├── config.json             # 引擎配置
 │   ├── conditions.json         # 条件引擎配置
 │   └── cache/                  # DAG 幂等执行缓存

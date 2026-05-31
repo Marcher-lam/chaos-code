@@ -800,10 +800,10 @@ const commandRegistry = [
     action: 'UICommand',
     create: () => new (require('../commands/ui').UICommand)(process.cwd()),
     mapper: (action, name, options) => {
-      const validActions = ['page', 'component', 'scaffold', 'preview', 'list'];
+      const validActions = ['page', 'component', 'scaffold', 'preview', 'test', 'diff', 'list'];
       return [validActions.includes(action) ? action : 'list', [name || ''], options];
     },
-    helpText: `Actions: page, component, scaffold, preview, list\n\nExamples:\n  stdd ui page dashboard                     # Generate a React page\n  stdd ui page home --layout sidebar         # Page with sidebar layout\n  stdd ui page about --framework vanilla     # Vanilla HTML page\n  stdd ui component SubmitButton --type button  # Button component\n  stdd ui component UserCard --type card     # Card component\n  stdd ui scaffold                           # Scaffold full UI app\n  stdd ui preview                            # Generate preview gallery\n  stdd ui list                               # List generated artifacts`,
+    helpText: `Actions: page, component, scaffold, preview, test, diff, list\n\nExamples:\n  stdd ui page dashboard                     # Generate a React page\n  stdd ui page home --layout sidebar         # Page with sidebar layout\n  stdd ui page about --framework vanilla     # Vanilla HTML page\n  stdd ui component SubmitButton --type button  # Button component\n  stdd ui component UserCard --type card     # Card component\n  stdd ui scaffold                           # Scaffold full UI app\n  stdd ui preview                            # Generate preview gallery\n  stdd ui test <name>                        # Generate test scaffold\n  stdd ui diff [name]                        # Visual diff comparison\n  stdd ui list                               # List generated artifacts`,
   },
   {
     name: 'docs [action]',
@@ -816,7 +816,7 @@ const commandRegistry = [
     action: 'DocsCommand',
     create: () => new (require('../commands/docs').DocsCommand)(process.cwd()),
     mapper: (action, options) => [action || 'generate', [], options],
-    helpText: `Actions: generate (default), open, sources\n\nExamples:\n  stdd docs                     # Generate docs site to stdd/docs-site/\n  stdd docs generate            # Same as above\n  stdd docs open                # Generate and open in browser\n  stdd docs sources             # List documentation sources\n  stdd docs --json              # Output source listing as JSON\n  stdd docs --lang en           # Generate English-only docs\n  stdd docs --output ./my-docs  # Custom output directory`,
+    helpText: `Actions: generate (default), open, sources, deploy\n\nExamples:\n  stdd docs                     # Generate docs site to stdd/docs-site/\n  stdd docs generate            # Same as above\n  stdd docs open                # Generate and open in browser\n  stdd docs sources             # List documentation sources\n  stdd docs deploy              # Deploy docs site (gh-pages, netlify, custom)\n  stdd docs deploy --provider netlify\n  stdd docs --json              # Output source listing as JSON\n  stdd docs --lang en           # Generate English-only docs\n  stdd docs --output ./my-docs  # Custom output directory`,
   },
 ];
 
