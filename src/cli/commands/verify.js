@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+const yaml = require('js-yaml');
 const { findActiveChange, checkTasksCompletion } = require('../../utils/change-utils');
 const { ConstitutionChecker } = require('./constitution-checker');
 const EvidenceCapture = require('../../utils/evidence-capture');
@@ -216,6 +217,50 @@ class VerifyCommand {
       report.lint = null;
     }
 
+    // 5) Visual Regression check
+    let config = {};
+    const configPath = path.join(stddDir, 'config.yaml');
+    if (fs.existsSync(configPath)) {
+      try {
+        config = yaml.load(fs.readFileSync(configPath, 'utf8')) || {};
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    if (config.visual_regression && config.visual_regression.enabled && Array.isArray(config.visual_regression.routes)) {
+      console.log(`\n  ${chalk.bold('Visual Regression Check')}`);
+      const { BrowserCommand } = require('./browser');
+      const browserCmd = new BrowserCommand(cwd);
+      const visualResults = [];
+      
+      for (const route of config.visual_regression.routes) {
+        console.log(`  Comparing route: ${chalk.cyan(route.name)} (${route.url})`);
+        const compareResult = await browserCmd.compare(route.url, {
+          name: route.name,
+          threshold: route.threshold,
+          width: route.width,
+          height: route.height
+        });
+        
+        visualResults.push({
+          name: route.name,
+          url: route.url,
+          ...compareResult
+        });
+      }
+      
+      const allPassed = visualResults.every(r => r.status === 'pass');
+      report.visual = { passed: allPassed, routes: visualResults };
+      
+      if (!allPassed) {
+        console.log(`  ${chalk.red('✗')} Visual Regression: failed`);
+        healthy = false;
+      } else {
+        console.log(`  ${chalk.green('✓')} Visual Regression: passed`);
+      }
+    }
+
     // Summary
     console.log(chalk.bold('\n📊 Verification Report'));
     console.log(`  Tasks:       ${report.tasks.allDone ? chalk.green('PASS') : chalk.red('FAIL')}  (${report.tasks.done}/${report.tasks.total})`);
@@ -233,6 +278,9 @@ class VerifyCommand {
     console.log(`  Constitution: ${report.constitution.status === 'pass' ? chalk.green('PASS') : chalk.red('FAIL')}`);
     if (report.lint !== null) {
       console.log(`  Lint:        ${report.lint.passed ? chalk.green('PASS') : chalk.red('FAIL')}`);
+    }
+    if (report.visual) {
+      console.log(`  Visual:      ${report.visual.passed ? chalk.green('PASS') : chalk.red('FAIL')}`);
     }
 
     console.log('');

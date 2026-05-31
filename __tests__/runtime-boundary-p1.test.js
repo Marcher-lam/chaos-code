@@ -146,7 +146,7 @@ describe('P1 runtime boundary implementations', () => {
     // Re-require to get fresh module with our spy in place
     jest.isolateModules(() => {
       const { ShellAgentExecutor: FreshExecutor } = require('../src/runtime/agents');
-      const executor = new FreshExecutor({ command: 'node -e "42"', allowUnsafe: true });
+      const _executor = new FreshExecutor({ command: 'node -e "42"', allowUnsafe: true });
       // This should throw because spawnSync throws
     });
 

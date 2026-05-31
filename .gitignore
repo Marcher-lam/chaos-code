@@ -43,7 +43,9 @@ stdd/evidence/
 stdd/progress.jsonl
 stdd/runtime/agent-state.json
 stdd/runtime/agent-turns.jsonl
+stdd/runtime/generated/
 stdd/reports/
+stdd/memory/*.bin
 
 # Benchmark results
 benchmark-results.json

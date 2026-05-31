@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
-const logger = createLogger('prp');
+const _logger = createLogger('prp');
 
 const PRP_TEMPLATE = `# PRP: {{title}}
 

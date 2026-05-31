@@ -17,7 +17,7 @@ const {
   buildBody 
 } = require('./commit-msg');
 
-const logger = createLogger('commit-tdd');
+const _logger = createLogger('commit-tdd');
 
 class CommitTddCommand {
   constructor(cwd = process.cwd()) {

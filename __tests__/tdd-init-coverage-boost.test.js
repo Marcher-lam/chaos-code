@@ -23,7 +23,7 @@ describe('TddInitCommand coverage boost', () => {
       w(path.join(srcDir, 'calculator.py'), 'def add(a, b): return a + b');
       w(path.join(srcDir, 'pytest.ini'), '[pytest]');
       const cmd = new TddInitCommand();
-      const result = await cmd.execute(TMP, { sourceDir: 'src' });
+      const _result = await cmd.execute(TMP, { sourceDir: 'src' });
       // Check generated test file uses pytest format
       const testFiles = fs.readdirSync(path.join(srcDir, '__tests__'));
       expect(testFiles.length).toBeGreaterThan(0);
@@ -35,7 +35,7 @@ describe('TddInitCommand coverage boost', () => {
       const srcDir = path.join(TMP, 'src');
       w(path.join(srcDir, 'my_module.py'), 'def foo(): pass');
       const cmd = new TddInitCommand();
-      const result = await cmd.execute(TMP, { sourceDir: 'src' });
+      const _result = await cmd.execute(TMP, { sourceDir: 'src' });
       const testFiles = fs.readdirSync(path.join(srcDir, '__tests__'));
       const content = fs.readFileSync(path.join(srcDir, '__tests__', testFiles[0]), 'utf8');
       expect(content).toContain('unittest');

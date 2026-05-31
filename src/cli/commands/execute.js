@@ -192,31 +192,31 @@ class ExecuteCommand {
     }
   }
 
-  async executeRedStage(task, changeDir, options) {
+  async executeRedStage(task, _changeDir, _options) {
     console.log(chalk.dim('Write failing test for: ' + task.title));
     console.log(chalk.cyan('\nPrompt: Write a test that fails for this task.'));
     return { success: true, message: 'RED stage - ready to write test' };
   }
 
-  async executeCheckStage(task, changeDir, options) {
+  async executeCheckStage(_task, _changeDir, _options) {
     console.log(chalk.dim('Run static analysis...'));
     console.log(chalk.cyan('\nCommands: npm run lint, tsc --noEmit'));
     return { success: true, message: 'CHECK stage - static analysis passed' };
   }
 
-  async executeGreenStage(task, changeDir, options) {
+  async executeGreenStage(_task, _changeDir, _options) {
     console.log(chalk.dim('Implement minimal code to pass test...'));
     console.log(chalk.cyan('\nPrompt: Implement the minimum code to make the test pass.'));
     return { success: true, message: 'GREEN stage - ready to implement' };
   }
 
-  async executeMutationStage(task, changeDir, options) {
+  async executeMutationStage(task, changeDir, _options) {
     console.log(chalk.dim('Verify tests detect mutations...'));
     console.log(chalk.cyan('\nCommand: stdd mutation ' + path.basename(changeDir)));
     return { success: true, message: 'MUTATION stage - mutation testing passed' };
   }
 
-  async executeRefactorStage(task, changeDir, options) {
+  async executeRefactorStage(_task, _changeDir, _options) {
     console.log(chalk.dim('Optimize code structure...'));
     console.log(chalk.cyan('\nPrompt: Refactor the code while keeping tests green.'));
     return { success: true, message: 'REFACTOR stage - ready to refactor' };

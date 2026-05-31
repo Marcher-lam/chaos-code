@@ -8,7 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const inquirer = require('inquirer');
-const logger = createLogger('propose');
+const _logger = createLogger('propose');
 
 class ProposeCommand {
   constructor() {
@@ -78,7 +78,7 @@ class ProposeCommand {
     return { changeName, path: proposalPath };
   }
 
-  async generateProposal(requirement, options) {
+  async generateProposal(requirement, _options) {
     const date = new Date().toISOString().split('T')[0];
     const clarifyingQuestions = this.generateClarifyingQuestions(requirement);
 
@@ -133,7 +133,7 @@ class ProposeCommand {
     return name.replace(/-+/g, '-').replace(/^-|-$/g, '') || 'change-' + Date.now();
   }
 
-  generateClarifyingQuestions(requirement) {
+  generateClarifyingQuestions(_requirement) {
     const questions = [
       'What are the specific inputs and outputs?',
       'Who are the users/actors involved?',

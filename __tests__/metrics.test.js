@@ -581,7 +581,8 @@ describe('MetricsCommand', () => {
         constitutionHealth: 'PASS',
       });
 
-      const output = logSpy.mock.calls.map(c => String(c[0])).join('\n');
+      const rawOutput = logSpy.mock.calls.map(c => String(c[0])).join('\n');
+      const output = rawOutput.replace(/\x1b\[[0-9;]*m/g, '');
       expect(output).toContain('feat-x');
       expect(output).toContain('main');
       expect(output).toContain('80%');

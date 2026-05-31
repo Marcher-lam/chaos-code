@@ -8,8 +8,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { CommitCommand, buildSubject, buildPhaseSubject, extractProposalTitle,
-        detectType, detectTddPhase, extractIssue, extractScopeFromChangeName, buildBody } = require('../src/cli/commands/commit-msg');
+const { CommitCommand, buildSubject, buildPhaseSubject, _extractProposalTitle,
+        _detectType, detectTddPhase, extractIssue, extractScopeFromChangeName, buildBody } = require('../src/cli/commands/commit-msg');
 
 const TMP = path.join(__dirname, '__commit_cov_tmp__');
 function mkdirp(dir) { fs.mkdirSync(dir, { recursive: true }); }

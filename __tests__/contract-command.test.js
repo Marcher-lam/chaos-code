@@ -590,27 +590,27 @@ describe('ContractCommand', () => {
     const { toSafeFilename: _toSafe } = require('../src/utils/change-helpers');
 
     it('should handle null input', () => {
-      const cmd = new ContractCommand('/tmp');
+      const _cmd = new ContractCommand('/tmp');
     expect(_toSafe(null)).toBe('');
     });
 
     it('should handle undefined input', () => {
-      const cmd = new ContractCommand('/tmp');
+      const _cmd = new ContractCommand('/tmp');
       expect(_toSafe(undefined)).toBe('');
     });
 
     it('should handle empty string', () => {
-      const cmd = new ContractCommand('/tmp');
+      const _cmd = new ContractCommand('/tmp');
       expect(_toSafe('')).toBe('');
     });
 
     it('should lowercase and replace special chars', () => {
-      const cmd = new ContractCommand('/tmp');
+      const _cmd = new ContractCommand('/tmp');
       expect(_toSafe('My Workspace Name!')).toBe('my-workspace-name');
     });
 
     it('should strip leading and trailing hyphens', () => {
-      const cmd = new ContractCommand('/tmp');
+      const _cmd = new ContractCommand('/tmp');
       expect(_toSafe('--hello--')).toBe('hello');
     });
   });

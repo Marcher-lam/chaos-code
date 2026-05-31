@@ -5,7 +5,7 @@
  */
 
 const path = require('path');
-const { validateChangeName } = require('./change-utils');
+const { _validateChangeName } = require('./change-utils');
 const { resolveWorkspace } = require('./workspace-detector');
 
 /**

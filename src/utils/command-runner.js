@@ -30,7 +30,7 @@ function parseCommandLocal(command) {
   return parseCommand(command, 'Command');
 }
 
-function validateCommand(command, _options = {}) {
+function validateCommand(command, options = {}) {
   const input = String(command || '').trim();
   if (!input) throw new Error('Command is required.');
 
@@ -44,6 +44,22 @@ function validateCommand(command, _options = {}) {
   for (const pattern of injectionPatterns) {
     if (pattern.test(input)) {
       throw new Error('Command rejected: Potential shell injection detected. Characters like pipe, &&, semicolon, dollar, backtick, or redirect are not allowed in test commands.');
+    }
+  }
+
+  // Phase 4 Sandbox Security check
+  if (options.sandbox || (options.env && options.env.STDD_SANDBOX === '1') || process.env.STDD_SANDBOX === '1') {
+    const { bin, args } = parseCommandLocal(input);
+    const SANDBOX_ALLOWED_BINS = new Set(['node', 'npm', 'npx', 'git', 'jest', 'eslint', 'tsc', 'echo']);
+    if (!SANDBOX_ALLOWED_BINS.has(bin)) {
+      throw new Error(`Command rejected under sandbox: Binary '${bin}' is not allowed in sandbox mode. Allowed: node, npm, npx, git, jest, eslint, tsc, echo.`);
+    }
+    // Block write/destructive commands or args
+    const blockedArgs = ['cp', 'mv', 'mkdir', 'rm', 'touch', 'chmod', 'chown', 'ln', 'tar', 'zip', 'unzip'];
+    for (const arg of args) {
+      if (blockedArgs.includes(arg.toLowerCase())) {
+        throw new Error(`Command rejected under sandbox: Destructive argument '${arg}' is not allowed.`);
+      }
     }
   }
 

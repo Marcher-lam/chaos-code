@@ -1306,7 +1306,7 @@ describe('HooksCommand - Extended Coverage', () => {
       logSpy.mockClear();
 
       // Disable
-      const disableResult = disableAction({ global: false });
+      const _disableResult = disableAction({ global: false });
       // The action itself just calls disableHooks, which returns true/false
       // But we can verify it ran by checking the settings
       const settingsPath = path.join(projectPath, '.claude', 'settings.json');

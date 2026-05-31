@@ -12,7 +12,7 @@ const { generateReactPage } = require('../../config/ui-templates/react-page');
 const { generateReactComponent } = require('../../config/ui-templates/react-component');
 const { generateVanillaPage } = require('../../config/ui-templates/vanilla-page');
 
-const logger = createLogger('ui');
+const _logger = createLogger('ui');
 
 class UICommand {
   constructor(cwd = process.cwd()) {

@@ -14,14 +14,14 @@ afterAll(() => { for (const d of tmps) { try { fs.rmSync(d, { recursive: true, f
 describe('round25: ff.js', () => {
   test('workspaceContext null workspace', () => {
     const { FFCommand } = require('../src/cli/commands/ff');
-    const cmd = new FFCommand(mkTmp());
+    const _cmd = new FFCommand(mkTmp());
     const { workspaceContext: _wsCtx } = require('../src/utils/change-helpers');
     expect(_wsCtx(null)).toBeNull();
   });
 
   test('toSafeFilename edge cases', () => {
     const { FFCommand } = require('../src/cli/commands/ff');
-    const cmd = new FFCommand(mkTmp());
+    const _cmd = new FFCommand(mkTmp());
     const { toSafeFilename: _toSafe } = require('../src/utils/change-helpers');
     expect(_toSafe('')).toBe('');
     expect(_toSafe(null)).toBe('');
@@ -30,7 +30,7 @@ describe('round25: ff.js', () => {
 
   test('generateChangeName starts with ff-', () => {
     const { FFCommand } = require('../src/cli/commands/ff');
-    const cmd = new FFCommand(mkTmp());
+    const _cmd = new FFCommand(mkTmp());
     const { generateChangeName: _genChangeName } = require('../src/utils/change-helpers');
     expect(_genChangeName('ff')).toMatch(/^ff-\d{8}-\d{4}$/);
   });
@@ -40,14 +40,14 @@ describe('round25: ff.js', () => {
 describe('round25: issue.js', () => {
   test('generateChangeName starts with bugfix-', () => {
     const { IssueCommand } = require('../src/cli/commands/issue');
-    const cmd = new IssueCommand();
+    const _cmd = new IssueCommand();
     const { generateChangeName: _genChangeName } = require('../src/utils/change-helpers');
     expect(_genChangeName('bugfix')).toMatch(/^bugfix-\d{8}-\d{4}$/);
   });
 
   test('workspaceContext null', () => {
     const { IssueCommand } = require('../src/cli/commands/issue');
-    const cmd = new IssueCommand();
+    const _cmd = new IssueCommand();
     const { workspaceContext: _wsCtx } = require('../src/utils/change-helpers');
     expect(_wsCtx(null)).toBeNull();
   });
@@ -55,7 +55,7 @@ describe('round25: issue.js', () => {
   test('toSafeFilename', () => {
     const { toSafeFilename: _toSafe } = require('../src/utils/change-helpers');
     const { IssueCommand } = require('../src/cli/commands/issue');
-    const cmd = new IssueCommand();
+    const _cmd = new IssueCommand();
     expect(_toSafe('Bug: Crash!')).toBe('bug-crash');
   });
 });
@@ -65,7 +65,7 @@ describe('round25: status.js', () => {
   test('execute with no stdd returns error', async () => {
     const { StatusCommand } = require('../src/cli/commands/status');
     const cmd = new StatusCommand();
-    const dir = mkTmp();
+    const _dir = mkTmp();
     await expect(cmd.execute('no-change', { json: true })).rejects.toThrow();
   });
 });

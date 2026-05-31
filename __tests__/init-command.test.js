@@ -817,7 +817,7 @@ describe('InitCommand', () => {
   });
 
   it('exists() returns false for permission denied path (EACCES)', async () => {
-    const targetRoot = createTempDir();
+    const _targetRoot = createTempDir();
     const cmd = new InitCommand(silentSpinner);
     // Use a path that won't exist with EACCES code
     // Since fs.access throws with code ENOENT for non-existent paths,
@@ -1077,7 +1077,7 @@ describe('InitCommand', () => {
     // The copyHooks method checks if sourceDir exists and returns early if not.
     // With the real getPackageRoot, it points to this project's templates/hooks.
     // To test the "source doesn't exist" path, we temporarily override.
-    const origMethod = cmd.copyHooks.bind(cmd);
+    const _origMethod = cmd.copyHooks.bind(cmd);
     // Spy on cmd.exists to force it to return false for the hooks sourceDir
     const origExists = cmd.exists.bind(cmd);
     cmd.exists = async function(p) {

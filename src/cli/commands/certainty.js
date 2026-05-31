@@ -8,7 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const inquirer = require('inquirer');
-const logger = createLogger('certainty');
+const _logger = createLogger('certainty');
 
 const DIMENSIONS = {
   requirementClarity: { label: 'Requirement Clarity', description: 'How clear and well-defined are the requirements?' },
@@ -204,7 +204,7 @@ class CertaintyCommand {
   getTrend(history) {
     if (history.length < 3) return 'insufficient data';
     const recent = history.slice(-5).map(h => h.overall);
-    const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const _avg = recent.reduce((a, b) => a + b, 0) / recent.length;
     const firstHalf = recent.slice(0, Math.floor(recent.length / 2));
     const secondHalf = recent.slice(Math.floor(recent.length / 2));
     const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;

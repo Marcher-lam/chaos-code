@@ -295,7 +295,7 @@ class RolesCommand {
     if (!def) throw new Error(`Unknown role "${roleId}". Available: ${Object.keys(ROLE_DEFINITIONS).join(', ')}`);
     if (!topic) topic = 'current change';
 
-    const context = this._gatherProjectContext();
+    const _context = this._gatherProjectContext();
     const result = {
       role: { id: def.id, name: def.name, lens: def.lens },
       topic,
@@ -394,7 +394,7 @@ class RolesCommand {
    * Cross-role synthesis for party mode.
    * Identify consensus, conflicts, and coverage gaps.
    */
-  _synthesizePerspectives(contributions, topic) {
+  _synthesizePerspectives(contributions, _topic) {
     const consensus = [];
     const conflicts = [];
     const coverageGaps = [];
@@ -629,7 +629,7 @@ class RolesCommand {
     }
 
     // Synthesize final debate result
-    const finalPositions = roundOutputs[roundOutputs.length - 1];
+    const _finalPositions = roundOutputs[roundOutputs.length - 1];
     const convergence = this._analyzeDebateConvergence(roundOutputs);
     const report = {
       topic,
@@ -669,7 +669,7 @@ class RolesCommand {
 
     for (let i = 0; i < firstRound.length; i++) {
       if (i >= lastRound.length) break;
-      const firstPrompt = firstRound[i].prompt.toLowerCase();
+      const _firstPrompt = firstRound[i].prompt.toLowerCase();
       const lastPrompt = lastRound[i].prompt.toLowerCase();
       // Simple convergence: if a role's later prompt acknowledges other roles' points
       const acknowledgesOthers = lastPrompt.includes('agree') || lastPrompt.includes('consensus') || lastPrompt.includes('acknowledge');

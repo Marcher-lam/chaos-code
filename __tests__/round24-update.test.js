@@ -310,7 +310,7 @@ describe('round24: update.js branch coverage', () => {
     // Make writeFile fail
     const writeSpy = jest.spyOn(fs.promises, 'writeFile').mockRejectedValue(new Error('disk full'));
     try {
-      const result = await cmd.updateConfig(tmp, { dryRun: false });
+      const _result = await cmd.updateConfig(tmp, { dryRun: false });
       expect(cmd.report.errors.length).toBeGreaterThan(0);
       expect(cmd.report.errors[0].message).toContain('Failed to create config.yaml');
     } finally {

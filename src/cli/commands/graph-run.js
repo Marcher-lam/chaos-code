@@ -134,7 +134,7 @@ class GraphRunCommand {
     return ordered;
   }
 
-  async _executeNode(nodeName, changeName, options = {}) {
+  async _executeNode(nodeName, changeName, options = {}, nodeDef = null) {
     const silentSpinner = {
       text: '', start() {}, stop() {}, succeed() {}, fail() {},
     };
@@ -275,6 +275,14 @@ class GraphRunCommand {
       }
 
       default:
+        if (nodeDef && nodeDef.command) {
+          try {
+            const { stdout, stderr } = await execAsync(nodeDef.command, { cwd: process.cwd() });
+            return { status: 'success', node: nodeName, detail: (stdout || stderr || '').trim() };
+          } catch (err) {
+            throw new Error(`Custom node command failed: ${err.message}`);
+          }
+        }
         return { status: 'unknown', node: nodeName };
     }
   }
@@ -285,16 +293,27 @@ class GraphRunCommand {
       throw new Error('STDD not initialized. Run `stdd init` first.');
     }
 
-    let router;
-    try {
-      router = new DynamicGraphRouter();
-    } catch (error) {
-      throw new Error(`Failed to initialize graph router: ${error.message}`);
-    }
+    let graph;
+    let nodes;
 
-    const graph = router.compile(intent);
-    this._applyConditions(graph);
-    const nodes = this._topologicalOrder(graph);
+    const isYaml = String(intent).endsWith('.yaml') || String(intent).endsWith('.yml') || fs.existsSync(path.resolve(process.cwd(), intent));
+    if (isYaml) {
+      const { WorkflowDslInterpreter } = require('../../utils/workflow-dsl-interpreter');
+      const interpreter = new WorkflowDslInterpreter(process.cwd());
+      const loaded = interpreter.load(intent);
+      graph = interpreter.compile(loaded);
+      nodes = graph.steps;
+    } else {
+      let router;
+      try {
+        router = new DynamicGraphRouter();
+      } catch (error) {
+        throw new Error(`Failed to initialize graph router: ${error.message}`);
+      }
+      graph = router.compile(intent);
+      this._applyConditions(graph);
+      nodes = this._topologicalOrder(graph);
+    }
 
     if (nodes.length === 0) {
       throw new Error(`No nodes found for intent '${intent}'.`);
@@ -330,7 +349,8 @@ class GraphRunCommand {
       console.log(chalk.yellow(`  [Executing: ${label}]`));
 
       try {
-        const result = await this._executeNode(nodeName, changeName, options);
+        const nodeDef = graph.skills && graph.skills[nodeName];
+        const result = await this._executeNode(nodeName, changeName, options, nodeDef);
         this.result.steps.push({ node: nodeName, command: label, ...result });
 
         if (result.status === 'success') {

@@ -56,7 +56,7 @@ class DocsCommand {
     return 'STDD';
   }
 
-  async execute(action = 'generate', args = [], options = {}) {
+  async execute(action = 'generate', _args = [], options = {}) {
     switch (action) {
       case 'generate':
         return this.generate(options);

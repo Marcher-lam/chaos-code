@@ -577,7 +577,7 @@ class ApiSpecCommand {
     return types;
   }
 
-  inferResourceName(routePath, method) {
+  inferResourceName(routePath, _method) {
     const segments = routePath.split('/').filter(function(s) { return s && !s.startsWith('{'); });
     const lastSegment = segments[segments.length - 1];
     if (lastSegment) {

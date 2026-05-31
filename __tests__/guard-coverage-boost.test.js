@@ -8,7 +8,7 @@ const path = require('path');
 
 const TMP = path.join(__dirname, '__guard_cov_tmp__');
 function mkdirp(dir) { fs.mkdirSync(dir, { recursive: true }); }
-function w(filePath, content) { mkdirp(path.dirname(filePath)); fs.writeFileSync(filePath, content, 'utf8'); }
+function _w(filePath, content) { mkdirp(path.dirname(filePath)); fs.writeFileSync(filePath, content, 'utf8'); }
 
 beforeEach(() => mkdirp(TMP));
 afterEach(() => fs.rmSync(TMP, { recursive: true, force: true }));

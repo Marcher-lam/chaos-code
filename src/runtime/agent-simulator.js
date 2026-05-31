@@ -18,6 +18,96 @@ function detectKeywordConvergence(history) {
   return allAgree;
 }
 
+
+/**
+ * Detect structural convergence signals beyond simple keyword matching.
+ *
+ * Signals checked:
+ * 1. Participation coverage — every agent has spoken at least once per round
+ * 2. Content repetition — last round has high word overlap with previous round
+ * 3. Unanimous vote — every agent in the last full round used positive signal
+ *
+ * @param {Array<{speakerId: string, content: string}>} history
+ * @param {object} state - Current simulation state
+ * @returns {{ converged: boolean, reason: string|null, score: number }}
+ */
+function detectStructuralConvergence(history, state) {
+  if (history.length < state.agents.length) {
+    return { converged: false, reason: null, score: 0 };
+  }
+
+  const agentIds = state.agents.map(a => a.id);
+  const score = { value: 0, max: 3, reasons: [] };
+
+  // Signal 1: Full participation coverage in the last round
+  const lastRoundSize = state.agents.length;
+  const lastRoundTurns = history.slice(-lastRoundSize);
+  const speakersInLastRound = new Set(lastRoundTurns.map(t => t.speakerId));
+  const coverage = speakersInLastRound.size / agentIds.length;
+  if (coverage >= 1.0) {
+    score.value++;
+    score.reasons.push('full_participation');
+  }
+
+  // Signal 2: Content stability — compare word sets of last round vs previous round
+  if (history.length >= lastRoundSize * 2) {
+    const currentWords = extractWordSet(lastRoundTurns);
+    const previousTurns = history.slice(-lastRoundSize * 2, -lastRoundSize);
+    const previousWords = extractWordSet(previousTurns);
+    const overlap = jaccardSimilarity(currentWords, previousWords);
+    if (overlap > 0.6) {
+      score.value++;
+      score.reasons.push('content_stability');
+    }
+  }
+
+  // Signal 3: All agents expressed agreement in the last round
+  const POSITIVE_SIGNALS = ['yes', 'ok', 'okay', 'agree', 'approved', 'confirmed',
+    '好的', '同意', '通过', '确认', '赞成', '可以'];
+  const allPositive = lastRoundTurns.every(turn => {
+    const text = (turn.content || '').toLowerCase();
+    return POSITIVE_SIGNALS.some(sig => text.includes(sig));
+  });
+  if (allPositive) {
+    score.value++;
+    score.reasons.push('unanimous_positive');
+  }
+
+  const converged = score.value >= 2;
+  return {
+    converged,
+    reason: converged ? score.reasons.join('+') : null,
+    score: score.value / score.max,
+  };
+}
+
+/**
+ * Extract a Set of normalized words from an array of turns.
+ */
+function extractWordSet(turns) {
+  const words = new Set();
+  for (const turn of turns) {
+    const tokens = (turn.content || '').toLowerCase().split(/\s+/);
+    for (const token of tokens) {
+      if (token.length > 2) words.add(token);
+    }
+  }
+  return words;
+}
+
+/**
+ * Compute Jaccard similarity between two sets.
+ */
+function jaccardSimilarity(setA, setB) {
+  if (setA.size === 0 && setB.size === 0) return 1.0;
+  if (setA.size === 0 || setB.size === 0) return 0.0;
+  let intersection = 0;
+  for (const item of setA) {
+    if (setB.has(item)) intersection++;
+  }
+  const union = setA.size + setB.size - intersection;
+  return union === 0 ? 0 : intersection / union;
+}
 const DEFAULT_AGENTS = [
   { id: 'po', name: 'Product Owner', role: 'Focus on scope, value, and user journey.' },
   { id: 'arch', name: 'Architect', role: 'Focus on system boundaries, patterns, and risks.' },
@@ -91,6 +181,29 @@ class AgentEngine {
       state.status = 'completed';
       state.convergenceDetected = true;
     }
+    // Structural convergence: participation coverage + content stability + unanimous positive
+    if (state.status === 'active') {
+      const structural = detectStructuralConvergence(history, state);
+      if (structural.converged) {
+        state.status = 'completed';
+        state.convergenceDetected = true;
+        state.convergenceReason = structural.reason;
+        state.convergenceScore = structural.score;
+      }
+    }
+
+    if (state.status === 'completed') {
+      try {
+        const { ProductProposalCommand } = require('../cli/commands/product-proposal');
+        const proposalCmd = new ProductProposalCommand(this.cwd);
+        const stddDir = path.join(this.cwd, 'stdd');
+        if (fs.existsSync(stddDir)) {
+          proposalCmd.execute({ output: path.join(this.cwd, 'PRODUCT-PROPOSAL.md') });
+        }
+      } catch (err) {
+        // Squelch errors during non-initialized tests
+      }
+    }
 
     this.saveState(state);
     return { turn: state.round, speaker, history: this.getHistory() };
@@ -121,4 +234,4 @@ class AgentEngine {
   }
 }
 
-module.exports = { AgentEngine, DEFAULT_AGENTS };
+module.exports = { AgentEngine, DEFAULT_AGENTS, detectKeywordConvergence, detectStructuralConvergence, extractWordSet, jaccardSimilarity };

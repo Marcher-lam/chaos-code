@@ -8,7 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const inquirer = require('inquirer');
-const logger = createLogger('iterate');
+const _logger = createLogger('iterate');
 
 const CYCLE_TEMPLATE = `# Iteration Cycle: {{title}}
 

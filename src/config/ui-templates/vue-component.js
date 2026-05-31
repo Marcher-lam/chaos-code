@@ -14,7 +14,7 @@ function kebabCase(str) {
 }
 
 const generators = {
-  button(name, tokens) {
+  button(_name, _tokens) {
     return {
       template: `    <button\n      :class="['btn', 'btn-' + variant, 'btn-' + size]"\n      :disabled="disabled"\n      @click="$emit('click', $event)"\n    >\n      <slot>Button</slot>\n    </button>`,
       script: `    const props = defineProps({\n      variant: { type: String, default: 'primary' },\n      size: { type: String, default: 'medium' },\n      disabled: { type: Boolean, default: false },\n    });\n    defineEmits(['click']);`,
@@ -22,7 +22,7 @@ const generators = {
     };
   },
 
-  card(name, tokens) {
+  card(_name, _tokens) {
     return {
       template: `    <div class="card">\n      <div v-if="$slots.header" class="card-header">\n        <slot name="header"></slot>\n      </div>\n      <div class="card-body"><slot>No content</slot></div>\n      <div v-if="$slots.footer" class="card-footer">\n        <slot name="footer"></slot>\n      </div>\n    </div>`,
       script: '',
@@ -30,7 +30,7 @@ const generators = {
     };
   },
 
-  form(name, tokens) {
+  form(_name, _tokens) {
     return {
       template: `    <form class="form" @submit.prevent="$emit('submit', $event)">\n      <slot></slot>\n      <div class="form-actions">\n        <slot name="actions">\n          <button type="submit" class="btn btn-primary">Submit</button>\n        </slot>\n      </div>\n    </form>`,
       script: `    defineEmits(['submit']);`,
@@ -38,7 +38,7 @@ const generators = {
     };
   },
 
-  input(name, tokens) {
+  input(_name, _tokens) {
     return {
       template: `    <div class="input-group">\n      <label v-if="label" :for="inputId" class="input-label">{{ label }}</label>\n      <input\n        :id="inputId"\n        :type="type"\n        :value="modelValue"\n        :placeholder="placeholder"\n        :disabled="disabled"\n        class="input-field"\n        @input="$emit('update:modelValue', $event.target.value)"\n      />\n      <span v-if="error" class="input-error">{{ error }}</span>\n    </div>`,
       script: `    import { computed } from 'vue';\n    const props = defineProps({\n      modelValue: { type: [String, Number], default: '' },\n      type: { type: String, default: 'text' },\n      label: { type: String, default: '' },\n      placeholder: { type: String, default: '' },\n      disabled: { type: Boolean, default: false },\n      error: { type: String, default: '' },\n    });\n    defineEmits(['update:modelValue']);\n    const inputId = computed(() => 'input-' + Math.random().toString(36).slice(2, 8));`,
@@ -46,7 +46,7 @@ const generators = {
     };
   },
 
-  modal(name, tokens) {
+  modal(_name, _tokens) {
     return {
       template: `    <Teleport to="body">\n      <div v-if="open" class="modal-overlay" @click.self="close">\n        <div class="modal" :class="'modal-' + size">\n          <div class="modal-header">\n            <h3 class="modal-title">{{ title }}</h3>\n            <button class="modal-close" @click="close">&times;</button>\n          </div>\n          <div class="modal-body"><slot></slot></div>\n          <div v-if="$slots.footer" class="modal-footer"><slot name="footer"></slot></div>\n        </div>\n      </div>\n    </Teleport>`,
       script: `    const props = defineProps({\n      open: { type: Boolean, default: false },\n      title: { type: String, default: '' },\n      size: { type: String, default: 'medium' },\n    });\n    const emit = defineEmits(['close']);\n    const close = () => emit('close');`,
@@ -54,7 +54,7 @@ const generators = {
     };
   },
 
-  nav(name, tokens) {
+  nav(_name, _tokens) {
     return {
       template: `    <nav class="nav">\n      <div class="nav-brand"><slot name="brand">{{ brand }}</slot></div>\n      <div class="nav-links">\n        <a v-for="item in items" :key="item.key || item.label"\n          :href="item.href || '#'" :class="['nav-link', { active: item.active }]"\n          @click.prevent="$emit('navigate', item)">{{ item.label }}</a>\n      </div>\n      <div class="nav-actions"><slot name="actions"></slot></div>\n    </nav>`,
       script: `    const props = defineProps({\n      brand: { type: String, default: 'App' },\n      items: { type: Array, default: () => [] },\n    });\n    defineEmits(['navigate']);`,
@@ -62,7 +62,7 @@ const generators = {
     };
   },
 
-  table(name, tokens) {
+  table(_name, _tokens) {
     return {
       template: `    <div class="table-wrapper">\n      <table class="table">\n        <thead><tr><th v-for="col in columns" :key="col.key">{{ col.label }}</th></tr></thead>\n        <tbody>\n          <tr v-for="(row, idx) in data" :key="idx">\n            <td v-for="col in columns" :key="col.key">{{ row[col.key] }}</td>\n          </tr>\n          <tr v-if="data.length === 0"><td :colspan="columns.length" class="table-empty">No data</td></tr>\n        </tbody>\n      </table>\n    </div>`,
       script: `    const props = defineProps({\n      columns: { type: Array, default: () => [] },\n      data: { type: Array, default: () => [] },\n    });`,
@@ -70,7 +70,7 @@ const generators = {
     };
   },
 
-  list(name, tokens) {
+  list(_name, _tokens) {
     return {
       template: `    <ul :class="['list', 'list-' + variant]">\n      <li v-for="(item, idx) in items" :key="idx" class="list-item">\n        <slot :item="item" :index="idx"><span class="list-item-content">{{ item }}</span></slot>\n      </li>\n      <li v-if="items.length === 0" class="list-empty"><slot name="empty">No items</slot></li>\n    </ul>`,
       script: `    const props = defineProps({\n      items: { type: Array, default: () => [] },\n      variant: { type: String, default: 'default' },\n    });`,

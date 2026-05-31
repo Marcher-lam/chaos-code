@@ -79,7 +79,7 @@ class ComplexityCommand {
     return { summary, files: results };
   }
 
-  calculateMetrics(content, filePath) {
+  calculateMetrics(content, _filePath) {
     const lines = content.split('\n');
     const nonEmptyLines = lines.filter(l => l.trim().length > 0);
     const commentLines = lines.filter(l => /^\s*\/\//.test(l) || /^\s*#/.test(l));
@@ -90,7 +90,7 @@ class ComplexityCommand {
     const cyclomaticComplexity = decisionMatches.length + 1;
 
     // Count nesting for cognitive complexity
-    const nestingMatches = content.match(COMPLEXITY_PATTERNS.nesting) || [];
+    const _nestingMatches = content.match(COMPLEXITY_PATTERNS.nesting) || [];
     const maxNesting = this.calculateMaxNesting(content);
 
     // Cognitive complexity formula (simplified)
@@ -171,7 +171,7 @@ class ComplexityCommand {
     };
   }
 
-  printReport(summary, results, options = {}) {
+  printReport(summary, results, _options = {}) {
     console.log(chalk.bold('\nComplexity Analysis Report\n'));
 
     console.log('  Overview:');

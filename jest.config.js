@@ -11,6 +11,7 @@ module.exports = {
     '/go-starter-test/',
     '/rust-starter-test/',
     '/stdd-integrated-test/',
+    '/.claude/',
   ],
   modulePathIgnorePatterns: [
     '<rootDir>/stdd/templates/starters',

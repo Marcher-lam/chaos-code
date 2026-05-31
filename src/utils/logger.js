@@ -34,10 +34,7 @@ function formatArgs(template, args) {
   const result = template.replace(/%[sdjifoO]/g, () => {
     if (idx >= args.length) return '';
     const val = args[idx++];
-    switch (arguments) {
-      default:
-        return String(val);
-    }
+    return String(val);
   });
 
   // Append any leftover args (matches console.log semantics)

@@ -8,7 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const { walkFiles: _walkFiles } = require('../../utils/file-walker');
-const logger = createLogger('factory');
+const _logger = createLogger('factory');
 
 const TYPE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx'];
 const FACTORY_TEMPLATE = `/**
@@ -82,7 +82,7 @@ class {{typeName}}Factory {
 module.exports = { {{typeName}}Factory };
 `;
 
-const INDEX_TEMPLATE = `/**
+const _INDEX_TEMPLATE = `/**
  * Factory index - exports all factories
  */
 

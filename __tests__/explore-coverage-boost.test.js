@@ -99,7 +99,7 @@ describe('explore.js coverage boost', () => {
       mkdirp(path.join(TMP, 'stdd'));
       const cmd = new ExploreCommand(TMP);
       const outputPath = path.join(TMP, 'report.md');
-      const report = await cmd.execute(null, { output: outputPath, sourceDir: path.join(TMP, 'src') });
+      const _report = await cmd.execute(null, { output: outputPath, sourceDir: path.join(TMP, 'src') });
       expect(fs.existsSync(outputPath)).toBe(true);
       const content = fs.readFileSync(outputPath, 'utf8');
       expect(content).toContain('STDD Project Exploration Report');

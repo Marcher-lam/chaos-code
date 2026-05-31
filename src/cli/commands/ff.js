@@ -101,7 +101,7 @@ ${workspaceRow}
     if (maxTasks >= 6) tasks.push('TASK-006: 安全审查与漏洞扫描');
     if (maxTasks >= 7) tasks.push('TASK-007: 文档更新与 API 规范对齐');
     if (maxTasks >= 8) tasks.push('TASK-008: 合规检查与审计日志验证');
-    const taskLines = tasks.slice(0, maxTasks).map((t, i) => `- [ ] ${t}`).join('\n');
+    const taskLines = tasks.slice(0, maxTasks).map((t, _i) => `- [ ] ${t}`).join('\n');
     return `# Tasks
 ${workspaceHeader}
 

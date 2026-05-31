@@ -257,7 +257,7 @@ describe('reporter-injector utility', () => {
       fs.writeFileSync(path.join(tmpDir, 'pyproject.toml'), '[tool.pytest]\n');
 
       const origReadFileSync = fs.readFileSync;
-      const origExistsSync = fs.existsSync;
+      const _origExistsSync = fs.existsSync;
 
       // Override readFileSync to throw for pyproject.toml
       fs.readFileSync = (filePath, encoding) => {
@@ -271,7 +271,7 @@ describe('reporter-injector utility', () => {
 
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
-      const result = _detectFramework(tmpDir);
+      const _result = _detectFramework(tmpDir);
       // Should still work: returns null since the file can't be read for pytest content
       // But console.error is called for non-ENOENT/EACCES error
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Read error on pyproject'));

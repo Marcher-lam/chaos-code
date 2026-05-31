@@ -303,8 +303,8 @@ describe('ValidateCommand', () => {
 
   // --- lineDiagnostics handles unreadable file ---
   it('lineDiagnostics returns error for unreadable file', () => {
-    const tmp = makeTmp();
-    const result = require('../src/cli/commands/validate');
+    const _tmp = makeTmp();
+    const _result = require('../src/cli/commands/validate');
     // We can't easily access lineDiagnostics directly since it's not exported,
     // but we can verify it handles errors via execute by using a file that gets deleted
     // This is implicitly tested through the code path.
@@ -314,7 +314,7 @@ describe('ValidateCommand', () => {
   it('execute with json flag outputs JSON to console', () => {
     const tmp = setupWithSpecs(makeTmp());
     const cmd = new ValidateCommand(tmp);
-    const result = cmd.execute(null, { json: true });
+    const _result = cmd.execute(null, { json: true });
     const output = logSpy.mock.calls.map(c => c[0]).join('\n');
     const parsed = JSON.parse(output);
     expect(parsed.status).toBe('pass');

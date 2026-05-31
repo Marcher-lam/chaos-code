@@ -563,7 +563,7 @@ describe('round20 — tdd-init.js branches', () => {
       fs.writeFileSync(path.join(srcDir, 'requirements.txt'), 'pytest\nflask\n');
 
       const cmd = new TddInitCommand(silentSpinner);
-      const result = await cmd.execute(tempDir);
+      const _result = await cmd.execute(tempDir);
 
       const testPath = path.join(srcDir, '__tests__', 'test_service.py');
       expect(fs.existsSync(testPath)).toBe(true);
@@ -581,7 +581,7 @@ describe('round20 — tdd-init.js branches', () => {
       fs.writeFileSync(path.join(tempDir, 'requirements.txt'), 'pytest\n');
 
       const cmd = new TddInitCommand(silentSpinner);
-      const result = await cmd.execute(tempDir);
+      const _result = await cmd.execute(tempDir);
 
       const testPath = path.join(srcDir, '__tests__', 'test_handler.py');
       expect(fs.existsSync(testPath)).toBe(true);
@@ -776,7 +776,7 @@ describe('round20 — command-loader.js branches', () => {
   describe('_wireAction: spinnerText as function', () => {
     it('evaluates spinnerText function with mapped args', async () => {
       const program = createProgram();
-      let receivedText = null;
+      let _receivedText = null;
 
       class TestCmd {
         async execute() { return 'ok'; }

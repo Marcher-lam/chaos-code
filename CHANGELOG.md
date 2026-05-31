@@ -2,6 +2,26 @@
 
 All notable changes to STDD Copilot will be documented in this file.
 
+## [1.2.0] - 2026-05-26
+
+### Changed
+- **cli.js inline commands migrated to CommandRegistry**: `dashboard`, `builder`, `ui`, `docs` commands moved from inline registration in `cli.js` to `command-registry.js` via new `create` + `mapper` pattern in `CommandLoader`. Reduces `cli.js` by ~85 lines and eliminates duplication.
+- **ParallelExecutor degradation retry**: Now only retries on transient errors (ETIMEDOUT, ECONNRESET, EBUSY, etc.) via new `isTransientError()` function. Permanent errors (SyntaxError, TypeError, ReferenceError) skip retry to avoid wasted cycles.
+- **Agent Simulator convergence detection**: Added three-layer structural convergence detection beyond keyword matching: (1) participation coverage — all agents spoke in the last round, (2) content stability — Jaccard word-set similarity > 0.6 between consecutive rounds, (3) unanimous positive — all agents expressed agreement. Convergence requires ≥2 signals.
+- **ESLint `no-unused-vars`** changed from `off` to `warn` to surface dead code accumulation.
+
+### Fixed
+- **logger.js `formatArgs` dead code**: Removed `switch (arguments)` in the printf replacement callback that never matched any case. Now uses direct `String(val)` return.
+- **Skill template deduplication**: Removed duplicated "设计决策" sections in `init/SKILL.md` (621→605 lines) and `guard/SKILL.md` (478→462 lines).
+
+### Added
+- **types/index.js expanded**: Added 14 new `@typedef` definitions covering core data structures (TechStackInfo, TaskInfo, AgentState, EvidenceEvent, ProfileConfig, ParallelGroup, SecurityScanResult, SudoLangParseResult, BrowserSnapshot, etc.).
+- **Structural convergence functions exported**: `detectStructuralConvergence`, `extractWordSet`, `jaccardSimilarity` now exported from `agent-simulator.js` for testing and extension.
+- **.gitignore**: Added `stdd/runtime/generated/` and `stdd/memory/*.bin`.
+
+### Docs
+- Updated all documentation (README, ARCHITECTURE, CONTRIBUTING, USAGE, agent-protocol, capabilities) with current metrics: 88 command implementations, 86 command templates, 53 skills, 28 utils modules, 196 test suites.
+
 ## [1.1.0] - 2026-05-26
 
 ### Added — Phase 2-4: Builder, UI Generator, Modules, Dashboard, Docs Site

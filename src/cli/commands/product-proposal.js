@@ -525,11 +525,11 @@ class ProductProposalCommand {
 
   inferUserPersonas() {
     const personas = [];
-    const { config, packageJson, specs, proposals, vision } = this.artifacts;
+    const { config, packageJson, specs, proposals, _vision } = this.artifacts;
 
     // Infer from project type
     const projType = (config && config.project && config.project.type) || '';
-    const projLang = (config && config.project && config.project.language) || '';
+    const _projLang = (config && config.project && config.project.language) || '';
     const projFramework = (config && config.project && config.project.framework) || '';
 
     if (projType.includes('cli') || projType.includes('tool') || projType.includes('CLI')) {
@@ -675,7 +675,7 @@ class ProductProposalCommand {
 
   inferValuePropositions() {
     const props = [];
-    const { config, packageJson, proposals, specs, evidence, vision, designs, tasks } = this.artifacts;
+    const { _config, packageJson, proposals, specs, evidence, vision, designs, tasks } = this.artifacts;
 
     if (specs && specs.length > 0) {
       props.push({
@@ -1188,7 +1188,7 @@ class ProductProposalCommand {
 
   inferCompetitiveDimensions() {
     const dims = [];
-    const { specs, evidence, proposals, designs, tasks, vision, config, packageJson } = this.artifacts;
+    const { specs, evidence, proposals, designs, tasks, vision, config, _packageJson } = this.artifacts;
 
     // BDD spec coverage dimension
     if (proposals && specs) {
@@ -1263,7 +1263,7 @@ class ProductProposalCommand {
 
   inferCompetitiveAdvantages() {
     const advantages = [];
-    const { specs, evidence, proposals, tasks, designs, vision, config } = this.artifacts;
+    const { specs, evidence, proposals, tasks, designs, _vision, _config } = this.artifacts;
 
     const hasFullPipeline = proposals && specs && designs && tasks;
     if (hasFullPipeline) {
@@ -1339,7 +1339,7 @@ class ProductProposalCommand {
 
   inferNextSteps() {
     const steps = [];
-    const { vision, config, proposals, specs, designs, tasks, evidence, archived } = this.artifacts;
+    const { vision, config, proposals, specs, designs, tasks, evidence, _archived } = this.artifacts;
 
     if (!vision) {
       steps.push({
@@ -1481,7 +1481,7 @@ class ProductProposalCommand {
 
   buildKpiTable() {
     const rows = [];
-    const { proposals, specs, evidence, tasks, vision, config } = this.artifacts;
+    const { proposals, specs, evidence, tasks, vision, _config } = this.artifacts;
 
     // 1. Spec coverage rate
     const totalChanges = proposals ? proposals.length : 0;

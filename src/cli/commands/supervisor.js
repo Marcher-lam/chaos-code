@@ -10,7 +10,7 @@ const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const inquirer = require('inquirer');
 const { AgentEngine } = require('../../runtime/agent-simulator');
-const logger = createLogger('supervisor');
+const _logger = createLogger('supervisor');
 
 const ROLES = {
   'Product Owner': { color: 'blue', expertise: 'requirements, priorities, business value' },
@@ -44,7 +44,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. What is the expected ROI vs. development effort?\n`
         + `4. Are there scope boundaries that need definition before proceeding?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       if (/TODO|FIXME/i.test(content)) findings.push({ severity: 'medium', message: 'Unresolved TODOs may indicate scope gaps', category: 'scope' });
       if (!/requirement|spec|acceptance/i.test(content)) findings.push({ severity: 'low', message: 'No explicit requirement references found', category: 'traceability' });
@@ -65,7 +65,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. Are there existing patterns in the codebase to follow?\n`
         + `4. What is the testing strategy for the changes?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       const lines = content.split('\n');
       if (lines.length > 300) findings.push({ severity: 'medium', message: `File is ${lines.length} lines — consider splitting into modules`, category: 'maintainability' });
@@ -81,7 +81,7 @@ const ROLE_ANALYSIS_PATTERNS = {
   'Tester': {
     focusAreas: ['edge cases', 'failure scenarios', 'test coverage', 'validation', 'regression risk'],
     riskPatterns: ['untested paths', 'missing edge cases', 'flaky tests', 'inadequate coverage', 'race conditions'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `Testing perspective on "${query}".\n`
         + `Key considerations:\n`
         + `1. What are the critical test scenarios (happy path, edge cases, failure modes)?\n`
@@ -89,7 +89,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. Are there boundary conditions or race conditions to test?\n`
         + `4. What integration tests are needed?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       if (!/describe\s*\(|it\s*\(|test\s*\(|expect\s*\(/i.test(content)) findings.push({ severity: 'high', message: 'No test structures detected', category: 'coverage' });
       if (/\.only\(|\.skip\(/i.test(content)) findings.push({ severity: 'high', message: 'Test has .only() or .skip() — will not run in CI correctly', category: 'ci' });
@@ -100,7 +100,7 @@ const ROLE_ANALYSIS_PATTERNS = {
   'Reviewer': {
     focusAreas: ['code quality', 'best practices', 'naming conventions', 'DRY', 'readability'],
     riskPatterns: ['code duplication', 'poor naming', 'magic numbers', 'deeply nested code', 'dead code'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `Code review perspective on "${query}".\n`
         + `Key considerations:\n`
         + `1. Does the code follow established conventions and style guides?\n`
@@ -108,7 +108,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. Is the code readable and self-documenting?\n`
         + `4. Are there any anti-patterns or code smells?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       const lines = content.split('\n');
       // Check for deeply nested code
@@ -146,7 +146,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `4. Does this introduce scalability concerns?\n`
         + `5. Which design pattern applies here?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       // Check require/import patterns for coupling
       const imports = content.match(/require\(['"]([^'"]+)['"]\)/g) || [];
@@ -166,7 +166,7 @@ const ROLE_ANALYSIS_PATTERNS = {
   'Security': {
     focusAreas: ['vulnerabilities', 'input validation', 'authentication', 'authorization', 'data exposure'],
     riskPatterns: ['SQL injection', 'XSS', 'CSRF', 'insecure defaults', 'hardcoded secrets', 'path traversal'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `Security assessment of "${query}".\n`
         + `Key considerations:\n`
         + `1. Are all inputs validated and sanitized?\n`
@@ -175,7 +175,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `4. Are there dependency vulnerabilities to check?\n`
         + `5. Does this handle sensitive data correctly (encryption, hashing)?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       // Hardcoded secrets
       if (/password\s*[:=]\s*['"][^'"]+['"]|api_?key\s*[:=]\s*['"][^'"]+['"]|secret\s*[:=]\s*['"][^'"]+['"]|token\s*[:=]\s*['"][^'"]+['"]/i.test(content)) findings.push({ severity: 'high', message: 'Potential hardcoded secret or credential detected', category: 'secrets' });
@@ -193,7 +193,7 @@ const ROLE_ANALYSIS_PATTERNS = {
   'DevOps': {
     focusAreas: ['deployment', 'CI/CD', 'infrastructure', 'monitoring', 'rollback strategy'],
     riskPatterns: ['manual deployment steps', 'missing health checks', 'no rollback plan', 'configuration drift', 'insufficient monitoring'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `DevOps perspective on "${query}".\n`
         + `Key considerations:\n`
         + `1. What are the deployment requirements and rollout strategy?\n`
@@ -202,7 +202,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `4. What is the rollback plan if things go wrong?\n`
         + `5. Are there infrastructure or environment changes required?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       if (!/health|readiness|liveness/i.test(content) && /server|app|listen/i.test(content)) findings.push({ severity: 'medium', message: 'No health check endpoint detected for service', category: 'monitoring' });
       if (/process\.env\./i.test(content)) {
@@ -215,7 +215,7 @@ const ROLE_ANALYSIS_PATTERNS = {
   'UX': {
     focusAreas: ['user experience', 'accessibility', 'design consistency', 'interaction patterns', 'feedback'],
     riskPatterns: ['poor error messages', 'missing loading states', 'inconsistent UI', 'accessibility barriers', 'slow perceived performance'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `UX perspective on "${query}".\n`
         + `Key considerations:\n`
         + `1. How does this affect the user journey and workflow?\n`
@@ -223,7 +223,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. Is this accessible (WCAG compliance)?\n`
         + `4. Does this maintain design consistency with the rest of the application?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       if (/alert\s*\(/i.test(content)) findings.push({ severity: 'medium', message: 'alert() breaks user flow — use custom notification component', category: 'ux' });
       if (!/aria-|role=|alt=|label/i.test(content) && /<\w+[^>]*>/i.test(content)) findings.push({ severity: 'medium', message: 'HTML elements without ARIA attributes — check accessibility', category: 'accessibility' });
@@ -233,7 +233,7 @@ const ROLE_ANALYSIS_PATTERNS = {
   'BA': {
     focusAreas: ['business processes', 'requirements', 'workflows', 'stakeholder impact', 'acceptance criteria'],
     riskPatterns: ['ambiguous requirements', 'missing acceptance criteria', 'unmapped workflows', 'stakeholder gaps'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `Business analysis of "${query}".\n`
         + `Key considerations:\n`
         + `1. Are the business requirements clearly defined and measurable?\n`
@@ -241,14 +241,14 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. Who are the stakeholders and how are they impacted?\n`
         + `4. What are the acceptance criteria for success?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (_content, _ctx) => {
       return [];
     },
   },
   'Tech Writer': {
     focusAreas: ['documentation', 'API docs', 'guides', 'code comments', 'examples'],
     riskPatterns: ['missing docs', 'outdated comments', 'undocumented APIs', 'no examples'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `Documentation perspective on "${query}".\n`
         + `Key considerations:\n`
         + `1. What documentation needs to be created or updated?\n`
@@ -256,7 +256,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. Is the user-facing documentation clear and accurate?\n`
         + `4. Are there migration or upgrade guides needed?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (content, _ctx) => {
       const findings = [];
       const lines = content.split('\n');
       const commentLines = lines.filter(l => /^\s*(\/\/|\/\*|\*|#)/.test(l)).length;
@@ -269,7 +269,7 @@ const ROLE_ANALYSIS_PATTERNS = {
   'QA Lead': {
     focusAreas: ['test strategy', 'quality planning', 'metrics', 'test automation', 'release criteria'],
     riskPatterns: ['insufficient test coverage', 'no regression suite', 'missing integration tests', 'no performance tests'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `Quality strategy perspective on "${query}".\n`
         + `Key considerations:\n`
         + `1. What test levels are needed (unit, integration, E2E)?\n`
@@ -277,14 +277,14 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. What metrics should we track?\n`
         + `4. Are there regression risks from this change?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (_content, _ctx) => {
       return [];
     },
   },
   'Data Analyst': {
     focusAreas: ['data quality', 'metrics', 'analytics', 'reporting', 'data pipelines'],
     riskPatterns: ['data quality issues', 'missing validation', 'incorrect aggregations', 'data leakage'],
-    promptTemplate: (query, ctx) => {
+    promptTemplate: (query, _ctx) => {
       return `Data perspective on "${query}".\n`
         + `Key considerations:\n`
         + `1. What data is involved and how should it be validated?\n`
@@ -292,7 +292,7 @@ const ROLE_ANALYSIS_PATTERNS = {
         + `3. How does this affect data pipelines or reporting?\n`
         + `4. Are there data privacy or retention implications?`;
     },
-    reviewStrategy: (content, ctx) => {
+    reviewStrategy: (_content, _ctx) => {
       return [];
     },
   },

@@ -7,6 +7,9 @@ describe('UpdateCommand', () => {
   let tempDirs = [];
   let logSpy;
 
+  // Strip ANSI color codes from string for reliable assertions
+  const stripAnsi = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
+
   function createTempProject(name) {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-update-test-'));
     tempDirs.push(root);
@@ -57,7 +60,7 @@ describe('UpdateCommand', () => {
         '01-library-first.md'
       );
       expect(fs.existsSync(articlePath)).toBe(true);
-      expect(logSpy.mock.calls.some(call => String(call[0]).includes('Update summary'))).toBe(true);
+      expect(logSpy.mock.calls.some(call => stripAnsi(call[0]).includes('Update summary'))).toBe(true);
     });
 
     it('should report errors and fail when file sync encounters write errors', async () => {
@@ -138,7 +141,7 @@ describe('UpdateCommand', () => {
       expect(skillsEntries.length).toBeGreaterThan(0);
 
       const summaryCall = logSpy.mock.calls.find(call =>
-        String(call[0]).includes('Update summary')
+        stripAnsi(call[0]).includes('Update summary')
       );
       expect(summaryCall).toBeDefined();
 
@@ -172,12 +175,12 @@ describe('UpdateCommand', () => {
       expect(content).toBe('# My Custom Modified SKILL\n\nlocal changes here\n');
 
       const summaryCall = logSpy.mock.calls.find(call =>
-        String(call[0]).includes('Update summary')
+        stripAnsi(call[0]).includes('Update summary')
       );
       expect(summaryCall).toBeDefined();
 
       const localChangesCall = logSpy.mock.calls.find(call => {
-        const msg = String(call[0]);
+        const msg = stripAnsi(call[0]);
         return msg.includes('local changes 1') || msg.includes('local changes 2') || msg.includes('local changes 3');
       });
       expect(localChangesCall).toBeDefined();
@@ -254,7 +257,7 @@ describe('UpdateCommand', () => {
       expect(fs.readdirSync(existingSkillsDir).length).toBe(1);
 
       const dryRunCall = logSpy.mock.calls.find(call =>
-        String(call[0]).includes('Dry run complete')
+        stripAnsi(call[0]).includes('Dry run complete')
       );
       expect(dryRunCall).toBeDefined();
     });
@@ -289,7 +292,7 @@ describe('UpdateCommand', () => {
 
       expect(fs.readFileSync(configPath, 'utf8')).toBe(before);
       const registryCall = logSpy.mock.calls.find(call =>
-        String(call[0]).includes('Workspace registry: would update')
+        stripAnsi(call[0]).includes('Workspace registry: would update')
       );
       expect(registryCall).toBeDefined();
     });
@@ -427,7 +430,7 @@ workspaces:
       const updateCommand = new UpdateCommand(silentSpinner);
       await updateCommand.execute(projectPath, { force: false, dryRun: false });
 
-      expect(logSpy.mock.calls.some(call => String(call[0]).includes('Use --force to overwrite'))).toBe(true);
+      expect(logSpy.mock.calls.some(call => stripAnsi(call[0]).includes('Use --force to overwrite'))).toBe(true);
     });
   });
 
@@ -447,7 +450,7 @@ workspaces:
       const updateCommand = new UpdateCommand(silentSpinner);
       await updateCommand.execute(projectPath, { dryRun: true, force: true });
 
-      expect(logSpy.mock.calls.some(call => String(call[0]).includes('Updated:'))).toBe(true);
+      expect(logSpy.mock.calls.some(call => stripAnsi(call[0]).includes('Updated:'))).toBe(true);
     });
 
     it('should print local changes files in dry-run mode', async () => {
@@ -465,7 +468,7 @@ workspaces:
       const updateCommand = new UpdateCommand(silentSpinner);
       await updateCommand.execute(projectPath, { dryRun: true, force: false });
 
-      expect(logSpy.mock.calls.some(call => String(call[0]).includes('Skipped (Local changes):'))).toBe(true);
+      expect(logSpy.mock.calls.some(call => stripAnsi(call[0]).includes('Skipped (Local changes):'))).toBe(true);
     });
   });
 
@@ -481,7 +484,7 @@ workspaces:
 
       // Should succeed without errors about engine commands
       expect(logSpy.mock.calls.some(call =>
-        String(call[0]).includes('Engine commands:') && String(call[0]).includes('updated 0')
+        stripAnsi(call[0]).includes('Engine commands:') && stripAnsi(call[0]).includes('updated 0')
       )).toBe(true);
     });
   });
@@ -496,7 +499,7 @@ workspaces:
       await updateCommand.execute(projectPath, { force: false });
 
       expect(logSpy.mock.calls.some(call =>
-        String(call[0]).includes('Skills:') && String(call[0]).includes('updated 0')
+        stripAnsi(call[0]).includes('Skills:') && stripAnsi(call[0]).includes('updated 0')
       )).toBe(true);
     });
   });
@@ -512,7 +515,7 @@ workspaces:
       await updateCommand.execute(projectPath, { force: false });
 
       // Should complete without error
-      expect(logSpy.mock.calls.some(call => String(call[0]).includes('Update summary'))).toBe(true);
+      expect(logSpy.mock.calls.some(call => stripAnsi(call[0]).includes('Update summary'))).toBe(true);
     });
   });
 
@@ -528,7 +531,7 @@ workspaces:
         await updateCommand.execute(projectPath, { force: false });
         // Should log errors about missing schema dir
         expect(logSpy.mock.calls.some(call =>
-          String(call[0]).includes('Schemas:')
+          stripAnsi(call[0]).includes('Schemas:')
         )).toBe(true);
       } finally {
         spy.mockRestore();
@@ -547,7 +550,7 @@ workspaces:
       try {
         await updateCommand.execute(projectPath, { force: false });
         expect(logSpy.mock.calls.some(call =>
-          String(call[0]).includes('GitHub templates:')
+          stripAnsi(call[0]).includes('GitHub templates:')
         )).toBe(true);
       } finally {
         spy.mockRestore();
@@ -637,7 +640,7 @@ workspaces:
       await updateCommand.execute(projectPath, { dryRun: true, force: true });
 
       // Should show the file as "updated" in dry run
-      expect(logSpy.mock.calls.some(call => String(call[0]).includes('Updated:'))).toBe(true);
+      expect(logSpy.mock.calls.some(call => stripAnsi(call[0]).includes('Updated:'))).toBe(true);
 
       // File should NOT actually be modified
       const content = fs.readFileSync(path.join(existingSkillDir, 'SKILL.md'), 'utf8');

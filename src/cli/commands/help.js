@@ -8,7 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const { detectTechStack } = require('../../utils/tech-stack-detector');
-const logger = createLogger('help');
+const _logger = createLogger('help');
 
 const COMMAND_CATEGORIES = {
   'Core Workflow': ['init', 'new', 'propose', 'spec', 'plan', 'apply', 'verify', 'archive'],
@@ -55,7 +55,7 @@ class HelpCommand {
     }
   }
 
-  async overview(options = {}) {
+  async overview(_options = {}) {
     const techStack = await detectTechStack(this.cwd);
 
     const output = [
@@ -103,7 +103,7 @@ class HelpCommand {
     return { topic: 'overview', techStack };
   }
 
-  async workflowGuide(options = {}) {
+  async workflowGuide(_options = {}) {
     const output = [
       chalk.bold('\nSTDD Workflow Guide\n'),
       chalk.dim('─'.repeat(50)),
@@ -154,7 +154,7 @@ class HelpCommand {
     return { topic: 'workflow' };
   }
 
-  listCommands(options = {}) {
+  listCommands(_options = {}) {
     const output = [chalk.bold('\nSTDD Commands\n'), chalk.dim('─'.repeat(50)), ''];
 
     for (const [category, commands] of Object.entries(COMMAND_CATEGORIES)) {
@@ -277,7 +277,7 @@ class HelpCommand {
     return { query, results, count: results.length };
   }
 
-  async contextHelp(options = {}) {
+  async contextHelp(_options = {}) {
     const techStack = await detectTechStack(this.cwd);
 
     const output = [
@@ -321,7 +321,7 @@ class HelpCommand {
     return { context: techStack, initialized: fs.existsSync(stddConfigPath) };
   }
 
-  troubleshoot(options = {}) {
+  troubleshoot(_options = {}) {
     const output = [
       chalk.bold('\nTroubleshooting Guide\n'),
       chalk.dim('─'.repeat(50)),
@@ -361,7 +361,7 @@ class HelpCommand {
     return { topic: 'troubleshoot' };
   }
 
-  cheatsheet(options = {}) {
+  cheatsheet(_options = {}) {
     const output = [
       chalk.bold('\nSTDD Cheatsheet\n'),
       chalk.dim('─'.repeat(50)),
@@ -403,7 +403,7 @@ class HelpCommand {
     return { topic: 'cheatsheet' };
   }
 
-  commandHelp(command, options = {}) {
+  commandHelp(command, _options = {}) {
     const description = this.getShortDescription(command);
     const output = [
       chalk.bold(`\nstdd ${command}\n`),

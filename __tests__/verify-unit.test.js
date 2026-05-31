@@ -9,8 +9,16 @@ const path = require('path');
 
 const mockFs = {
   existsSync: jest.fn(),
+  readFileSync: jest.fn().mockReturnValue(''),
 };
 jest.mock('fs', () => mockFs);
+
+const mockCompare = jest.fn();
+jest.mock('../src/cli/commands/browser', () => ({
+  BrowserCommand: jest.fn().mockImplementation(() => ({
+    compare: mockCompare,
+  })),
+}));
 
 jest.mock('chalk', () => {
   const passthrough = (str) => str;
@@ -1001,6 +1009,80 @@ describe('VerifyCommand (unit)', () => {
 
       const output = consoleCapture.logs.join('\n');
       expect(output).toContain('root');
+    });
+  });
+
+  // ========================================
+  // Visual Regression Check
+  // ========================================
+
+  describe('visual regression check', () => {
+    it('triggers visual regression when enabled in config.yaml and succeeds', async () => {
+      // Mock existsSync for config.yaml to return true
+      mockFs.existsSync.mockImplementation((filePath) => {
+        if (filePath.endsWith('config.yaml') || filePath.includes('stdd')) return true;
+        return false;
+      });
+
+      const configYaml = `
+visual_regression:
+  enabled: true
+  routes:
+    - name: dashboard
+      url: http://localhost:3000/dashboard
+      threshold: 0.01
+`;
+      mockFs.readFileSync.mockReturnValue(configYaml);
+      mockCompare.mockResolvedValue({
+        status: 'pass',
+        diffRatio: 0.005,
+        engine: 'fallback',
+        message: 'Matched 99.5%'
+      });
+
+      await runVerify('demo');
+
+      expect(mockCompare).toHaveBeenCalledWith('http://localhost:3000/dashboard', {
+        name: 'dashboard',
+        threshold: 0.01,
+        width: undefined,
+        height: undefined
+      });
+      const output = consoleCapture.logs.join('\n');
+      expect(output).toContain('Visual Regression Check');
+      expect(output).toContain('Comparing route: dashboard');
+      expect(output).toContain('Visual:      PASS');
+      expect(process.exitCode).toBeUndefined();
+    });
+
+    it('triggers visual regression and fails when mismatch exceeds threshold', async () => {
+      mockFs.existsSync.mockImplementation((filePath) => {
+        if (filePath.endsWith('config.yaml') || filePath.includes('stdd')) return true;
+        return false;
+      });
+
+      const configYaml = `
+visual_regression:
+  enabled: true
+  routes:
+    - name: dashboard
+      url: http://localhost:3000/dashboard
+      threshold: 0.01
+`;
+      mockFs.readFileSync.mockReturnValue(configYaml);
+      mockCompare.mockResolvedValue({
+        status: 'fail',
+        diffRatio: 0.04,
+        engine: 'fallback',
+        message: 'Diff 4%'
+      });
+
+      await runVerify('demo');
+
+      const output = consoleCapture.logs.join('\n');
+      expect(output).toContain('Visual Regression: failed');
+      expect(output).toContain('Visual:      FAIL');
+      expect(process.exitCode).toBe(1);
     });
   });
 });

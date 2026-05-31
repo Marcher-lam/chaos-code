@@ -204,7 +204,7 @@ describe('cli.js entry point', () => {
 
   // Helper: collect all action callbacks registered on inline commands
   function getInlineCommandActions() {
-    const program = commanderMock._program;
+    const _program = commanderMock._program;
     const actions = [];
     for (const cmd of commanderMock._commands) {
       if (cmd.action.mock.calls.length > 0) {
@@ -675,7 +675,7 @@ describe('cli.js entry point', () => {
 
     it('baby-steps command should throw when not initialized', async () => {
       process.exitCode = 0;
-      const { findActiveChange } = require('../src/utils/change-utils');
+      const { _findActiveChange } = require('../src/utils/change-utils');
       const fs = require('fs');
       const origExistsSync = fs.existsSync;
       fs.existsSync = jest.fn().mockReturnValue(false);

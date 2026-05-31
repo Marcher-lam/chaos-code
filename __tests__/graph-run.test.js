@@ -567,7 +567,7 @@ describe('GraphRunCommand', () => {
 
     test('** without trailing slash matches any path', () => {
       // Covers lines 41-42: ** without / after it
-      const re = require('../src/cli/commands/graph-run');
+      const _re = require('../src/cli/commands/graph-run');
       // Access the function indirectly via _evaluateCondition with has_file_pattern
       // We'll test via globPatternToRegex by invoking file pattern evaluation
       const command = new _GRC();

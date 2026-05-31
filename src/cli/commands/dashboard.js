@@ -19,7 +19,7 @@ class DashboardCommand {
     this.stddDir = path.join(cwd, 'stdd');
   }
 
-  async execute(action = 'generate', args = [], options = {}) {
+  async execute(action = 'generate', _args = [], options = {}) {
     switch (action) {
       case 'generate':
       case 'create':
@@ -426,7 +426,7 @@ class DashboardCommand {
     // Watch stdd/ directory for changes
     let debounceTimer = null;
     try {
-      fs.watch(this.stddDir, { recursive: true }, (eventType, filename) => {
+      fs.watch(this.stddDir, { recursive: true }, (_eventType, _filename) => {
         if (debounceTimer) clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           try {

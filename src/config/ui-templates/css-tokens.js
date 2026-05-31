@@ -4,7 +4,7 @@
  */
 
 const fs = require('fs');
-const path = require('path');
+const _path = require('path');
 
 /**
  * Extract design tokens from a DESIGN.md file.

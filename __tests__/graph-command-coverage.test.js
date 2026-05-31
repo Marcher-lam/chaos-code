@@ -4,14 +4,14 @@ const os = require('os');
 const {
   compileGraph,
   getEdges,
-  getLayers,
+  _getLayers,
   buildMermaid,
   sanitizeMermaidId,
   formatAnalyze,
-  formatParallelLayers,
+  _formatParallelLayers,
   writeOrPrint,
   getGraphHtmlTemplatePath,
-  renderHtml,
+  _renderHtml,
   graphCommand,
 } = require('../src/cli/commands/graph');
 

@@ -360,10 +360,11 @@ const commandRegistry = [
   },
   {
     name: 'user-test [change]',
-    description: 'Generate human and agent user test scripts',
+    description: 'Generate human and agent user test scripts, and framework skeletons',
     options: [
       { flags: '--human-only', description: 'Only human tests' },
       { flags: '--agent-only', description: 'Only agent tests' },
+      { flags: '--framework <fw>', description: 'Generate framework test skeleton (react|vue|vanilla)' },
       { flags: '--json', description: 'JSON output' },
     ],
     action: 'UserTestCommand',
@@ -592,7 +593,7 @@ const commandRegistry = [
   },
   {
     name: 'browser',
-    description: 'Built-in browser drive for E2E testing',
+    description: 'Built-in browser drive for E2E testing and visual regression',
     subcommands: [
       {
         name: 'snapshot <url>',
@@ -616,6 +617,27 @@ const commandRegistry = [
           { flags: '--json', description: 'JSON output' },
         ],
         action: 'BrowserCommand.doctor',
+      },
+      {
+        name: 'compare <url>',
+        description: 'Compare current page with visual baseline',
+        options: [
+          { flags: '--name <name>', description: 'Snapshot unique name', default: 'default' },
+          { flags: '--threshold <ratio>', description: 'Visual difference ratio threshold', default: '0.01' },
+          { flags: '--width <width>', description: 'Viewport width', default: '1280' },
+          { flags: '--height <height>', description: 'Viewport height', default: '800' },
+        ],
+        action: 'BrowserCommand.compare',
+      },
+      {
+        name: 'update-baseline <url>',
+        description: 'Update baseline screenshot for visual comparison',
+        options: [
+          { flags: '--name <name>', description: 'Snapshot unique name', default: 'default' },
+          { flags: '--width <width>', description: 'Viewport width', default: '1280' },
+          { flags: '--height <height>', description: 'Viewport height', default: '800' },
+        ],
+        action: 'BrowserCommand.updateBaseline',
       },
     ],
   },
@@ -738,6 +760,8 @@ const commandRegistry = [
       { flags: '--output <path>', description: 'Custom output file path' },
     ],
     action: 'DashboardCommand',
+    create: () => new (require('../commands/dashboard').DashboardCommand)(process.cwd()),
+    mapper: (action, options) => [action || 'generate', [], options],
     helpText: `Actions: generate (default), open\n\nExamples:\n  stdd dashboard                # Generate dashboard to stdd/dashboard/index.html\n  stdd dashboard generate       # Same as above\n  stdd dashboard open           # Generate and open in browser\n  stdd dashboard --json         # Output raw data as JSON\n  stdd dashboard --output ./report.html`,
   },
   {
@@ -757,6 +781,8 @@ const commandRegistry = [
       { flags: '--force', description: 'Force overwrite existing' },
     ],
     action: 'BuilderCommand',
+    create: () => new (require('../commands/builder').BuilderCommand)(process.cwd()),
+    mapper: (action, name, options) => [action || 'list', [name || ''], options],
     helpText: `Actions: agent, workflow, skill, list, validate, export\n\nExamples:\n  stdd builder agent security-reviewer\n  stdd builder workflow custom-pipeline --phases stdd-propose,stdd-spec,stdd-plan\n  stdd builder skill data-validator\n  stdd builder list\n  stdd builder validate stdd/builders/agents/my-agent.json\n  stdd builder export my-agent --type agent`,
   },
   {
@@ -772,6 +798,11 @@ const commandRegistry = [
       { flags: '--force', description: 'Force overwrite' },
     ],
     action: 'UICommand',
+    create: () => new (require('../commands/ui').UICommand)(process.cwd()),
+    mapper: (action, name, options) => {
+      const validActions = ['page', 'component', 'scaffold', 'preview', 'list'];
+      return [validActions.includes(action) ? action : 'list', [name || ''], options];
+    },
     helpText: `Actions: page, component, scaffold, preview, list\n\nExamples:\n  stdd ui page dashboard                     # Generate a React page\n  stdd ui page home --layout sidebar         # Page with sidebar layout\n  stdd ui page about --framework vanilla     # Vanilla HTML page\n  stdd ui component SubmitButton --type button  # Button component\n  stdd ui component UserCard --type card     # Card component\n  stdd ui scaffold                           # Scaffold full UI app\n  stdd ui preview                            # Generate preview gallery\n  stdd ui list                               # List generated artifacts`,
   },
   {
@@ -783,6 +814,8 @@ const commandRegistry = [
       { flags: '--lang <lang>', description: 'Language filter: zh or en' },
     ],
     action: 'DocsCommand',
+    create: () => new (require('../commands/docs').DocsCommand)(process.cwd()),
+    mapper: (action, options) => [action || 'generate', [], options],
     helpText: `Actions: generate (default), open, sources\n\nExamples:\n  stdd docs                     # Generate docs site to stdd/docs-site/\n  stdd docs generate            # Same as above\n  stdd docs open                # Generate and open in browser\n  stdd docs sources             # List documentation sources\n  stdd docs --json              # Output source listing as JSON\n  stdd docs --lang en           # Generate English-only docs\n  stdd docs --output ./my-docs  # Custom output directory`,
   },
 ];

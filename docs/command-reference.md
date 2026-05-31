@@ -151,7 +151,7 @@
 | **Skill 模板** (SKILL.md) | **53** | `src/templates/skills/stdd/{name}/SKILL.md` |
 | **Command 模板** (.md) | **86** | `src/templates/commands/{name}.md` |
 | **唯一斜杠命令** (`/stdd:*`) | **86** | 去重后的 Skill + Command 入口 |
-| **CLI 命令** (含子命令) | **86** | `stdd xxx` 终端命令 |
+| **CLI 命令** (含子命令) | **84** | `stdd xxx` 终端命令 |
 | **Skill 驱动入口** | **53** | 有 Skill 模板的命令 |
 | **Command 文件入口** | **86** | 有 Command 模板的命令 |
 | **总入口** | **139** | 86 Command + 53 Skill，去重后 86 个唯一入口 |
@@ -159,7 +159,7 @@
 | **Constitution 条例** | **9** | 3 Blocking + 4 Warning + 2 Suggestion |
 | **Agent 角色** | **12** | 4 基础 + 8 专用 |
 | **Graph Intent** | **4** | feature/hotfix/repair/research |
-| **测试基线** | **191 套件 / 4158 测试** | Branch 93.2%，`npm test` 全部通过 |
+| **测试基线** | **196 套件 / ~4150 测试** | Branch 93.2%，`npm test` 全部通过 |
 
 ---
 

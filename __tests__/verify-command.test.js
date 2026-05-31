@@ -6,12 +6,19 @@ const { spawnSync } = require('child_process');
 describe('verify CLI command', () => {
   const cliPath = path.join(__dirname, '..', 'cli.js');
 
+  function stripAnsi(str) {
+    return str.replace(/\x1b\[[0-9;]*m/g, '');
+  }
+
   function runCli(args, cwd) {
-    return spawnSync(process.execPath, [cliPath, ...args], {
+    const result = spawnSync(process.execPath, [cliPath, ...args], {
       cwd,
       encoding: 'utf8',
-      env: { ...process.env, CI: '1' },
+      env: { ...process.env, CI: '1', NO_COLOR: '1', FORCE_COLOR: '0' },
     });
+    result.stdout = stripAnsi(result.stdout || '');
+    result.stderr = stripAnsi(result.stderr || '');
+    return result;
   }
 
   function createTempProject(name, options = {}) {

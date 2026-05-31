@@ -88,6 +88,128 @@
  * @property {Object} mutation - Mutation evidence results
  */
 
+/**
+ * @typedef {Object} TechStackInfo
+ * @property {string} language - Detected language (node, python, rust, go, unknown)
+ * @property {string} testRunner - Test runner name (jest, vitest, pytest, cargo, unknown)
+ * @property {string} framework - Framework name (react, express, fastify, nestjs, unknown)
+ * @property {string} testCommand - Resolved test command string
+ */
+
+/**
+ * @typedef {Object} TaskInfo
+ * @property {number} index - Line index in tasks.md
+ * @property {string} line - Raw line content
+ * @property {string} prefix - Checkbox prefix (e.g. '- ')
+ * @property {string} status - Status character (' ', '~', 'x')
+ * @property {string} description - Task description text
+ * @property {boolean} isDone - Whether the task is completed
+ * @property {string} raw - Raw match string
+ */
+
+/**
+ * @typedef {Object} TasksCompletion
+ * @property {boolean} allDone - Whether all tasks are completed
+ * @property {number} total - Total number of tasks
+ * @property {number} done - Number of completed tasks
+ * @property {string[]} pending - Descriptions of pending tasks
+ */
+
+/**
+ * @typedef {Object} CommandResult
+ * @property {number} status - Exit code (0 = success)
+ * @property {string} stdout - Standard output
+ * @property {string} stderr - Standard error
+ * @property {string[]} args - Parsed arguments
+ * @property {string} bin - Binary name
+ */
+
+/**
+ * @typedef {Object} AgentTurn
+ * @property {string} speakerId - Agent identifier (e.g. 'po', 'arch', 'dev', 'qa')
+ * @property {string} timestamp - ISO timestamp
+ * @property {string} content - Turn content text
+ */
+
+/**
+ * @typedef {Object} AgentState
+ * @property {string} status - Simulation status (idle, active, completed, stopped)
+ * @property {string} topic - Current discussion topic
+ * @property {Object[]} agents - Participating agents
+ * @property {number} currentSpeakerIndex - Index of current speaker
+ * @property {number} round - Current round number
+ * @property {number} maxRounds - Maximum allowed rounds
+ * @property {boolean} convergenceDetected - Whether convergence was detected
+ */
+
+/**
+ * @typedef {Object} EvidenceEvent
+ * @property {string} event_id - Unique event identifier
+ * @property {string} timestamp - ISO timestamp
+ * @property {string} type - Event type from EVENT_TYPES
+ * @property {string} trace_id - Distributed trace identifier
+ * @property {string} span_id - Span identifier
+ * @property {string} [change_name] - Associated change name
+ * @property {string} [phase] - TDD phase (red, green, refactor)
+ * @property {string} [status] - Event status (passed, failed, skipped)
+ * @property {string} [command] - Executed command
+ * @property {number} [duration_ms] - Duration in milliseconds
+ */
+
+/**
+ * @typedef {Object} ProfileConfig
+ * @property {string} id - Profile identifier (quick, standard, thorough, enterprise)
+ * @property {string} name - Display name
+ * @property {string} description - Short description
+ * @property {number} depth - Planning depth level (1-4)
+ * @property {Object} phases - Phase configuration with skip/include arrays
+ */
+
+/**
+ * @typedef {Object} ParallelGroup
+ * @property {string[]} skills - Skill names in this group
+ * @property {('all'|'any'|'race')} strategy - Execution strategy
+ * @property {boolean} passed - Whether the group passed its strategy
+ * @property {number} successCount - Number of succeeded skills
+ * @property {number} totalCount - Total skills in group
+ */
+
+/**
+ * @typedef {Object} SecurityScanResult
+ * @property {Array<{name: string, line: number}>} secrets - Detected secrets
+ * @property {string} sanitized - Sanitized input string
+ * @property {boolean} pathSafe - Whether a path passes safety checks
+ * @property {string} redacted - Redacted output string
+ */
+
+/**
+ * @typedef {Object} SudoLangArtifact
+ * @property {string} [spec] - Auto-generated spec from goals
+ * @property {string} [design] - Architecture constraints document
+ * @property {string} [apispec] - Interface definitions JSON
+ */
+
+/**
+ * @typedef {Object} SudoLangParseResult
+ * @property {string} extractedAt - ISO timestamp
+ * @property {number} complexityScore - Sum of all parsed elements
+ * @property {Object[]} interfaces - Parsed interface definitions
+ * @property {Object[]} constraints - Parsed constraints
+ * @property {Object[]} commands - Parsed commands
+ * @property {Object[]} goals - Parsed goals
+ * @property {string[]} raw - Raw non-comment lines
+ */
+
+/**
+ * @typedef {Object} BrowserSnapshot
+ * @property {string} status - Result status (success)
+ * @property {string} filePath - Screenshot file path
+ * @property {string} relativePath - Path relative to cwd
+ * @property {string} url - Final page URL
+ * @property {string} title - Page title
+ * @property {number} timestamp - Timestamp of snapshot
+ */
+
 const TASK_STATUS = {
   PENDING: ' ',
   IN_PROGRESS: '~',

@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
-const logger = createLogger('brainstorm');
+const _logger = createLogger('brainstorm');
 const { ANGLE_STRATEGIES, CONTEXT_HINT_SIGNALS } = require('../../config/brainstorm-strategies');
 
 const DEFAULT_ANGLES = [
@@ -188,7 +188,7 @@ class BrainstormCommand {
     };
   }
 
-  generateHint(topic, question) {
+  generateHint(topic, _question) {
     const hints = [
       `Consider the impact on ${topic.split(' ')[0]}`,
       'Think about edge cases and error scenarios',
@@ -701,7 +701,7 @@ class BrainstormCommand {
     console.log('');
 
     // Print analysis by angle
-    for (const [key, value] of Object.entries(analysis)) {
+    for (const [_key, value] of Object.entries(analysis)) {
       console.log(chalk.bold(`${value.icon} ${value.name} Perspective`));
       console.log(chalk.dim('─'.repeat(40)));
 

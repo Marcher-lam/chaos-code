@@ -10,7 +10,7 @@ const { createLogger } = require('../../utils/logger');
 const { ParallelExecutor } = require('../../utils/parallel-executor');
 const { HeterogeneousAdapter } = require('../../utils/heterogeneous-adapter');
 const { DynamicRouter } = require('../../utils/dynamic-router');
-const logger = createLogger('parallel');
+const _logger = createLogger('parallel');
 
 class ParallelCommand {
   constructor(cwd = process.cwd()) {
@@ -101,7 +101,7 @@ class ParallelCommand {
     return { intent, plan };
   }
 
-  async visualize(intent, options = {}) {
+  async visualize(intent, _options = {}) {
     const router = new DynamicRouter(this.graphDir);
     const dag = await router.compile(intent);
 

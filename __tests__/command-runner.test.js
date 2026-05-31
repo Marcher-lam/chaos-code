@@ -127,4 +127,15 @@ describe('command-runner', () => {
       args: ['commit', '-m', 'initial commit'],
     });
   });
+
+  test('sandbox rejects non-allowlisted binaries', () => {
+    expect(() => validateCommand('python3 script.py', { sandbox: true })).toThrow("rejected under sandbox: Binary 'python3' is not allowed");
+    expect(() => validateCommand('npm test', { sandbox: true })).not.toThrow();
+  });
+
+  test('sandbox rejects destructive arguments', () => {
+    expect(() => validateCommand('node index.js rm file.txt', { sandbox: true })).toThrow("rejected under sandbox: Destructive argument 'rm' is not allowed");
+    expect(() => validateCommand('node index.js mkdir dirName', { sandbox: true })).toThrow("rejected under sandbox: Destructive argument 'mkdir' is not allowed");
+    expect(() => validateCommand('node index.js parse file.txt', { sandbox: true })).not.toThrow();
+  });
 });

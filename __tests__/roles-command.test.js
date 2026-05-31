@@ -28,7 +28,7 @@ describe('RolesCommand', () => {
 
   it('list outputs JSON when json option is set', () => {
     const cmd = new RolesCommand();
-    const result = cmd.list({ json: true });
+    const _result = cmd.list({ json: true });
 
     const output = logSpy.mock.calls.map(c => c[0]).join('\n');
     const json = JSON.parse(output);
@@ -77,7 +77,7 @@ describe('RolesCommand', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-roles-json-'));
     fs.writeFileSync(path.join(tmp, 'sample.js'), 'const x = 1;');
     const cmd = new RolesCommand(tmp);
-    const result = cmd.execute('adversarial', ['.'], { json: true });
+    const _result = cmd.execute('adversarial', ['.'], { json: true });
 
     const output = logSpy.mock.calls.map(c => c[0]).join('\n');
     const json = JSON.parse(output);
@@ -89,7 +89,7 @@ describe('RolesCommand', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-roles-overflow-'));
     const lines = [];
     for (let i = 0; i < 40; i++) {
-      lines.push(`const password_${i} = "secret_${i}";`);
+      lines.push(`const password = "secret_${i}";`);
     }
     fs.writeFileSync(path.join(tmp, 'many-secrets.js'), lines.join('\n'));
     const cmd = new RolesCommand(tmp);

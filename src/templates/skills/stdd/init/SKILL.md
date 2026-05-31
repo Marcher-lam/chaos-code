@@ -603,19 +603,3 @@ workspaces:
 - [YAML Specification](https://yaml.org/)
 - [Configuration Best Practices](https://12factor.net/config)
 
-## 设计决策
-
-### 为什么需要初始化？
-- **一致性**: 统一的目录结构
-- **配置**: 集中管理配置
-- **可发现**: 明确的文件位置
-
-### 为什么自动检测？
-- **便利**: 减少手动配置
-- **准确**: 基于实际项目状态
-- **智能**: 推荐合理默认值
-
-### 为什么支持 Workspace？
-- **Monorepo**: 现代项目结构
-- **隔离**: 包独立配置
-- **共享**: 全局配置继承

@@ -195,15 +195,15 @@ class ParallelExecutor {
 
       const batchResults = await Promise.all(promises);
 
-      for (const { nodeName, output, error } of batchResults) {
-        if (error) {
-          // 单节点失败：尝试引擎降级
-          const degradedEngine = this.adapter.degrade(
-            engineAssignment.get(nodeName) || 'unknown',
-            nodeName
-          );
-          if (degradedEngine) {
-            // 降级重试一次
+     for (const { nodeName, output, error } of batchResults) {
+       if (error) {
+         // 单节点失败：尝试引擎降级
+         const degradedEngine = this.adapter.degrade(
+           engineAssignment.get(nodeName) || 'unknown',
+           nodeName
+         );
+          if (degradedEngine && isTransientError(error)) {
+            // 降级重试一次（仅瞬时错误）
             try {
               const retryOutput = await this.executeFn(nodeName, context);
               results[nodeName] = retryOutput;
@@ -212,7 +212,7 @@ class ParallelExecutor {
               results[nodeName] = { success: false, error: error.message, degraded: true };
             }
           } else {
-            results[nodeName] = { success: false, error: error.message };
+            results[nodeName] = { success: false, error: error.message, degraded: false };
           }
         } else {
           results[nodeName] = output;
@@ -267,6 +267,22 @@ class ParallelExecutor {
 
     return groups;
   }
+}
+
+/**
+ * Determine if an error is transient (retry may help) vs permanent (retry is pointless).
+ */
+function isTransientError(err) {
+  if (!err) return false;
+  // Timeouts, connection resets, and temporary filesystem errors are transient
+  const transientCodes = ['ETIMEDOUT', 'ECONNRESET', 'ECONNREFUSED', 'EPIPE', 'EBUSY', 'ELOCKED'];
+  if (err.code && transientCodes.includes(err.code)) return true;
+  // Non-numeric exit codes (signal kill) are transient
+  if (err.signal) return true;
+  // Syntax/Type/Reference errors are permanent — retry won't help
+  if (err instanceof SyntaxError || err instanceof TypeError || err instanceof ReferenceError) return false;
+  // Default: assume non-transient to avoid pointless retries
+  return false;
 }
 
 module.exports = ParallelExecutor;

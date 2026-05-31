@@ -813,6 +813,7 @@ class BuilderCommand {
         const wf = yaml.load(fs.readFileSync(workflowPath, 'utf8'));
         if (!wf.phases || wf.phases.length === 0) results.errors.push('Workflow has no phases');
         // Simulate phase execution
+        const evalCondition = (cond) => !!cond;
         for (const phase of (wf.phases || [])) {
           const conditionMet = phase.condition ? evalCondition(phase.condition) : true;
           results.steps.push({

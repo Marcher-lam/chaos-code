@@ -195,7 +195,7 @@ class PlanCommand {
     return null;
   }
 
-  getTaskTemplates(requirements, techStack) {
+  getTaskTemplates(_requirements, _techStack) {
     const templates = [
       {
         title: 'Set up test infrastructure',

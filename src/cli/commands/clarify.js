@@ -104,7 +104,7 @@ class ClarifyCommand {
     return clarification;
   }
 
-  generateAreaQuestions(area, proposal) {
+  generateAreaQuestions(area, _proposal) {
     const questions = {
       boundary_conditions: [
         'What are the input boundaries (min/max values, formats)?',
@@ -151,7 +151,7 @@ class ClarifyCommand {
 
 Generated: ${clarification.timestamp}
 
-${Object.entries(clarification.areas).map(([key, value]) => `
+${Object.entries(clarification.areas).map(([_key, value]) => `
 ### ${value.area}
 
 ${value.questions.map(q => `- [ ] ${q}`).join('\n')}
@@ -171,7 +171,7 @@ ${value.questions.map(q => `- [ ] ${q}`).join('\n')}
     console.log(chalk.dim('═'.repeat(50)));
     console.log('');
 
-    for (const [key, value] of Object.entries(clarification.areas)) {
+    for (const [_key, value] of Object.entries(clarification.areas)) {
       console.log(chalk.bold(`📋 ${value.area}`));
       console.log(chalk.dim('─'.repeat(40)));
 

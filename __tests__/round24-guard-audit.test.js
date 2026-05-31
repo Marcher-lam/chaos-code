@@ -175,7 +175,7 @@ describe('Round24 GuardCommand branch coverage', () => {
 
     const cmd = new GuardCommand(projectPath);
     // Mock spawnSync to simulate eslint failure
-    const { spawnSync } = require('child_process');
+    const { _spawnSync } = require('child_process');
     const origSpawn = jest.requireActual('child_process').spawnSync;
     const spawnMock = jest.spyOn(require('child_process'), 'spawnSync').mockImplementation((cmd, opts) => {
       if (String(cmd).includes('eslint')) {
@@ -422,7 +422,7 @@ describe('Round24 GuardCommand branch coverage', () => {
       writeFile(p, '.eslintrc.json', { rules: {} });
     });
 
-    const { spawnSync } = require('child_process');
+    const { _spawnSync } = require('child_process');
     const spawnMock = jest.spyOn(require('child_process'), 'spawnSync').mockImplementation((cmd) => {
       if (String(cmd).includes('eslint')) {
         return { error: null, status: 0, stdout: '', stderr: '' };
@@ -434,7 +434,7 @@ describe('Round24 GuardCommand branch coverage', () => {
     const report = await cmd.execute({ constitution: false });
 
     expect(['pass', 'warn']).toContain(report.lint.status);
-    const output = logSpy.mock.calls.map(c => String(c[0])).join('\n');
+    const _output = logSpy.mock.calls.map(c => String(c[0])).join('\n');
     spawnMock.mockRestore();
   });
 
@@ -562,7 +562,7 @@ describe('Round24 AuditCommand branch coverage', () => {
 
   // --- Branch: _handleEmpty with json + reason ---
   it('handles empty with json=true and reason', async () => {
-    const projectPath = createTempProject((p) => {
+    const projectPath = createTempProject((_p) => {
       // No stdd dir => triggers "Not initialized" reason
     });
 
@@ -577,7 +577,7 @@ describe('Round24 AuditCommand branch coverage', () => {
 
   // --- Branch: _handleEmpty with json=false and reason ---
   it('handles empty with json=false and reason shows message', async () => {
-    const projectPath = createTempProject((p) => {
+    const projectPath = createTempProject((_p) => {
       // No stdd dir
     });
 

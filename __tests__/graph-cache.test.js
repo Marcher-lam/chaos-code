@@ -198,7 +198,7 @@ describe('GraphCacheManager', () => {
       // Actually, we need a scenario where the file vanishes between readdir and readFile.
       // Mock fs to simulate ENOENT during read.
       const origReadFileSync = fs.readFileSync;
-      const origReaddirSync = fs.readdirSync;
+      const _origReaddirSync = fs.readdirSync;
 
       // Create a valid cache file first
       cache.set('enoent-test', {}, { r: 'data' });
@@ -232,7 +232,7 @@ describe('GraphCacheManager', () => {
       cache.set('eacces-test', {}, { r: 'data' });
 
       // Mock readFileSync to throw EACCES
-      jest.spyOn(fs, 'readFileSync').mockImplementation((filePath) => {
+      jest.spyOn(fs, 'readFileSync').mockImplementation((_filePath) => {
         const err = new Error('EACCES: permission denied');
         err.code = 'EACCES';
         throw err;

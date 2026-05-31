@@ -99,10 +99,10 @@ describe('ProgressCommand branch coverage', () => {
       // append a "complete" with a different id so the start is incomplete
       // but findLastIncomplete walks backwards and picks the complete.
       // Better approach: just test via _summary with a mock.
-      const origGetResumeContext = p.getResumeContext.bind(p);
+      const _origGetResumeContext = p.getResumeContext.bind(p);
       p.getResumeContext = jest.fn().mockReturnValue(null);
       // Make summary report incomplete > 0
-      const origSummary = p.summary.bind(p);
+      const _origSummary = p.summary.bind(p);
       p.summary = jest.fn().mockReturnValue({
         total: 1, completed: 0, failed: 0, interrupted: 0,
         incomplete: 1, lastActivity: null,

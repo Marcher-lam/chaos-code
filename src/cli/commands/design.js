@@ -8,7 +8,7 @@ const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const { TechStackDetector, detectTechStack: _detectTechStack } = require('../../utils/tech-stack-detector');
-const logger = createLogger('design');
+const _logger = createLogger('design');
 
 const PRESETS = {
   modern: {
@@ -318,6 +318,12 @@ class DesignCommand {
   }
 
   async execute(action = 'create', args = [], options = {}) {
+    let safeArgs = [];
+    if (Array.isArray(args)) {
+      safeArgs = args;
+    } else if (typeof args === 'string') {
+      safeArgs = [args];
+    }
     switch (action) {
       case 'create':
       case 'init':
@@ -333,6 +339,11 @@ class DesignCommand {
         return this.check(options);
       case 'update':
         return await this.update(options);
+      case 'reverse-scan':
+      case 'reverse_scan':
+      case 'reverseScan':
+      case 'scan':
+        return await this.reverseScan(safeArgs[0], options);
       default:
         return await this.create(options);
     }
@@ -343,7 +354,7 @@ class DesignCommand {
       throw new Error(`DESIGN.md already exists. Use --force to overwrite.`);
     }
 
-    const techStack = _detectTechStack ? await _detectTechStack(this.cwd) : TechStackDetector.analyze(this.cwd);
+    const _techStack = _detectTechStack ? await _detectTechStack(this.cwd) : TechStackDetector.analyze(this.cwd);
     const preset = options.preset || options.p || 'modern';
 
     if (!PRESETS[preset]) {
@@ -492,6 +503,46 @@ class DesignCommand {
       console.log(`  Preset: ${chalk.cyan(preset)} (${PRESETS[preset].name})\n`);
     }
     return { path: this.designPath, preset, updated: true, previews };
+  }
+
+  async reverseScan(targetDir, options = {}) {
+    const { CssExtractor } = require('../../utils/css-extractor');
+    const scanDir = targetDir ? path.resolve(this.cwd, targetDir) : this.cwd;
+
+    if (!options.json) {
+      console.log(chalk.bold('\n🔍 Reverse scanning project style design tokens...\n'));
+      console.log(`  Target Directory: ${chalk.cyan(scanDir)}`);
+    }
+
+    const extractor = new CssExtractor(this.cwd);
+    const extracted = extractor.extract(scanDir);
+
+    const custom = {
+      name: 'Self-Healed Design',
+      colors: extracted.colors,
+      fontFamily: extracted.fontFamily,
+      borderRadius: extracted.borderRadius,
+      spacing: extracted.spacing,
+    };
+
+    // Save to DESIGN.md using modern preset as base structure
+    const content = renderDesignMD('modern', custom);
+    fs.writeFileSync(this.designPath, content, 'utf8');
+
+    // Generate previews with forced overwrite
+    const previews = this.writePreviews('modern', { ...options, force: true });
+
+    if (options.json) {
+      console.log(JSON.stringify({ path: this.designPath, extracted, updated: true, previews }, null, 2));
+    } else {
+      console.log(chalk.bold('\n✓ DESIGN.md successfully self-healed and updated via reverse-scan\n'));
+      console.log(`  ${chalk.cyan(path.relative(this.cwd, this.designPath))}`);
+      console.log(`  Source: Analyzed CSS/SCSS and Tailwind tokens in ${chalk.cyan(path.relative(this.cwd, scanDir))}`);
+      previews.forEach(file => console.log(`  Preview: ${chalk.cyan(path.relative(this.cwd, file))}`));
+      console.log(chalk.dim('\n  STDD design auto-tuned design variables to align perfectly with your source code.\n'));
+    }
+
+    return { path: this.designPath, extracted, updated: true, previews };
   }
 }
 

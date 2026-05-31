@@ -5,7 +5,7 @@ last_updated: "2026-05-26"
 
 ## 概述
 
-STDD Copilot 基于 Skill Graph (技能图谱) 将 Spec-First 与 TDD 深度融合。包含 53 个 Skills、12 个 Agent 角色、9 篇 Constitution 条例、Hook Enforcement System，以及 86 个 CLI 命令。
+STDD Copilot 基于 Skill Graph (技能图谱) 将 Spec-First 与 TDD 深度融合。包含 53 个 Skills、12 个 Agent 角色、9 篇 Constitution 条例、Hook Enforcement System，以及 88 个 CLI 命令。
 
 **架构边界**: CLI 负责产物生成、测试执行、mutation evidence、证据采集、质量门禁和工作区编排。真实 AI 自动编码、多 Agent runtime、contract/mock/factory 等仍由 Skill 和外部 AI 执行器承载。Quick mutation 是启发式 anti-fake-green 检查；真实 mutation 依赖项目安装并配置 Stryker。
 
@@ -175,7 +175,7 @@ graph TB
 ### Workflow & Governance (Runtime Engines)
 | 模块 | 职责 | 能力 |
 |---|---|---|
-| **stdd runtime agent** | 多 Agent 状态机 (Party Mode) | 启动/推进/停止多 Agent 辩论，管理交互历史与收敛状态 |
+| **stdd runtime agent** | 多 Agent 状态机 (Party Mode) | 启动/推进/停止多 Agent 辩论，管理交互历史与收敛状态（关键词 + 结构化三信号：参与度覆盖、内容稳定性 Jaccard、全体一致投票） |
 | **stdd runtime sudo** | SudoLang 伪代码解析引擎 | 将 Sudo 伪代码解析为 STDD 结构化产物 (Spec/Design/API) |
 | `stdd archive` | Delta Spec Merge | 自动合并 ADDED/MODIFIED/REMOVED 到 stdd/specs，生成 spec-merge-report.json |
 | `stdd commit` | TDG Phase Prefix | 支持 `--tdd`/`--phase`/`--issue` 生成 red/green/refactor (#N) 提交 |
@@ -192,7 +192,7 @@ graph TB
 | **security** | 安全工具模块 | 输入清理、密钥检测、路径遍历防护 |
 | **command-registry** | 命令注册中心 | 集中式命令定义、元数据管理 |
 | **command-loader** | 动态命令加载 | 按需加载命令模块、减少启动开销 |
-| **types** | 类型定义 | TypeScript/JSDoc 核心接口类型定义 |
+| **types** | 类型定义 | TypeScript/JSDoc 核心接口类型定义（30+ typedef，覆盖核心数据结构） |
 
 ### 1. Skill Graph 引擎
 
@@ -208,7 +208,7 @@ graph TB
 | **Evidence Capture** | 结构化错误证据采集 | 错误对象+上下文 | 证据链快照 | `src/utils/evidence-capture.js` |
 | **Error Propagator** | 多跳向上传播 + 决策点定位 | 失败节点 | 回炉目标+证据报告 | `src/utils/error-propagator.js` |
 | **Heterogeneous Adapter** | 异构引擎适配 + Tier 降级 | Skill 名称 | 引擎分配+标准化输出 | `src/utils/heterogeneous-adapter.js` |
-| **Parallel Executor** | DAG 分层并行执行 | DAG + 引擎适配器 | 并行执行结果 | `src/utils/parallel-executor.js` |
+| **Parallel Executor** | DAG 分层并行执行 | DAG + 引擎适配器 | 并行执行结果（瞬时错误降级重试） | `src/utils/parallel-executor.js` |
 | **Recommender** | 智能推荐 | 上下文、历史、workspace 状态 | 推荐列表 | `src/cli/commands/recommend.js`, `src/cli/commands/graph.js` |
 
 #### `stdd graph run` 与运行时工具

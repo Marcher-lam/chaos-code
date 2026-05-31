@@ -16,19 +16,25 @@ class StoryCommand {
   }
 
   async execute(action = 'list', args = [], options = {}) {
+    let safeArgs = [];
+    if (Array.isArray(args)) {
+      safeArgs = args;
+    } else if (typeof args === 'string') {
+      safeArgs = [args];
+    }
     switch (action) {
       case 'create':
-        return this.create(args[0], options);
+        return this.create(safeArgs[0], options);
       case 'list':
         return this.list(options);
       case 'update':
-        return this.update(args[0], options);
+        return this.update(safeArgs[0], options);
       case 'split':
-        return this.split(args[0], options);
+        return this.split(safeArgs[0], options);
       case 'epic':
-        return this.epic(args[0], options);
+        return this.epic(safeArgs[0], options);
       case 'sprint':
-        return this.sprint(args[0], options);
+        return this.sprint(safeArgs[0], options);
       case 'board':
         return this.board(options);
       default:

@@ -43,11 +43,14 @@ describe('ParallelExecutor branch coverage', () => {
       const executor = new ParallelExecutor(graph, adapter, {
         executeFn: async () => {
           callCount++;
-          throw new Error('always fails');
+          const err = new Error('always fails');
+          err.code = 'ETIMEDOUT';
+          throw err;
         },
       });
 
       const { results } = await executor.executeAll({});
+      expect(callCount).toBeGreaterThan(0);
       expect(results['stdd-apply']).toBeDefined();
       // Both original and retry fail
       expect(results['stdd-apply'].success).toBe(false);
@@ -81,6 +84,7 @@ describe('ParallelExecutor branch coverage', () => {
 
       const engineAssignment = adapter.assignEngines(['A']);
       const result = await executor._executeLayer(['A'], engineAssignment, {});
+      expect(callCount).toBeGreaterThan(0);
 
       // Since executeFn always throws, degrade should kick in and retry also fails
       expect(result.A.success).toBe(false);
@@ -112,7 +116,7 @@ describe('ParallelExecutor branch coverage', () => {
         },
       });
 
-      const origGetGroups = executor._getParallelGroups.bind(executor);
+      const _origGetGroups = executor._getParallelGroups.bind(executor);
       executor._getParallelGroups = () => ({
         'test-group': { strategy: 'any', skills: ['A', 'B'] },
       });
@@ -241,7 +245,7 @@ describe('ParallelExecutor branch coverage', () => {
 
       const { results } = await executor.executeAll({});
       expect(results.A.success).toBe(false);
-      expect(results.A.degraded).toBeUndefined();
+      expect(results.A.degraded).toBe(false);
 
       cleanupAdapter(adapter);
     });

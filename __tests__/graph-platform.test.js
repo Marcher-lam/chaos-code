@@ -1,12 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { execSync } = require('child_process');
+const { _execSync } = require('child_process');
 
 // Test openInBrowser platform branches using jest.isolateModules
 // to re-require graph.js with mocked os.platform()
 
-function testWithPlatform(platform, command, expectedArgs) {
+function testWithPlatform(platform, command, _expectedArgs) {
   describe(`openInBrowser on ${platform}`, () => {
     let graph;
 

@@ -90,7 +90,7 @@ describe('UserTestCommand', () => {
   it('outputs JSON when json option is true', () => {
     const tmp = setupWithSpecs();
     const cmd = new UserTestCommand(tmp);
-    const result = cmd.execute(null, { json: true });
+    const _result = cmd.execute(null, { json: true });
 
     const output = logSpy.mock.calls.map(c => c[0]).join('\n');
     const json = JSON.parse(output);
@@ -115,5 +115,42 @@ describe('UserTestCommand', () => {
 
     const output = logSpy.mock.calls.map(c => c[0]).join('\n');
     expect(output).toContain('Generated user test scripts');
+  });
+
+  it('generates React testing library skeleton', () => {
+    const tmp = setupWithSpecs();
+    const cmd = new UserTestCommand(tmp);
+    const result = cmd.execute(null, { framework: 'react' });
+    expect(result.outputs.length).toBe(3);
+    const reactSpec = result.outputs.find(f => f.endsWith('user-test-react.test.jsx'));
+    expect(reactSpec).toBeDefined();
+    const content = fs.readFileSync(reactSpec, 'utf8');
+    expect(content).toContain("import React from 'react';");
+    expect(content).toContain("describe('BDD User Test Scenarios (React)'");
+    expect(content).toContain("test('Scenario: Pay with card'");
+  });
+
+  it('generates Vue test skeleton', () => {
+    const tmp = setupWithSpecs();
+    const cmd = new UserTestCommand(tmp);
+    const result = cmd.execute(null, { framework: 'vue' });
+    expect(result.outputs.length).toBe(3);
+    const vueSpec = result.outputs.find(f => f.endsWith('user-test-vue.spec.js'));
+    expect(vueSpec).toBeDefined();
+    const content = fs.readFileSync(vueSpec, 'utf8');
+    expect(content).toContain("import { mount } from '@vue/test-utils';");
+    expect(content).toContain("describe('BDD User Test Scenarios (Vue)'");
+  });
+
+  it('generates Playwright E2E skeleton by default for unrecognized framework', () => {
+    const tmp = setupWithSpecs();
+    const cmd = new UserTestCommand(tmp);
+    const result = cmd.execute(null, { framework: 'vanilla' });
+    expect(result.outputs.length).toBe(3);
+    const e2eSpec = result.outputs.find(f => f.endsWith('user-test-e2e.spec.js'));
+    expect(e2eSpec).toBeDefined();
+    const content = fs.readFileSync(e2eSpec, 'utf8');
+    expect(content).toContain("const { test, expect } = require('@playwright/test');");
+    expect(content).toContain("test.describe('BDD User Test Scenarios (Playwright E2E)'");
   });
 });

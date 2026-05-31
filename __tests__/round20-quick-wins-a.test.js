@@ -62,7 +62,7 @@ describe('MetricsCommand branch coverage boosters', () => {
       workspaces: [],
     });
 
-    const output = logSpy.mock.calls.map(c => String(c[0])).join('\n');
+    const output = logSpy.mock.calls.map(c => String(c[0]).replace(/\x1b\[[0-9;]*m/g, '')).join('\n');
     expect(output).toContain('Coverage');
     expect(output).toContain('50%');
   });
@@ -270,7 +270,7 @@ describe('MetricsCommand branch coverage boosters', () => {
   });
 
   it('issueBelongsToWorkspace matches by absRoot path', async () => {
-    const cwd = process.cwd();
+    const _cwd = process.cwd();
     const projectPath = createTempProject('abs-match');
     const { MetricsCommand } = require('../src/cli/commands/metrics');
     const cmd = new MetricsCommand(projectPath);
@@ -580,9 +580,9 @@ describe('InitCommand branch coverage boosters', () => {
     // Monkey-patch getPackageRoot by intercepting the path resolution
     // Instead, let's directly test the method logic by calling it
     // and checking only .js files are copied
-    const origReaddir = require('fs').promises.readdir;
-    const origReadFile = require('fs').promises.readFile;
-    const origWriteFile = require('fs').promises.writeFile;
+    const _origReaddir = require('fs').promises.readdir;
+    const _origReadFile = require('fs').promises.readFile;
+    const _origWriteFile = require('fs').promises.writeFile;
 
     // This is complex to mock properly; instead test via the real project
     cmd.exists = origExists;
@@ -733,7 +733,7 @@ describe('StatusCommand branch coverage boosters', () => {
     const { StatusCommand } = require('../src/cli/commands/status');
     const cmd = new StatusCommand();
     const root = makeTmp();
-    const stdd = makeStddDir(root);
+    const _stdd = makeStddDir(root);
 
     await cmd.execute(undefined, { json: false });
 
@@ -818,7 +818,7 @@ describe('SkillsCommand branch coverage boosters', () => {
 
     const origExistsSync = fs.existsSync;
     const origReaddirSync = fs.readdirSync;
-    const origReadFileSync = fs.readFileSync;
+    const _origReadFileSync = fs.readFileSync;
 
     const spy1 = jest.spyOn(fs, 'existsSync').mockImplementation((p) => {
       if (p === SKILLS_DIR) return true;
@@ -1036,7 +1036,7 @@ describe('SkillsCommand branch coverage boosters', () => {
     const pathModule = require('path');
     const SKILLS_DIR = pathModule.resolve(__dirname, '..', 'src', 'cli', 'commands', '..', '..', 'templates', 'skills', 'stdd');
 
-    const origExistsSync = fs.existsSync;
+    const _origExistsSync = fs.existsSync;
     const origReaddirSync = fs.readdirSync;
 
     const spy1 = jest.spyOn(fs, 'existsSync').mockImplementation((p) => {

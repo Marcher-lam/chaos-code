@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const yaml = require('js-yaml');
-const { OutsideInCommand, DEFAULT_REGISTRY } = require('../src/cli/commands/outside-in');
+const { OutsideInCommand, _DEFAULT_REGISTRY } = require('../src/cli/commands/outside-in');
 
 function makeTmp() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-outsidein-cov-'));
@@ -82,7 +82,7 @@ describe('OutsideInCommand - uncovered branch coverage', () => {
     it('status without json:true prints title-prefixed output', () => {
       const cmd = new OutsideInCommand(tmp);
       cmd.init();
-      const result = cmd.execute('status');
+      const _result = cmd.execute('status');
       // printResult was called; check the last console.log call
       const lastCall = logSpy.mock.calls[logSpy.mock.calls.length - 1][0];
       // Non-JSON branch prepends the title

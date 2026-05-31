@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
-const logger = createLogger('vision');
+const _logger = createLogger('vision');
 
 const DEFAULT_VISION_TEMPLATE = `# Project Vision
 
@@ -72,7 +72,7 @@ class VisionCommand {
     this.visionPath = path.join(cwd, 'stdd', 'vision.md');
   }
 
-  execute(action = 'show', args = [], options = {}) {
+  execute(action = 'show', _args = [], options = {}) {
     switch (action) {
       case 'create':
       case 'init':
@@ -132,7 +132,7 @@ class VisionCommand {
     return { exists: true, path: this.visionPath, content };
   }
 
-  edit(options = {}) {
+  edit(_options = {}) {
     if (!fs.existsSync(this.visionPath)) {
       throw new Error(`No vision document found. Run "stdd vision create" first.`);
     }
@@ -201,7 +201,7 @@ class VisionCommand {
 
     const specsDir = path.join(this.cwd, 'stdd', 'specs');
     const changesDir = path.join(this.cwd, 'stdd', 'changes');
-    const vision = fs.readFileSync(this.visionPath, 'utf8');
+    const _vision = fs.readFileSync(this.visionPath, 'utf8');
 
     const specs = [];
     if (fs.existsSync(specsDir)) {

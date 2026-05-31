@@ -306,7 +306,7 @@ class ExploreCommand {
     }
 
     if (report.scope) {
-      const totalFiles = report.untestedFiles.length + report.longFiles.length + report.highExportFiles.length;
+      const _totalFiles = report.untestedFiles.length + report.longFiles.length + report.highExportFiles.length;
       console.log(chalk.dim(`\n  Scope filter applied: "${report.scope}"`));
     }
 

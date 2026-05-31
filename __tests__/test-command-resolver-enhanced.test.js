@@ -222,7 +222,7 @@ describe('test-command-resolver', () => {
         const realFs = require('fs');
         const mockFs = {
           ...realFs,
-          readFileSync: jest.fn().mockImplementation((p) => {
+          readFileSync: jest.fn().mockImplementation((_p) => {
             const err = new Error('ENOENT');
             err.code = 'ENOENT';
             throw err;
@@ -233,7 +233,7 @@ describe('test-command-resolver', () => {
 
         // Need a config.yaml to exist so we get past the existsSync check
         // but readFileSync in the try block throws ENOENT
-        const yaml = require('js-yaml');
+        const _yaml = require('js-yaml');
         jest.doMock('js-yaml', () => ({
           load: jest.fn().mockImplementation(() => { throw new Error('should not reach'); }),
         }));

@@ -215,8 +215,8 @@ class SpecCommand {
     }
   }
 
-  generateScenarios(domain, proposal) {
-    const scenarios = [];
+  generateScenarios(domain, _proposal) {
+    const _scenarios = [];
 
     const scenarioTemplates = {
       'api': [

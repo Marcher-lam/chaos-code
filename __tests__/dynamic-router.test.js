@@ -1,6 +1,12 @@
-const DynamicGraphRouter = require('../src/utils/dynamic-router');
+let DynamicGraphRouter;
 
 describe('DynamicGraphRouter (自适应动态拓扑)', () => {
+  beforeEach(() => {
+    jest.isolateModules(() => {
+      DynamicGraphRouter = require('../src/utils/dynamic-router');
+    });
+  });
+
   it('should compile hotfix intent correctly for fast track', () => {
     // 拦截虚假的 fallback 文件以测试容错
     const router = new DynamicGraphRouter('non-existent-fallback.yaml');

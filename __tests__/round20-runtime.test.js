@@ -65,7 +65,7 @@ describe('round20: AgentEngine uncovered branches', () => {
     engine.start('topic', { rounds: 100 });
     engine.recordTurn('po', 'I agree');
     // Only 1 turn -- convergence requires >= 2
-    const result = engine.nextTurn();
+    const _result = engine.nextTurn();
     // Simulation should still be active (rounds=100, only 1 turn so no keyword convergence)
     const state = engine.getStatus();
     expect(state.status).toBe('active');

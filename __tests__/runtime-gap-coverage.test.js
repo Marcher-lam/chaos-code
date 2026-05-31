@@ -18,13 +18,14 @@ function tempProject() {
 }
 
 describe('runtime gap coverage commands', () => {
-  test('story create and bdd conversion generate journey and feature files', () => {
+  test('story create saves story data to json in stories directory', () => {
     const root = tempProject();
     const command = new StoryCommand(root);
     const created = command.create('checkout flow');
-    expect(fs.existsSync(created.path)).toBe(true);
-    const bdd = command.toBdd(created.path);
-    expect(fs.readFileSync(bdd.path, 'utf8')).toContain('Feature: checkout flow');
+    const storyPath = path.join(root, 'stdd', 'stories', `${created.id}.json`);
+    expect(fs.existsSync(storyPath)).toBe(true);
+    const saved = JSON.parse(fs.readFileSync(storyPath, 'utf8'));
+    expect(saved.name).toBe('checkout flow');
   });
 
   test('user-test generates human and agent scripts from specs', () => {

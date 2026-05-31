@@ -46,7 +46,9 @@ class CommandLoader {
         spinner = this.createSpinner(text).start();
       }
 
-      const instance = new Factory(spinner || undefined);
+      const instance = def.create
+        ? def.create()
+        : new Factory(spinner || undefined);
 
       try {
         const result = await instance.execute(...args);

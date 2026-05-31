@@ -3,7 +3,7 @@ const yaml = require('js-yaml');
 const path = require('path');
 const { getPackageRoot } = require('./path-resolver');
 const { ProfileEngine } = require('./profile-engine');
-const { CONDITION_ENGINE } = require('../config/planning-profiles');
+const { CONDITION_ENGINE, PROFILES } = require('../config/planning-profiles');
 
 class DynamicGraphRouter {
   constructor(configPath = 'stdd/graph/skills.yaml') {
@@ -70,15 +70,13 @@ class DynamicGraphRouter {
 
     // ---- helpers ----
     const phaseToSkill = (phase) => `stdd-${phase}`;
-    const skillToPhase = (skill) => skill.replace(/^stdd-/, '');
 
     // Rebuild skill list preserving order
     const skillNames = Object.keys(baseGraph.skills);
 
     // Build a set of phases to skip from the profile definition
-    const { PROFILES, CONDITION_ENGINE } = require('../config/planning-profiles');
     const profile = PROFILES[profileId];
-    const skipPhases = new Set((profile && profile.phases && profile.phases.skip) || []);
+    const skipPhases = new Set(profile.phases.skip);
 
     // Map skip phases to skill names
     const skipSkills = new Set();
@@ -107,17 +105,15 @@ class DynamicGraphRouter {
           phase: 'review',
         },
       });
-      // Require stdd-mutation — insert after stdd-review if not already present
-      if (!filtered.includes('stdd-mutation')) {
-        insertions.push({
-          after: 'stdd-review',
-          skillName: 'stdd-mutation',
-          nodeRef: {
-            description: 'Required mutation testing for thorough profile',
-            phase: 'mutation',
-          },
-        });
-      }
+      // Require stdd-mutation — insert after stdd-apply
+      insertions.push({
+        after: 'stdd-apply',
+        skillName: 'stdd-mutation',
+        nodeRef: {
+          description: 'Required mutation testing for thorough profile',
+          phase: 'mutation',
+        },
+      });
     }
 
     // -- enterprise profile --
@@ -135,16 +131,14 @@ class DynamicGraphRouter {
         });
       }
       // Insert stdd-constitution before archive
-      if (!filtered.includes('stdd-constitution')) {
-        insertions.push({
-          after: '__before_archive__',
-          skillName: 'stdd-constitution',
-          nodeRef: {
-            description: 'Enterprise constitution check — final governance gate',
-            phase: 'constitution-check',
-          },
-        });
-      }
+      insertions.push({
+        after: '__before_archive__',
+        skillName: 'stdd-constitution',
+        nodeRef: {
+          description: 'Enterprise constitution check — final governance gate',
+          phase: 'constitution-check',
+        },
+      });
     }
 
     // Apply insertions
@@ -184,10 +178,8 @@ class DynamicGraphRouter {
       const insertion = insertions.find(ins => ins.skillName === skillName);
       if (insertion) {
         nodeRef = { ...insertion.nodeRef };
-      } else if (baseGraph.skills[skillName]) {
-        nodeRef = JSON.parse(JSON.stringify(baseGraph.skills[skillName]));
       } else {
-        nodeRef = { description: `Auto-generated node for ${skillName}` };
+        nodeRef = JSON.parse(JSON.stringify(baseGraph.skills[skillName]));
       }
       nodeRef.depends_on = i === 0 ? [] : [expanded[i - 1]];
       dynamicGraph.skills[skillName] = nodeRef;
@@ -198,15 +190,16 @@ class DynamicGraphRouter {
   compileConditional(intent = 'feature', context = {}) {
     const profileId = context.profileId || 'standard';
     const profileGraph = this.compileWithProfile(intent, profileId);
-    const phases = profileGraph.skills ? Object.keys(profileGraph.skills) : [];
+    const phases = Object.keys(profileGraph.skills);
     const evaluatedPhases = [];
 
     for (const phase of phases) {
       const condition = this._getPhaseCondition(phase);
       const shouldExecute = CONDITION_ENGINE.evaluate(condition, context);
       evaluatedPhases.push({
-        phase, status: shouldExecute ? 'execute' : 'skip',
-        condition: condition || null,
+        phase,
+        status: shouldExecute ? 'execute' : 'skip',
+        condition,
         skill: shouldExecute ? profileGraph.skills[phase] : null,
       });
     }

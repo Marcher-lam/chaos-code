@@ -13,7 +13,7 @@ const { execSync } = require('child_process');
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 const tmpDirs = [];
-function mktmp(prefix) {
+function _mktmp(prefix) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   tmpDirs.push(d);
   return d;

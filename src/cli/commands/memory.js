@@ -9,7 +9,7 @@ const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const { MemoryScanner } = require('./memory-scan');
 const { walkFiles: _walkFiles } = require('../../utils/file-walker');
-const logger = createLogger('memory');
+const _logger = createLogger('memory');
 
 class MemoryCommand extends MemoryScanner {
   constructor(cwd = process.cwd()) {

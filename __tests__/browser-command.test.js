@@ -1,8 +1,16 @@
+const mockCompareResult = jest.fn();
+jest.mock('../src/utils/visual-regression', () => ({
+  VisualRegression: jest.fn().mockImplementation(() => ({
+    compare: mockCompareResult,
+  })),
+}));
+
 const { BrowserCommand } = require('../src/cli/commands/browser');
 
+const mockSnapshot = jest.fn();
 jest.mock('../src/runtime/browser-controller', () => ({
   BrowserController: jest.fn().mockImplementation(() => ({
-    snapshot: jest.fn(),
+    snapshot: mockSnapshot,
     inspect: jest.fn(),
   })),
 }));
@@ -178,6 +186,96 @@ describe('BrowserCommand', () => {
       const prevExitCode = process.exitCode;
       cmd.doctor({});
       expect(process.exitCode).toBe(prevExitCode);
+    });
+  });
+
+  describe('compare and update-baseline', () => {
+    let tempDir;
+    const path = require('path');
+
+    beforeAll(() => {
+      const os = require('os');
+      const fs = require('fs');
+      tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-browser-cmd-test-'));
+    });
+
+    afterAll(() => {
+      const fs = require('fs');
+      if (fs.existsSync(tempDir)) {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+
+    it('delegates compare action and handles pass state', async () => {
+      const fs = require('fs');
+      const cmd = new BrowserCommand(tempDir);
+      
+      // Initialize baseline on disk
+      const baselineDir = path.join(tempDir, 'stdd/evidence/visual/baselines');
+      fs.mkdirSync(baselineDir, { recursive: true });
+      fs.writeFileSync(path.join(baselineDir, 'default.png'), 'baseline-data');
+
+      // Mock snapshot controller
+      mockSnapshot.mockResolvedValue({
+        status: 'success',
+        filePath: path.join(tempDir, 'snap.png'),
+        url: 'http://test.com',
+      });
+      fs.writeFileSync(path.join(tempDir, 'snap.png'), 'current-data');
+
+      mockCompareResult.mockReturnValue({
+        status: 'pass',
+        diffRatio: 0,
+        message: 'Visual match perfect.'
+      });
+
+      const result = await cmd.compare('http://test.com', { name: 'default' });
+      expect(result.status).toBe('pass');
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Visual Regression PASSED'));
+    });
+
+    it('delegates compare action and handles fail state', async () => {
+      const fs = require('fs');
+      const cmd = new BrowserCommand(tempDir);
+
+      const baselineDir = path.join(tempDir, 'stdd/evidence/visual/baselines');
+      fs.mkdirSync(baselineDir, { recursive: true });
+      fs.writeFileSync(path.join(baselineDir, 'fail-test.png'), 'baseline-data');
+
+      mockSnapshot.mockResolvedValue({
+        status: 'success',
+        filePath: path.join(tempDir, 'snap2.png'),
+        url: 'http://test.com',
+      });
+      fs.writeFileSync(path.join(tempDir, 'snap2.png'), 'current-data');
+
+      mockCompareResult.mockReturnValue({
+        status: 'fail',
+        diffRatio: 0.05,
+        message: 'Diff exceeds threshold.',
+        diffPath: 'stdd/evidence/visual/current/fail-test-diff.png'
+      });
+
+      await cmd.compare('http://test.com', { name: 'fail-test' });
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Visual Regression FAILED'));
+      expect(process.exitCode).toBe(1);
+      delete process.exitCode;
+    });
+
+    it('updates baseline successfully', async () => {
+      const fs = require('fs');
+      const cmd = new BrowserCommand(tempDir);
+
+      mockSnapshot.mockResolvedValue({
+        status: 'success',
+        filePath: path.join(tempDir, 'new-baseline.png'),
+        url: 'http://test.com',
+      });
+      fs.writeFileSync(path.join(tempDir, 'new-baseline.png'), 'new-baseline-data');
+
+      const result = await cmd.updateBaseline('http://test.com', { name: 'new-baseline' });
+      expect(result.status).toBe('success');
+      expect(fs.existsSync(path.join(tempDir, 'stdd/evidence/visual/baselines/new-baseline.png'))).toBe(true);
     });
   });
 });

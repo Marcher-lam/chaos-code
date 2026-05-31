@@ -91,6 +91,24 @@ describe('AgentEngine', () => {
       expect(state.status).toBe('completed');
       expect(state.convergenceDetected).toBe(true);
     });
+
+    test('triggers product proposal generation on completed state', () => {
+      // Create stdd directory and package.json in tmpDir so fs.existsSync passes
+      const stddDir = path.join(tmpDir, 'stdd');
+      fs.mkdirSync(stddDir, { recursive: true });
+      fs.writeFileSync(path.join(tmpDir, 'package.json'), JSON.stringify({ name: 'test-app', version: '1.0.0' }), 'utf8');
+
+      // Start simulation
+      engine.start('test-topic', { rounds: 1 });
+      const agentCount = DEFAULT_AGENTS.length;
+      for (let i = 0; i < agentCount; i++) engine.nextTurn();
+
+      // Check if PRODUCT-PROPOSAL.md was generated
+      const proposalPath = path.join(tmpDir, 'PRODUCT-PROPOSAL.md');
+      expect(fs.existsSync(proposalPath)).toBe(true);
+      const content = fs.readFileSync(proposalPath, 'utf8');
+      expect(content).toContain('test-app 产品方案');
+    });
   });
 
   describe('keyword convergence', () => {

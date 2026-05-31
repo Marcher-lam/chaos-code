@@ -89,7 +89,7 @@ describe('openInBrowser platform branches', () => {
         jest.spyOn(osMod, 'platform').mockReturnValue(platform);
 
         // Mock child_process.spawn
-        const { spawn } = require('child_process');
+        const { _spawn } = require('child_process');
         const EventEmitter = require('events');
 
         jest.spyOn(require('child_process'), 'spawn').mockImplementation((cmd, args, opts) => {
@@ -169,7 +169,7 @@ describe('openInBrowser platform branches', () => {
         jest.spyOn(require('os'), 'platform').mockReturnValue('linux');
 
         const EventEmitter = require('events');
-        jest.spyOn(require('child_process'), 'spawn').mockImplementation((cmd, args, opts) => {
+        jest.spyOn(require('child_process'), 'spawn').mockImplementation((_cmd, _args, _opts) => {
           const ee = new EventEmitter();
           setImmediate(() => ee.emit('close', 1)); // non-zero exit
           return ee;

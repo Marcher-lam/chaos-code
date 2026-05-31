@@ -29,6 +29,8 @@ class SessionProgress {
   }
 
   start(command, args = {}) {
+    const traceId = process.env.STDD_TRACE_ID || `trace_${crypto.randomBytes(8).toString('hex')}`;
+    const spanId = `span_${crypto.randomBytes(8).toString('hex')}`;
     const entry = {
       id: `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`,
       ts: new Date().toISOString(),
@@ -36,6 +38,8 @@ class SessionProgress {
       cmd: command,
       args,
       pid: process.pid,
+      traceId,
+      spanId,
     };
     this._append(entry);
     return entry;

@@ -64,7 +64,7 @@ describe('CommandsCommand', () => {
   });
 
   it('falls back to first heading when no frontmatter description', () => {
-    const origReaddir = fs.readdirSync;
+    const _origReaddir = fs.readdirSync;
     const origRead = fs.readFileSync;
     jest.spyOn(fs, 'existsSync').mockReturnValue(true);
     jest.spyOn(fs, 'readdirSync').mockReturnValue(['no-desc.md']);

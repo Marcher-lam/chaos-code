@@ -10,7 +10,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const EventEmitter = require('events');
+const _EventEmitter = require('events');
 
 jest.mock('chalk', () => {
   const fn = (...args) => args.join('');
@@ -424,11 +424,12 @@ describe('round25 init.js branch coverage', () => {
     // Intercept readdir to add a non-.md file in the templates dir
     const fsp = require('fs').promises;
     const origReaddir = fsp.readdir;
-    let templatesDirSeen = false;
+    let _templatesDirSeen = false;
+    // eslint-disable-next-line no-unused-vars
     fsp.readdir = jest.fn().mockImplementation((dir) => {
       const result = origReaddir(dir);
       if (String(dir).includes('templates')) {
-        templatesDirSeen = true;
+        _templatesDirSeen = true;
         return result.then(files => [...files, '.gitkeep']);
       }
       return result;
@@ -717,7 +718,7 @@ describe('round25 spec-generator.js branch coverage', () => {
   // BRDA:222,3 — toTitleCase and toFeatureTitle branches (FNDA:0)
   it('toTitleCase handles multi-word strings with hyphens and underscores', () => {
     const { SpecGenerator } = require('../src/cli/commands/spec-generator');
-    const gen = new SpecGenerator();
+    const _gen = new SpecGenerator();
 
     const { toTitleCase: _toTitle } = require('../src/utils/change-helpers');
     expect(_toTitle('hello-world')).toBe('HelloWorld');

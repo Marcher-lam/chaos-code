@@ -1,8 +1,9 @@
-const DynamicGraphRouter = require('../src/utils/dynamic-router');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const yaml = require('js-yaml');
+
+let DynamicGraphRouter;
 
 /**
  * Tests targeting uncovered branches in dynamic-router.js
@@ -15,6 +16,9 @@ describe('DynamicGraphRouter branch coverage', () => {
   let yamlPath;
 
   beforeEach(() => {
+    jest.isolateModules(() => {
+      DynamicGraphRouter = require('../src/utils/dynamic-router');
+    });
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-dr-'));
     yamlPath = path.join(tmpDir, 'skills.yaml');
   });
@@ -243,6 +247,98 @@ describe('DynamicGraphRouter branch coverage', () => {
         'stdd-propose', 'stdd-spec', 'stdd-plan',
         'stdd-outside-in', 'stdd-apply', 'stdd-verify',
       ]);
+    });
+  });
+
+  describe('compileWithProfile and compileConditional (uncovered branches)', () => {
+    it('returns unmodified graph for unknown profile', () => {
+      const router = new DynamicGraphRouter();
+      const base = router.compile('feature');
+      const result = router.compileWithProfile('feature', 'non-existent-profile');
+      expect(result.skills).toEqual(base.skills);
+    });
+
+    it('handles quick profile formatting', () => {
+      const router = new DynamicGraphRouter();
+      const result = router.compileWithProfile('feature', 'quick');
+      expect(Object.keys(result.skills)).not.toContain('stdd-clarify');
+      expect(Object.keys(result.skills)).not.toContain('stdd-mutation');
+    });
+
+    it('handles thorough profile insertions', () => {
+      const router = new DynamicGraphRouter();
+      const result = router.compileWithProfile('feature', 'thorough');
+      expect(Object.keys(result.skills)).toContain('stdd-review');
+      expect(Object.keys(result.skills)).toContain('stdd-mutation');
+      // stdd-review should be after stdd-apply
+      const keys = Object.keys(result.skills);
+      expect(keys.indexOf('stdd-review')).toBeGreaterThan(keys.indexOf('stdd-apply'));
+    });
+
+    it('handles enterprise profile insertions', () => {
+      const router = new DynamicGraphRouter();
+      // Compile hotfix with enterprise profile to trigger the stdd-archive hook
+      const result = router.compileWithProfile('hotfix', 'enterprise');
+      const keys = Object.keys(result.skills);
+      expect(keys).toContain('stdd-guard');
+      expect(keys).toContain('stdd-constitution');
+      expect(keys.indexOf('stdd-guard')).toBeGreaterThan(keys.indexOf('stdd-apply'));
+      expect(keys.indexOf('stdd-constitution')).toBeLessThan(keys.indexOf('stdd-archive'));
+    });
+
+    it('handles compileConditional with various conditions and context', () => {
+      const router = new DynamicGraphRouter();
+      
+      // Inject conditional phases into feature pathway so they are evaluated in compileConditional
+      router.intentPathways['feature'].push('stdd-clarify');
+      router.intentPathways['feature'].push('stdd-mutation');
+      router.intentPathways['feature'].push('stdd-adr');
+      router.intentPathways['feature'].push('stdd-security-audit');
+      router.intentPathways['feature'].push('stdd-multi-role-review');
+
+      // Call with no arguments to trigger default parameter coverage
+      const defaultProfileGraph = router.compileWithProfile();
+      expect(defaultProfileGraph.skills).toBeDefined();
+
+      const defaultConditionalGraph = router.compileConditional();
+      expect(defaultConditionalGraph.conditionalPhases).toBeDefined();
+
+      // Thorough profile with high complexity should trigger mutation, ADR, clarify, etc.
+      const thoroughCtx = { profileId: 'thorough', complexityScore: 90 };
+      const resultThorough = router.compileConditional('feature', thoroughCtx);
+      expect(resultThorough.conditionalPhases).toBeDefined();
+
+      const clarifyPhase = resultThorough.conditionalPhases.find(p => p.phase === 'stdd-clarify');
+      expect(clarifyPhase.status).toBe('execute');
+
+      const mutationPhase = resultThorough.conditionalPhases.find(p => p.phase === 'stdd-mutation');
+      expect(mutationPhase.status).toBe('execute');
+
+      const adrPhase = resultThorough.conditionalPhases.find(p => p.phase === 'stdd-adr');
+      expect(adrPhase.status).toBe('execute');
+
+      const multiRolePhase = resultThorough.conditionalPhases.find(p => p.phase === 'stdd-multi-role-review');
+      expect(multiRolePhase.status).toBe('execute');
+
+      // Enterprise profile with high complexity should trigger security-audit (since it does not skip it)
+      const enterpriseCtx = { profileId: 'enterprise', complexityScore: 90 };
+      const resultEnterprise = router.compileConditional('feature', enterpriseCtx);
+      const securityPhase = resultEnterprise.conditionalPhases.find(p => p.phase === 'stdd-security-audit');
+      expect(securityPhase.status).toBe('execute');
+
+      // Standard profile with low complexity should skip mutation and ADR
+      const standardCtx = { profileId: 'standard', complexityScore: 10 };
+      const resultStandard = router.compileConditional('feature', standardCtx);
+      const skippedMutation = resultStandard.conditionalPhases.find(p => p.phase === 'stdd-mutation');
+      expect(skippedMutation.status).toBe('skip');
+
+      // Thorough profile with low complexity should skip mutation and ADR but keep clarify
+      const thoroughLowCtx = { profileId: 'thorough', complexityScore: 10 };
+      const resultThoroughLow = router.compileConditional('feature', thoroughLowCtx);
+      const skippedThoroughMutation = resultThoroughLow.conditionalPhases.find(p => p.phase === 'stdd-mutation');
+      expect(skippedThoroughMutation.status).toBe('skip');
+      const keptClarify = resultThoroughLow.conditionalPhases.find(p => p.phase === 'stdd-clarify');
+      expect(keptClarify.status).toBe('execute');
     });
   });
 });

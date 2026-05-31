@@ -45,7 +45,7 @@ describe('ConstitutionChecker', () => {
     );
   }
 
-  function createSrcFile(dir, relPath, content) {
+  function _createSrcFile(dir, relPath, content) {
     const fullPath = path.join(dir, relPath);
     fs.mkdirSync(path.dirname(fullPath), { recursive: true });
     fs.writeFileSync(fullPath, content);

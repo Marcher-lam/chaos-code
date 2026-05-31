@@ -4,7 +4,7 @@
  *         bin blocked audit, spawn-error audit.
  */
 
-const { ShellAgentExecutor, parseCommand } = require('../src/runtime/agents/shell-executor');
+const { ShellAgentExecutor, _parseCommand } = require('../src/runtime/agents/shell-executor');
 const fs = require('fs');
 const path = require('path');
 

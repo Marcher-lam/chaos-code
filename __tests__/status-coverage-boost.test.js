@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { StatusCommand } = require('../src/cli/commands/status');
-const { CHANGE_PHASES } = require('../src/types');
+const { _CHANGE_PHASES } = require('../src/types');
 
 // Helpers
 const cmd = new StatusCommand();
