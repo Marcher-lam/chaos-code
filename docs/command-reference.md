@@ -1,191 +1,463 @@
-# STDD Copilot Ultra 全部命令清单
+# STDD Copilot Ultra v2.0.0 — 完整命令参考
 
-## 1. 核心 STDD 工作流 (11 个)
+> **Spec + Test Driven Development · AI 全生命周期开发平台**
+> 最后更新：2026-06-01 · 适用于 `@marcher-lam/stdd-copilot-ultra@2.0.0`
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:init` | `stdd init [path]` | 初始化 STDD 项目目录结构 (specs/changes/memory/graph/config.yaml) + `.claude/commands/` + `.claude/skills/` |
-| `/stdd:new` | `stdd new change <name>` | 创建新变更提案，生成 proposal.md + .status.yaml，引导需求收集与澄清 |
-| `/stdd:propose` | — | 提出新功能需求草案，边界澄清，自动检测过大 Epic 并建议拆分 |
-| `/stdd:clarify` | — | 多轮需求澄清对话 (78 种结构化推理方法)，解决歧义与边界情况 |
-| `/stdd:confirm` | — | 人机确认门，展示提案摘要并请求用户审批，回复确认后推进到 spec 阶段 |
-| `/stdd:spec` | `stdd spec <change>` | 将需求提案转化为 BDD (Given/When/Then) Delta Specs，含 ADDED/MODIFIED/REMOVED 标记 |
-| `/stdd:plan` | — | 评估架构变更，生成 5-6 个细粒度微任务清单 (每任务约 30 分钟) + ADR 记录 |
-| `/stdd:apply` | `stdd apply [change]` | 执行 Ralph Loop TDD 循环：红灯→检查→绿灯→变异→重构，支持 `--task`/`--fix`/`--phase` |
-| `/stdd:execute` | — | 严格 Ralph Loop TDD 闭环执行 (apply 的别名) |
-| `/stdd:verify` | `stdd verify [change]` | 5 维验证：API 签名/BDD 覆盖/类型/边界异常/文档一致性 + Constitution 合规 + Evidence |
-| `/stdd:archive` | `stdd archive [change]` | 完成变更：合并 Delta Spec 到主规格，移至归档，生成 spec-merge-report.json |
+---
 
-## 2. 工作流增强 (6 个)
+## 1. 核心 STDD 工作流（11 个）
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:ff` | `stdd ff <desc>` | Fast-Forward 快速生成：一次性生成全部四项核心产物 (提案/规格/设计/任务)，支持 `--dry-run` |
-| `/stdd:continue` | `stdd continue [change]` | 自动检测 `.status.yaml` 工作流状态机，推进到下一个缺失产物并生成，支持 `--specs` 强制跳转 |
-| `/stdd:explore` | `stdd explore [scope]` | 只读探索模式：分析现有代码架构、模式、约束，写入 `stdd/explorations/`，支持 `--deep` |
-| `/stdd:turbo` | `stdd turbo <desc>` | One-Shot 一键执行所有实现前阶段 (propose→clarify→confirm→spec→plan)，在确认门暂停 |
-| `/stdd:brainstorm` | `stdd brainstorm <topic>` | 只读头脑风暴，多维度分析 (架构洞察/代码质量/技术评估/重构建议)，零文件修改，支持 `--method` |
-| `/stdd:issue` | `stdd issue <desc>` | Bug TDD 修复：分类缺陷，先写失败测试 (RED)，最小修复 (GREEN)，验证无回归 |
+核心工作流覆盖从初始化到归档的完整生命周期。每个阶段产出文件化证据链，支持断点续传。
 
-## 3. SDD 增强 — 规格驱动 (4 个)
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:init` | `stdd init [path]` | 初始化 STDD 工作区。生成 `stdd/` 目录结构、配置文件 `config.yaml`、memory 模板、skills 模板。支持 `--force` 覆盖、`--skip-skills` 跳过技能复制、`-y` 非交互模式 |
+| `/stdd:new` | `stdd new change <name>` | 创建新变更目录 `stdd/changes/<name>/`，包含 `proposal.md`、`tasks.md`、`evidence/` 等初始文件。支持 `--title` 设置标题 |
+| `/stdd:propose` | `stdd propose [action] [name]` | 需求提案草拟。Actions: `draft`（创建提案）、`show`（查看）、`refine`（精炼）、`validate`（验证完整性）、`split`（拆分复杂需求）。支持 `--description`、`--force`、`--dry-run` |
+| `/stdd:clarify` | `stdd clarify [action] [change]` | 多轮需求澄清。Actions: `clarify`（执行澄清）、`questions`（生成澄清问题）、`edge-cases`（边界情况分析）、`constraints`（约束识别）。支持 `--rounds`（轮数，默认 3）、`--focus`（聚焦领域） |
+| `/stdd:confirm` | `stdd confirm [change]` | 人类确认门。展示提案摘要和澄清结果，请求用户批准后进入规格阶段。支持 `--skip` 自动确认 |
+| `/stdd:spec` | `stdd spec <change>` | 从任务生成 BDD 规格。产出 `stdd/specs/features/` 和 `stdd/specs/scenarios/`。支持 `--merge` 与已有规格合并 |
+| `/stdd:plan` | `stdd plan [action] [change]` | 架构评估与微任务拆解。Actions: `generate`（生成任务列表）、`show`（查看）、`estimate`（时间估算）、`dependencies`（依赖分析）。支持 `--tasks`（目标任务数）、`--estimate` |
+| `/stdd:apply` | `stdd apply [change]` | Ralph Loop TDD 实现。执行 红→绿→重构 循环。支持 `--task <id>`、`--phase red\|green\|refactor`、`--dry-run`、`--delegate`（失败时写委派证据）、`--e2e-command`、`--allow-no-tests`、`--workspace` |
+| `/stdd:execute` | `stdd execute [action] [change]` | Ralph Loop 闭环执行器。Actions: `run`（执行 TDD 循环）、`status`（查看状态）、`evidence`（查看证据）、`retry`（重试失败任务）。支持 `--phase`、`--max-tasks` |
+| `/stdd:verify` | `stdd verify [change]` | 5 维验证 + 宪法检查。验证测试通过、覆盖率达标、宪法合规、证据完整。支持 `--no-constitution`、`--lint`、`--lint-command`、`--test-command`、`--workspace` |
+| `/stdd:archive` | `stdd archive [change]` | Delta Spec Merge 归档。合并变更规格到主规格库，移动证据到 `stdd/changes/archive/`，生成归档报告 |
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:api-spec` | `stdd api-spec [change]` | 生成 OpenAPI 格式 API 规格 + TypeScript 类型定义，支持多端点批量生成 |
-| `/stdd:schema` | `stdd schema validate/create/fork` | 生成 JSON Schema 和 Zod 类型校验，支持 create/fork 自定义 artifact DAG workflow |
-| `/stdd:contract` | `stdd contract <action>` | 生成和管理消费者驱动契约测试 (5 种消息模式)，支持 generate/verify 子命令 |
-| `/stdd:validate` | `stdd validate [change]` | 验证规格一致性 + Spec Guardian 泄漏检测 + RFC 2119 关键词检查，支持 `--fix` 自动修复 |
+---
 
-## 4. TDD 增强 — 测试驱动 (6 个)
+## 2. 工作流增强（6 个）
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:outside-in` | `stdd outside-in <action>` | 由外向内 TDD：从 E2E 测试开始，再到集成测试，最后单元测试。支持 init/scaffold/status |
-| `/stdd:mutation` | `stdd mutation [change]` | 变异测试：Quick 启发式 anti-fake-green 检测 + Stryker 委托深度分析 (`--mode stryker`) |
-| `/stdd:mock` | `stdd mock [change]` | 自动生成外部依赖的 Mock 实现，支持 `--all` 扫描全量 + `--fake` 生成可运行 fake |
-| `/stdd:factory` | — | 测试数据工厂：Builder 模式 + Faker.js + 嵌套 Fixture，覆盖正常/边界/异常场景 |
-| — | `stdd tdd-init [path]` | 为已有源码文件初始化测试脚手架，支持 `--dry-run` |
-| — | `stdd baby-steps [task]` | 交互式 TDD 小步引导，适合复杂组件的渐进式实现 |
+快捷通道和增强工具，加速常见工作流模式。
 
-## 5. 质量与治理 (8 个)
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:ff` | `stdd ff <description>` | **快速通道**：提案→规格→任务一步到位。自动创建变更、生成提案、拆解任务。支持 `--change-name`、`--workspace` |
+| `/stdd:continue` | `stdd continue [change]` | **断点续传**：读取 `stdd/changes/*/progress.jsonl`，恢复中断的工作。支持 `--force`、`--dry-run`、`--test-command` |
+| `/stdd:explore` | `stdd explore [scope]` | **深度项目探索**：分析项目架构、技术栈、模块依赖、代码模式。产出 `stdd/memory/exploration.md`。支持 `--output`、`--json` |
+| `/stdd:turbo` | `stdd turbo <description>` | **一键全流程**：自动执行 propose→confirm→spec→plan→apply→verify→archive 全链路。仅在确认点和归档点暂停。支持 `--change-name`、`--no-spec` |
+| `/stdd:brainstorm` | `stdd brainstorm <topic...>` | **多策略头脑风暴**：内置 10+ 启发式方法（第一性原理、SCAMPER、逆向思维等）。支持 `--method <id>`（指定方法）、`--list`（列出方法）、`--json` |
+| `/stdd:issue` | `stdd issue <description>` | **Bug 修复入口**：创建 bugfix 变更，自动标记严重度，生成修复提案。支持 `--title`、`--severity`、`--workspace` |
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:guard` | `stdd guard` | TDD 守护钩子：强制测试先行 (Blocking) + 最小实现 (Warning) + 反绕过，支持 on/off/status |
-| `/stdd:constitution` | `stdd constitution <action>` | 管理 9 篇开发条例：show/check/status/fix/audit/waive，支持豁免追踪和审计趋势 |
-| `/stdd:metrics` | `stdd metrics [change]` | 质量指标仪表板：测试覆盖率、变异得分、代码复杂度、TDD 合规率，支持 `--export` |
-| `/stdd:fix-packet` | `stdd fix-packet [change]` | 生成诊断修复包 (Golden Packet)，从失败任务收集修复上下文，支持 `--test-command` |
-| — | `stdd hooks install/verify/status/disable/enable` | 管理 STDD Hook 系统 (Pre/Post ToolUse)，多引擎支持 (Claude Code/Cursor/Windsurf) |
-| — | `stdd audit` | Constitution 条例历史合规审计，支持 `--json` |
-| — | `stdd depcheck [path]` | 检查未使用/过期的依赖包，支持 `--json` |
-| — | `stdd doctor` | 项目健康诊断：10 项检查 (STDD 目录/配置/Node 版本/Git Hooks/测试框架等) |
+---
 
-## 6. Graph 引擎 — DAG 编排 (8 个子命令)
+## 3. SDD 增强 — 规格驱动（4 个）
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:graph` | `stdd graph <subcommand>` | DAG 技能编排引擎总入口，动态拓扑裁剪 |
-| — | `stdd graph visualize` | 输出编译后图谱 (Mermaid/JSON/HTML 格式) |
-| — | `stdd graph analyze` | 打印图谱节点、边、入口、终端、层级摘要 + 瓶颈分析 (`--bottlenecks`) |
-| — | `stdd graph run --intent <intent>` | 按意图 DAG 执行全工作流 (feature/hotfix/research/repair)，动态路由拓扑 |
-| — | `stdd graph parallel --detect/--execute` | 检查图谱并行化机会和可并行层，支持 `--max-workers` |
-| — | `stdd graph history` | 查看执行历史 (从证据文件)，支持 `--failures` 过滤 |
-| — | `stdd graph replay <id>` | 查看详情或重新执行过去的运行 |
-| — | `stdd graph recommend` | 根据项目状态推荐下一步 Skill 和原因 |
+Spec-Driven Development 工具链，在编码前锁定接口和数据契约。
 
-## 7. 协作与文档 (9 个)
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:api-spec` | `stdd api-spec [change]` | **OpenAPI 规范生成**：从需求自动生成 OpenAPI 3.0 规范。产出 `stdd/specs/openapi.yaml`。支持 `--format yaml\|json`（默认 yaml）、`--workspace` |
+| `/stdd:schema` | `stdd schema <subcommand>` | **类型/数据 Schema 管理**。Subcommands: `validate [path]`（验证 Schema 合规）、`create <name>`（创建工作流 Schema）、`fork <source> <name>`（派生 Schema）。支持 `--strict`、`--force`、`--json` |
+| `/stdd:contract` | `stdd contract <action> [change]` | **契约测试**：生成消费者/提供者契约。Actions: `generate`、`verify`、`list`。支持 `--consumer`、`--provider`、`--workspace` |
+| `/stdd:validate` | `stdd validate [change]` | **规格验证 + Spec Guardian**：检查规格一致性、实现泄漏。支持 `--spec-guardian`（实现泄漏检测）、`--fix`（写入修复建议）、`--json` |
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:commit` | `stdd commit [change]` | 原子化 Git 提交：red:/green:/refactor: 前缀 (Conventional Commits + TDD)，支持 `--tdd`/`--phase`/`--issue` |
-| `/stdd:final-doc` | — | 聚合所有阶段产物为 FINAL_REQUIREMENT.md 综合文档 |
-| `/stdd:design` | — | 将规格转化为技术设计文档，含 Context/Decision/Rationale/Consequences ADR 格式 |
-| `/stdd:prp` | — | What/Why/How/Success 结构化规划框架，便于干系人对齐 |
-| `/stdd:product-proposal` | `stdd product-proposal` | 扫描所有 stdd/ 产物，生成 15 章产品方案报告 (PRODUCT-PROPOSAL.md)，含覆盖率、质量指标、路线图，支持 `--json`/`--output` |
-| `/stdd:context` | `stdd context [layer]` | 三层文档上下文管理 (Foundation~500t + Component~1000t + Feature~2000t)，支持 `--export`/`--json` |
-| `/stdd:user-test` | `stdd user-test [change]` | 从 BDD 规格生成人类可读验收测试脚本 (非技术人员可执行) + AI agent 自动化脚本 |
-| — | `stdd story <action>` | Story Mapping：创建用户故事地图 (journey YAML) 并转化为 BDD feature files |
-| — | `stdd pipeline [change]` | 从规格生成 parser IR 和验收测试骨架 |
+---
 
-## 8. 高级与 AI Agent (10 个)
+## 4. TDD 增强 — 测试驱动（6 个）
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:supervisor` | — | 多 Agent 协调器 (Supervisor 模式)，跨领域并行工作，管理 start/status |
-| `/stdd:iterate` | — | Plan-Execute-Reflect 自主迭代循环，渐进式质量提升，支持 `--max` 限制轮数 |
-| `/stdd:memory` | `stdd memory <action>` | 向量数据库记忆系统：save/search/stats/scan/list 语义搜索和持久化记忆存储 |
-| `/stdd:parallel` | — | DAG 并行执行引擎：识别并并行执行独立任务，聚合结果 |
-| `/stdd:roles` | `stdd roles <action>` | 12 个专业 Agent 角色 (4 基础 + 8 专用)，Party Mode 辩论 + 对抗式安全审查 |
-| `/stdd:learn` | `stdd learn <action>` | 自适应学习：scan/good/bad/suggest/status，Pattern Teaching 扫描项目本地惯例 |
-| `/stdd:vision` | — | 创建和维护项目愿景文档 (长期目标、架构北极星、战略方向) |
-| `/stdd:help` | — | 基于当前项目状态的上下文感知帮助系统，推荐下一步命令 |
-| — | `stdd runtime agent <action>` | Party Mode 多 Agent 状态机：start/next/stop/run，支持 `--rounds`/`--role` |
-| — | `stdd runtime sudo <file>` | SudoLang 伪代码解析引擎，将伪代码解析为 STDD 结构化产物，支持 `--generate` |
+强化 TDD 实践的专用工具，覆盖从测试脚手架到变异测试的全链路。
 
-## 9. 评估与决策支持 (3 个)
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:outside-in` | `stdd outside-in [action] [change]` | **外向内 TDD**：生成分层测试骨架（E2E→集成→单元）。Actions: `init`（创建注册表）、`plan`（生成层计划）、`scaffold`（生成测试文件）。支持 `--feature`、`--force`、`--json` |
+| `/stdd:mutation` | `stdd mutation [change]` | **变异测试**：验证测试套件有效性。Modes: `quick`（Quick Heuristic，快速）、`stryker`（集成 Stryker）。支持 `--mode`、`--threshold`（分数阈值，默认 80）、`--workspace`、`--json` |
+| `/stdd:mock` | `stdd mock [action] [target]` | **Mock 生成**：自动生成模块/函数/API Mock。Actions: `generate`、`list`、`validate`。支持 `--type module\|function\|api`、`--methods`、`--force`、`--json` |
+| `/stdd:factory` | `stdd factory [action] [typeName]` | **测试数据工厂**：基于类型定义生成 Faker 数据工厂。Actions: `list`、`generate`、`validate`。支持 `--fields`（逗号分隔字段列表）、`--locale`（Faker 区域设置）、`--force`、`--json` |
+| — | `stdd tdd-init [path]` | **TDD 脚手架初始化**：为项目生成测试配置和初始测试文件。支持 `--source-dir`、`--dry-run` |
+| — | `stdd baby-steps [task]` | **Baby Steps TDD 引导**：交互式 TDD 猜谜游戏，引导用户逐步实现功能。适用于学习和教学场景 |
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:complexity` | — | 代码复杂度评估 (APP Mass 圈复杂度/认知复杂度分析) + Top-10 热点 + 重构建议 |
-| `/stdd:certainty` | — | 5 维度置信度评分 (需求清晰度/技术可行性/风险/测试覆盖/愿景对齐)，低于阈值暂停 |
-| `/stdd:vision` | — | 项目愿景文档管理 (同第 8 类) |
+---
 
-## 10. 生成与预览（Phase 2-4 新增，7 个）
+## 5. 质量与治理（8 个）
 
-| 斜杠命令 | CLI 命令 | 功能 |
-|---------|---------|------|
-| `/stdd:builder` | `stdd builder <action>` | 自定义 Agent、工作流、Skill 构建器：agent/workflow/skill/list/validate/test/share/export |
-| `/stdd:ui` | `stdd ui <action>` | 多框架 UI 页面/组件生成（React / Vue / Angular / Svelte），支持 component/page 类型 |
-| `/stdd:modules` | `stdd modules <action>` | 模块市场管理：list/install/info/uninstall/registry |
-| `/stdd:dashboard` | `stdd dashboard <action>` | 项目健康仪表板（静态 HTML）：generate/open/serve |
-| `/stdd:docs` | `stdd docs <action>` | 文档站点生成（Astro + Starlight 风格）：generate/serve |
-| `/stdd:profile` | `stdd profile <action>` | 规划配置文件管理：create/select/show/list/edit，自适应规划深度 |
-| — | `stdd adapt <action>` | IDE 配置适配生成（多引擎自动配置）：generate/setup/list |
+代码质量守护、宪法合规检查和依赖治理。
 
-## 11. 辅助工具 (15 个)
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:guard` | `stdd guard` | **TDD 守护钩子**：运行实时质量检查（宪法、TDD 合规）。支持 `--no-constitution`、`--workspace`、`--strict`（警告也视为失败）。可作为 Git pre-commit hook 使用 |
+| `/stdd:constitution` | `stdd constitution [action] [target]` | **9 条质量宪法管理**。Actions: `show`（查看条例）、`check`（合规检查）、`fix`（自动修复）、`status`（状态）、`audit`（历史审计）、`waive`（豁免）。支持 `--article <n>`、`--force`、`--reason`、`--days`、`--dry-run`、`--lint`、`--json` |
+| `/stdd:metrics` | `stdd metrics [change]` | **质量指标仪表板**：展示测试覆盖率、任务完成率、宪法合规率等指标。支持 `--workspace`、`--json` |
+| `/stdd:fix-packet` | `stdd fix-packet [change]` | **Golden Packet 失败修复上下文**：为 AI 交接生成完整的失败上下文包，包含测试输出、代码差异、规格。支持 `--test-output`、`--test-command`、`--task`、`--json` |
+| — | `stdd hooks <subcommand>` | **AI Code Hook 系统**。Subcommands: `install`（安装 hooks 到 AI 引擎配置）、`verify`（验证安装）、`status`（状态）、`disable`（禁用）、`enable`（启用）。支持 `-g/--global`、`-f/--force`、`--git`（同时安装 Git pre-commit hook）、`--article` |
+| — | `stdd audit` | **历史合规审计**：扫描历史变更，生成宪法合规审计报告。支持 `--json` |
+| — | `stdd depcheck [path]` | **依赖检查**：检测未使用、过时或已知漏洞的依赖。支持 `--workspace`、`--safe-list`、`--json` |
+| — | `stdd doctor` | **项目健康检查**：验证 STDD 配置、文件完整性、工具链可用性。支持 `--json`、`--deep`（深度检查包括 audit 和 lint） |
 
-| CLI 命令 | 功能 |
-|---------|------|
-| `stdd status [change]` | 查看变更状态 (支持 `--json`) |
-| `stdd list` / `stdd ls` | 列出所有变更/规格，支持 `--archived`/`--json`/`--specs` |
-| `stdd skills [--phase N]` | 列出所有可用技能，支持按阶段过滤 |
-| `stdd commands` | 列出所有 Claude Code 斜杠命令 |
-| `stdd recommend` | 根据项目状态智能推荐下一步，支持 `--json` |
-| `stdd update [path]` | 更新 STDD Copilot Ultra 模板文件，支持 `--force`/`--dry-run` |
-| `stdd progress` | 实时进度追踪：JSONL 持久化日志，start/complete/fail/interrupt 四态记录，断点续传 (`--resume`)，支持 `--summary`/`--json`/`--last N`/`--clear`，SIGINT/SIGTERM 信号捕获 |
-| `stdd start` | 交互式快速启动向导 (TTY) / 帮助文本 (非 TTY) |
-| `stdd workspace list/validate/repair` | Monorepo 工作空间注册表管理，支持 `--json` |
-| `stdd extensions list/install/validate` | STDD 扩展管理：列出/安装/验证扩展 |
-| `stdd starters list/create` | 项目启动模板管理 (TS/JS/Python/Go/Rust 5 种) |
-| `stdd ci [platform]` | 生成 CI 配置文件 (支持 github) |
-| `stdd browser snapshot/inspect/doctor` | 内置浏览器驱动 (Playwright)：截图/检查/健康诊断，支持 `--width`/`--height` |
-| `stdd graph recommend` | 智能推荐下一步 Skill (同第 6 类) |
-| `stdd constitution audit` | Constitution 合规审计 (同第 5 类) |
+---
+
+## 6. Graph 引擎 — DAG 编排（8 个子命令）
+
+基于 DAG（有向无环图）的工作流编排引擎，支持可视化、分析和并行执行。
+
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:graph` | `stdd graph <subcommand>` | **Graph 引擎入口**。4 种意图模式：`feature`（新功能）、`hotfix`（热修复）、`research`（探索分析）、`repair`（修复）、`brownfield`（接手遗留项目） |
+| — | `stdd graph visualize` | **DAG 可视化**：输出 Mermaid 图、JSON 结构或 HTML 交互视图（自动打开浏览器）。支持 `--intent`、`--format mermaid\|json\|html`、`--output` |
+| — | `stdd graph analyze` | **图结构分析**：展示节点数、边数、入口节点、终端节点、并行层数。支持 `--intent` |
+| — | `stdd graph run` | **DAG 工作流执行**：按拓扑顺序执行完整 STDD 工作流。支持 `--intent`、`--change-name`、`--workspace`、`--skip-apply` |
+| — | `stdd graph parallel` | **并行化分析**：检测可并行执行的层级。支持 `--intent`、`--detect` |
+| — | `stdd graph history` | **执行历史**：查看 DAG 执行历史和证据。支持 `--json`、`--change`、`--workspace` |
+| — | `stdd graph replay <id>` | **历史回放**：回放过去的 DAG 执行记录，查看详细结果。支持 `--json`、`--verbose` |
+| — | `stdd graph recommend [change]` | **智能推荐**：基于项目状态推荐下一步操作。支持 `--json`、`--workspace` |
+
+---
+
+## 7. 协作与文档（9 个）
+
+团队协作、文档生成和故事管理工作流。
+
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:commit` | `stdd commit [change]` | **提交消息生成**：基于变更内容生成结构化 commit message。支持 `--format text\|json`、`--tdd`（TDD 前缀）、`--phase red\|green\|refactor`、`--issue`、`--require-issue`。别名：`stdd commit-msg` |
+| `/stdd:final-doc` | `stdd final-doc [change]` | **最终需求文档**：聚合所有阶段产物为 `FINAL_REQUIREMENT.md`。支持 `--output`（自定义输出文件名）、`--include-evidence`（包含执行证据）、`--json` |
+| `/stdd:design` | `stdd design [action] [dir]` | **设计系统文档**：生成 `DESIGN.md`，包含 Design Tokens（颜色、排版、间距、圆角）。支持 `--preset modern\|dark\|minimal`、`--no-preview`（跳过预览 HTML）、`--force`、`--json` |
+| `/stdd:prp` | `stdd prp [action] [title...]` | **PRP 结构化规划**：What/Why/How/Success 四段式规划。Actions: `create`、`show`、`update`。支持 `--what`、`--why`、`--how`、`--force`、`--json` |
+| `/stdd:product-proposal` | `stdd product-proposal` | **产品提案文档**：生成结构化产品提案，包含市场分析、用户画像、功能规划。支持 `--json` |
+| `/stdd:context` | `stdd context [layer]` | **三层文档架构**：展示项目上下文（Foundation/Components/Integration）。支持 `--export`、`--workspace`、`--format`、`--json` |
+| `/stdd:user-test` | `stdd user-test [change]` | **用户测试脚本**：生成人类和 Agent 用户测试框架骨架。支持 `--human-only`、`--agent-only`、`--framework react\|vue\|vanilla`、`--json` |
+| — | `stdd story [action] [name]` | **故事地图**：创建用户旅程并转换为 BDD 场景。Actions: `create`、`list`、`convert`。支持 `--persona`、`--goal`、`--force`、`--json` |
+| — | `stdd pipeline [change]` | **Pipeline 骨架**：从规格生成 Parser IR 和验收测试骨架。支持 `--json` |
+
+---
+
+## 8. 高级与 AI Agent（10 个）
+
+多 Agent 协作、运行时引擎、记忆系统和并行执行。
+
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:supervisor` | `stdd supervisor [action] [args...]` | **多 Agent 协调器**：管理 Agent 讨论轮次、角色分配、决策汇总。Actions: `status`、`start`、`stop`、`review`。支持 `--roles`（逗号分隔角色列表）、`--rounds`、`--json` |
+| `/stdd:iterate` | `stdd iterate [action] [args...]` | **Plan-Execute-Reflect 迭代循环**：自主迭代改进。Actions: `status`、`plan`、`execute`、`reflect`。支持 `--plan`、`--reflection`、`--next`、`--json` |
+| `/stdd:memory` | `stdd memory <action> [args...]` | **记忆管理**：扫描项目源码到记忆工件。Actions: `scan`（扫描）、`list`（列出）。支持 `--source-dir`、`--json` |
+| `/stdd:parallel` | `stdd parallel [action] [intent]` | **DAG 并行执行**：并行运行多个 Skill。Actions: `status`、`run`、`plan`。支持 `-p`（最大并行数）、`--strategy all\|any\|race`、`--dry-run`、`--json` |
+| `/stdd:roles` | `stdd roles [action] [args...]` | **12 角色 Agent 协作**：PM、Architect、UX、QA、Security、DevOps、DBA、Performance、Accessibility、Documentation、Compliance、Observer。Actions: `party`（派对模式）、`review`（对抗审查）、`list`。支持 `--roles`、`--json` |
+| `/stdd:learn` | `stdd learn [action] [args...]` | **自适应学习**：记录项目模式和反馈，优化后续工作流。Actions: `record`、`feedback`、`patterns`、`reset`。支持 `--json` |
+| `/stdd:vision` | `stdd vision [action]` | **项目愿景文档**：管理项目愿景、目标、路线图。Actions: `show`、`create`、`update`。支持 `--force`、`--json` |
+| `/stdd:help` | `stdd help [topic]` | **上下文感知帮助**：根据当前工作流阶段提供定向帮助。支持 `--json` |
+| — | `stdd runtime agent <action> [topic]` | **Agent 运行时引擎**：多 Agent 模拟器（Party Mode）。Actions: `start`（启动）、`next`（下一轮）、`record`（记录）、`stop`（停止）、`run`（执行任务）。支持 `--rounds`、`--executor noop\|shell`、`--command`、`--role`、`--allow-unsafe-shell-executor`、`--allowed-bin`、`--json` |
+| — | `stdd runtime sudo [file]` | **SudoLang 解释器**：解析 SudoLang 伪代码并生成 STDD 工件。支持 `--generate`（生成工件）、`--json` |
+| — | `stdd memory-scan [action]` | **源码记忆扫描**：扫描项目源码并生成结构化记忆工件。Actions: `scan`（默认）、`list`。支持 `--source-dir`、`--json` |
+
+---
+
+## 9. 评估与决策支持（3 个）
+
+复杂度评估、信心评分和项目愿景分析工具。
+
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:complexity` | `stdd complexity [action] [path]` | **代码复杂度分析**：计算圈复杂度、认知复杂度、耦合度。Actions: `analyze`（分析）、`report`（报告）、`trend`（趋势）。支持 `--limit`、`--json` |
+| `/stdd:certainty` | `stdd certainty [action] [args...]` | **5 维度信心评分**：需求清晰度、技术可行性、资源充裕度、时间可行性、风险评估。Actions: `assess`（评估）、`set`（设置阈值）、`history`（历史趋势）。支持 `--scores`（预设分数）、`--set`（配置阈值）、`--json` |
+| `/stdd:vision` | `stdd vision [action]` | **项目愿景管理**：（同 8 高级与 AI Agent 中的 vision，跨分类复用）。支持 `--force`、`--json` |
+
+---
+
+## 10. 生成与预览（7 个）
+
+代码生成、UI 生成、模块市场和可视化工具。
+
+| 斜杠命令 | CLI 命令 | 功能描述 |
+|----------|---------|---------|
+| `/stdd:builder` | `stdd builder [action] [name]` | **自定义构建器**：创建自定义 Agent、工作流和 Skill。Actions: `agent`（创建 Agent）、`workflow`（创建工作流）、`skill`（创建 Skill）、`list`、`validate`、`export`。支持 `--type`、`--expertise`、`--lens`、`--focus`、`--phases`、`--intent`、`--description`、`--category`、`--phase`、`--force`、`--json` |
+| `/stdd:ui` | `stdd ui [action] [name]` | **前端页面与组件生成**（详见下方详细说明） |
+| `/stdd:modules` | `stdd modules [action] [args...]` | **STDD 模块市场**：浏览、搜索、安装模块。Actions: `featured`（精选）、`search`（搜索）、`install`（安装）、`list`（已安装）、`info`（详情）、`publish`（发布）、`categories`（分类）。支持 `--category`、`--json` |
+| `/stdd:dashboard` | `stdd dashboard [action]` | **静态 HTML 仪表板**：生成项目健康度、变更状态、证据概览的仪表板。Actions: `generate`（默认）、`open`（生成并打开浏览器）。支持 `--json`、`--output` |
+| `/stdd:docs` | `stdd docs [action]` | **静态文档站点**：从项目文档生成可部署的 HTML 文档站点。Actions: `generate`（默认）、`open`、`sources`（列出源文件）、`deploy`（部署到 gh-pages/netlify）。支持 `--output`、`--lang zh\|en`、`--json` |
+| `/stdd:profile` | `stdd profile [action]` | **自适应规划深度**：根据变更类型自动调整规划深度。Profiles: `quick`(1)、`standard`(2)、`thorough`(3)、`enterprise`(4)。Actions: `detect`、`set`、`list`、`recommend`。支持 `--change`、`--force`、`--json` |
+| — | `stdd adapt [action]` | **IDE 适配器**（内部使用）：为不同 IDE 生成配置文件。Actions: `generate\|setup`、`list`、`all`。自动适配所有已安装的 AI 引擎 |
+
+### `/stdd:ui` 详细说明
+
+`stdd ui` 是全栈前端生成引擎，基于 `DESIGN.md` Design Token 驱动。
+
+#### Actions
+
+| Action | 命令 | 说明 |
+|--------|------|------|
+| `page` | `stdd ui page <name>` | 生成页面（支持所有页面类型和框架） |
+| `component` | `stdd ui component <name>` | 生成组件（支持所有组件类型） |
+| `scaffold` | `stdd ui scaffold` | 脚手架完整 UI 应用（布局 + 基础组件 + 默认状态） |
+| `preview` | `stdd ui preview` | 生成预览画廊 HTML（自动打开浏览器） |
+| `test` | `stdd ui test <name>` | 生成测试脚手架 |
+| `diff` | `stdd ui diff [name]` | 视觉回归对比 |
+| `list` | `stdd ui list` | 列出所有已生成的 UI 工件 |
+
+#### Component 类型
+
+| 类型 | 说明 |
+|------|------|
+| `button` | 按钮（主要/次要/危险/禁用变体） |
+| `card` | 卡片（内容/产品/用户卡片） |
+| `form` | 表单（含验证逻辑） |
+| `input` | 输入框（文本/密码/搜索/数字） |
+| `modal` | 模态对话框（含焦点陷阱） |
+| `nav` | 导航栏（响应式 + 移动端汉堡菜单） |
+| `table` | 数据表格（排序/筛选/分页） |
+| `list` | 列表（虚拟滚动支持） |
+
+#### Page 类型
+
+| 类型 | 说明 |
+|------|------|
+| `landing` | 着陆页（Hero + Features + CTA） |
+| `dashboard` | 仪表板（侧边栏 + 数据卡片 + 图表区） |
+| `auth` | 认证页（login/register/forgot 变体，`--authVariant`） |
+| `settings` | 设置页（Profile/Security/Notifications 分区） |
+| `pricing` | 定价页（Plan 对比 + FAQ） |
+
+#### 支持框架
+
+| 框架 | 文件格式 |
+|------|---------|
+| `react` / `next` | `.jsx` + `.css` |
+| `vue` / `nuxt` | `.vue` 单文件组件 |
+| `angular` | `.component.ts` + `.html` + `.css` |
+| `svelte` | `.svelte` |
+| `vanilla` | `.html` |
+
+#### 样式方案
+
+| 方案 | 说明 |
+|------|------|
+| `css` | 标准 CSS（默认） |
+| `scss` | Sass 预处理器 |
+| `tailwind` | Tailwind CSS 工具类 |
+| `css-modules` | CSS Modules（React 专用） |
+
+#### UI 状态生成
+
+| 状态 | 说明 |
+|------|------|
+| `loading` | 加载骨架屏/Spinner |
+| `empty` | 空状态占位 |
+| `error` | 错误提示与重试 |
+| `permission` | 权限不足提示 |
+| `offline` | 离线状态提示 |
+| `success` | 操作成功反馈 |
+
+#### 无障碍（a11y）支持
+
+- 完整 `aria-*` 属性（`aria-label`、`aria-describedby`、`aria-live` 等）
+- 语义化 ARIA roles（`role="dialog"`、`role="navigation"` 等）
+- 焦点陷阱（Modal 自动捕获/释放焦点）
+- 键盘导航支持（Tab/Shift+Tab/Escape）
+- Screen-reader only 工具类（`.sr-only`）
+
+#### 响应式支持
+
+- 移动优先设计
+- Tailwind 断点：`sm:`（640px）、`md:`（768px）、`lg:`（1024px）
+- CSS 自定义属性断点系统
+- 弹性网格布局（`grid-template-columns: repeat(auto-fill, ...)`）
+
+#### DESIGN.md Token 提取
+
+所有生成的组件和页面自动从 `DESIGN.md` 提取 Design Tokens：
+- **颜色系统**：`--color-primary`、`--color-gray-*`、语义色
+- **排版**：`--font-family-base`、`--font-size-*`
+- **间距**：`--spacing-xs` ~ `--spacing-3xl`
+- **圆角**：`--radius-sm` ~ `--radius-full`
+- 无 `DESIGN.md` 时使用合理默认值
+
+---
+
+## 11. 辅助工具（15 个）
+
+项目管理和辅助工具。
+
+| CLI 命令 | 功能描述 |
+|---------|---------|
+| `stdd status [change]` | 显示变更状态（当前阶段、任务进度、证据状态）。支持 `--json` |
+| `stdd list` / `stdd ls` | 列出所有变更和规格。支持 `--changes`、`--specs`、`--archived`（含已归档）、`--json` |
+| `stdd skills` | 列出所有可用的 STDD Skills |
+| `stdd commands` | 列出所有 Claude Code 斜杠命令模板 |
+| `stdd recommend [change]` | 基于项目状态推荐下一步操作。支持 `--workspace`、`--json` |
+| `stdd update [path]` | 更新 STDD 配置文件到最新版本。支持 `--force`、`--dry-run` |
+| `stdd progress` | 跟踪和查看命令执行进度（JSONL 记录）。支持 `--summary`、`--resume`、`--clear`、`--json` |
+| `stdd start` | 交互式快速启动向导。支持 `--json` |
+| `stdd workspace <subcommand>` | 工作区管理。Subcommands: `list`（列出）、`validate`（验证注册表）、`repair`（修复）。支持 `--json`、`--dry-run` |
+| `stdd extensions [action] [args...]` | 扩展管理。Actions: `list`、`install`、`validate`、`package`。支持 `--json` |
+| `stdd starters <subcommand> [args...]` | 项目启动器模板（TypeScript/JavaScript/Python/Go/Rust） |
+| `stdd ci [platform]` | CI 配置生成（GitHub Actions/GitLab CI/Jenkins 等）。支持 `--force`。别名：`stdd ci-generator` |
+| `stdd browser <subcommand>` | 内置浏览器驱动（E2E 测试和视觉回归）。Subcommands: `snapshot`（截图）、`inspect`（检查页面）、`doctor`（Playwright 健康检查）、`compare`（视觉对比）、`update-baseline`（更新基线） |
+| `stdd graph recommend [change]` | （同 6 Graph 引擎中的 recommend，跨分类复用） |
+| `stdd constitution audit` | （同 5 质量与治理中的 constitution audit，跨分类复用） |
 
 ---
 
 ## 统计总览
 
-| 指标 | 数量 | 说明 |
-|------|------|------|
-| **Skill 模板** (SKILL.md) | **53** | `src/templates/skills/stdd/{name}/SKILL.md` |
-| **Command 模板** (.md) | **86** | `src/templates/commands/{name}.md` |
-| **唯一斜杠命令** (`/stdd:*`) | **86** | 去重后的 Skill + Command 入口 |
-| **CLI 命令** (含子命令) | **88** | `stdd xxx` 终端命令 |
-| **Skill 驱动入口** | **53** | 有 Skill 模板的命令 |
-| **Command 文件入口** | **86** | 有 Command 模板的命令 |
-| **总入口** | **86** | 86 Command + 53 Skill，去重后 86 个唯一入口 |
-| **AI 引擎适配** | **24** | 4 Tier 兼容体系 |
-| **Constitution 条例** | **9** | 3 Blocking + 4 Warning + 2 Suggestion |
-| **Agent 角色** | **12** | 4 基础 + 8 专用 |
-| **Graph Intent** | **4** | feature/hotfix/repair/research |
-| **测试基线** | **196 套件 / ~4151 测试** | Branch 93.2%，`npm test` 全部通过 |
+| 指标 | 数量 |
+|------|------|
+| CLI 命令实现 | **88** |
+| 斜杠命令模板 | **86** |
+| Skill 模板 | **53** |
+| 顶级 CLI 命令 | **83** |
+| 测试套件 | **197** |
+| 测试用例 | **4151+** |
+| 测试通过率 | **100%** |
+| 代码覆盖率 | **97.7% statements / 93% branches** |
+| AI 引擎兼容 | **4 层 22 种**（Claude Code、Cursor、Windsurf、Copilot、Aider、Cline、Continue.dev、Amazon Q、OpenCode、Codex、Qwen Code、MarsCode、Comate、Gemini、ChatGPT Codex、Kiro、CodeBuddy、Augment、PearAI、Cody、Tabnine、Bolt.new） |
+| 宪法条例 | **9 条**（3 Blocking + 4 Warning + 2 Suggestion） |
+| Agent 角色 | **12 个**（PM、Architect、UX、QA、Security、DevOps、DBA、Performance、Accessibility、Documentation、Compliance、Observer） |
+| Graph 意图模式 | **5 种**（feature、hotfix、research、repair、brownfield） |
 
 ---
 
 ## 按使用场景速查
 
-### 需求明确的快速开发
-```
-stdd init → stdd ff "描述" → stdd apply → stdd verify → stdd archive
+### 场景 1：新功能开发（标准流程）
+
+```bash
+stdd init                                    # 首次初始化
+stdd new change add-dark-mode                # 创建变更
+stdd propose draft add-dark-mode             # 需求提案
+stdd clarify add-dark-mode                   # 需求澄清
+stdd confirm add-dark-mode                   # 确认需求
+stdd spec add-dark-mode                      # 生成规格
+stdd plan add-dark-mode                      # 任务拆解
+stdd apply add-dark-mode                     # TDD 实现
+stdd verify add-dark-mode                    # 验证
+stdd archive add-dark-mode                   # 归档
 ```
 
-### 需求模糊的渐进式开发
-```
-stdd init → stdd new → /stdd:propose → /stdd:clarify → /stdd:confirm → /stdd:spec → /stdd:plan → stdd apply → stdd verify → stdd archive
+### 场景 2：快速通道（推荐日常使用）
+
+```bash
+stdd ff "添加深色模式支持"                     # 一键：提案→规格→任务
+stdd apply                                    # TDD 循环
+stdd verify                                   # 验证
+stdd archive                                  # 归档
 ```
 
-### Bug 修复
-```
-stdd issue "Bug描述" → TDD 最小修复 → stdd verify → stdd archive
+### 场景 3：一键全流程
+
+```bash
+stdd turbo "用户注册功能"                      # 全自动（仅在确认/归档暂停）
 ```
 
-### 一键全流程
-```
-stdd turbo "需求描述" → 自动完成所有阶段 → stdd commit
+### 场景 4：Bug 修复
+
+```bash
+stdd issue "登录页面白屏"                      # Bug 修复入口
+stdd apply                                    # TDD 修复
+stdd verify                                   # 验证
+stdd archive                                  # 归档
 ```
 
-### 断点恢复
+### 场景 5：接手遗留项目（Brownfield）
+
+```bash
+stdd explore                                  # 深度分析项目
+stdd init                                     # 初始化 STDD
+stdd ff "修复性能问题"                         # 快速通道
+stdd apply && stdd verify && stdd archive     # 执行
 ```
-stdd progress --resume → stdd continue <change>
+
+### 场景 6：AI 助手斜杠命令（Claude Code / Cursor 等）
+
 ```
+/stdd:init                                    # 初始化
+/stdd:ff 实现用户 OAuth 登录                    # 快速通道
+/stdd:apply --phase red                       # TDD 红阶段
+/stdd:apply --phase green                     # TDD 绿阶段
+/stdd:mutation                                # 变异测试
+/stdd:verify                                  # 全面验证
+/stdd:archive                                 # 归档
+```
+
+### 场景 7：多 Agent 协作探索
+
+```bash
+stdd brainstorm "微服务架构迁移" --method first-principles  # 头脑风暴
+stdd roles party --roles pm,architect,qa       # 多角色讨论
+stdd complexity analyze                        # 复杂度评估
+stdd certainty assess                          # 信心评分
+stdd vision create                             # 项目愿景
+```
+
+### 场景 8：API 优先开发（SDD）
+
+```bash
+stdd ff "RESTful 用户管理 API"                 # 快速通道
+stdd api-spec                                 # OpenAPI 规范
+stdd schema create user-model                 # 数据 Schema
+stdd contract generate                        # 契约测试
+stdd validate --spec-guardian                 # 规格验证
+stdd apply && stdd verify && stdd archive     # 执行
+```
+
+### 场景 9：前端 UI 生成
+
+```bash
+stdd design create                            # 生成设计系统
+stdd ui scaffold --framework react --style tailwind   # 脚手架
+stdd ui page dashboard --pageType dashboard   # 仪表板页面
+stdd ui component UserCard --type card        # 卡片组件
+stdd ui state AppLoading --type loading       # 加载状态
+stdd ui preview                               # 预览画廊
+stdd ui test dashboard                        # 测试脚手架
+```
+
+### 场景 10：DAG 工作流编排
+
+```bash
+stdd graph visualize --format html            # 可视化 DAG
+stdd graph analyze --intent feature           # 分析结构
+stdd graph run --intent feature               # 执行工作流
+stdd graph history                            # 查看历史
+stdd graph replay <id>                        # 回放执行
+```
+
+### 场景 11：质量治理
+
+```bash
+stdd hooks install --git                      # 安装 hooks + Git pre-commit
+stdd guard                                    # 质量守护
+stdd constitution check                       # 宪法合规
+stdd depcheck                                 # 依赖检查
+stdd doctor --deep                            # 深度健康检查
+stdd mutation --mode quick                    # 快速变异测试
+stdd metrics                                  # 质量指标
+stdd dashboard                                # 生成仪表板
+```
+
+---
+
+## AI 引擎兼容性矩阵
+
+STDD Copilot Ultra 兼容 22 种 AI 编码引擎，通过 4 层适配：
+
+| 层级 | 引擎 |
+|------|------|
+| **Tier 1 — 完整适配** | Claude Code (`.claude`)、Cursor (`.cursor`)、Windsurf (`.windsurf`) |
+| **Tier 2 — 高度兼容** | GitHub Copilot (`.github`)、Aider (`.aider`)、Cline (`.cline`)、Continue.dev (`.continue`) |
+| **Tier 3 — 标准兼容** | Amazon Q (`.amazonq`)、OpenCode (`.opencode`)、Codex (`.codex`)、Qwen Code (`.tongyi`)、MarsCode (`.marscode`)、Comate (`.comate`)、Gemini (`.gemini`)、ChatGPT Codex (`AGENTS.md`) |
+| **Tier 4 — 基础兼容** | Kiro (`.kiro`)、CodeBuddy (`.codebuddy`)、Augment (`.augment`)、PearAI (`.pearai`)、Cody (`.cody`)、Tabnine (`.tabnine`)、Bolt.new (`bolt.md`) |
+
+---
+
+## Constitution 质量宪法（9 条）
+
+| # | 条例 | 优先级 | 核心规则 |
+|---|------|--------|---------|
+| 1 | Library-First | 🟡 Warning | 优先使用成熟库，避免重复造轮子 |
+| 2 | TDD | 🔴 Blocking | 测试先行 + 覆盖率门禁 + 变异证据 |
+| 3 | Small Commits | 🟡 Warning | 原子化提交，每个 commit 只做一件事 |
+| 4 | Code Style | 🟡 Warning | 统一代码格式，遵循项目 lint 规则 |
+| 5 | Documentation | 🟢 Suggestion | 文档即代码，保持文档与代码同步 |
+| 6 | Error Handling | 🟡 Warning | 禁止空 catch，必须有错误处理策略 |
+| 7 | Security | 🔴 Blocking | 禁止硬编码密钥、注入、不安全路径 |
+| 8 | Performance | 🟢 Suggestion | 合理默认性能，避免不必要优化 |
+| 9 | CI/CD | 🔴 Blocking | 自动化流水线必需，禁止手动部署 |
+
+---
+
+## 相关文档
+
+- [CLI 使用指南](./cli-guide.md) — 命令行使用详解
+- [工作流说明](./workflows.md) — 工作流模式详解
+- [核心概念](./concepts.md) — STDD 核心概念
+- [快速开始](./getting-started.md) — 5 分钟上手
+- [Agent 协议](./agent-protocol.md) — Agent 通信协议
+- [English Version](./en/command-reference.md) — 英文版命令参考
