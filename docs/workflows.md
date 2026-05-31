@@ -1,6 +1,6 @@
-# Getting Started
+# Workflows
 
-实践用法请参阅 [快速开始](getting-started.md) 和 [工作流程](workflows.md)。
+工作流详解和实践用法请参阅 [快速开始](getting-started.md)。
 
 ## 文档导航
 - [项目首页](../README.md) - 项目概览和顶层示例

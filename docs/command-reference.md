@@ -1,4 +1,4 @@
-# STDD Copilot 全部命令清单
+# STDD Copilot Ultra 全部命令清单
 
 ## 1. 核心 STDD 工作流 (11 个)
 
@@ -131,7 +131,7 @@
 | `stdd skills [--phase N]` | 列出所有可用技能，支持按阶段过滤 |
 | `stdd commands` | 列出所有 Claude Code 斜杠命令 |
 | `stdd recommend` | 根据项目状态智能推荐下一步，支持 `--json` |
-| `stdd update [path]` | 更新 STDD Copilot 模板文件，支持 `--force`/`--dry-run` |
+| `stdd update [path]` | 更新 STDD Copilot Ultra 模板文件，支持 `--force`/`--dry-run` |
 | `stdd progress` | 实时进度追踪：JSONL 持久化日志，start/complete/fail/interrupt 四态记录，断点续传 (`--resume`)，支持 `--summary`/`--json`/`--last N`/`--clear`，SIGINT/SIGTERM 信号捕获 |
 | `stdd start` | 交互式快速启动向导 (TTY) / 帮助文本 (非 TTY) |
 | `stdd workspace list/validate/repair` | Monorepo 工作空间注册表管理，支持 `--json` |

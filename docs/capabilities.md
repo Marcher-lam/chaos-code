@@ -1,10 +1,10 @@
-# STDD Copilot 能力边界说明
+# STDD Copilot Ultra 能力边界说明
 
 > 本文档明确区分工具自身能力和需要外部 AI 执行器才能完成的功能
 
 ## 核心设计原则
 
-STDD Copilot 是一个 **CLI 工具 + 模板框架**，它本身不提供 AI 编码能力，而是为你的 AI 编码助手（Claude Code、Cursor、Copilot 等）设定"交通规则"。
+STDD Copilot Ultra 是一个 **CLI 工具 + 模板框架**，它本身不提供 AI 编码能力，而是为你的 AI 编码助手（Claude Code、Cursor、Copilot 等）设定"交通规则"。
 
 ---
 

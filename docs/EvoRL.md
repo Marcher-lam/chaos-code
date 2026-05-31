@@ -1,7 +1,7 @@
-# STDD Copilot 用户实操手册：从零构建一个完整项目
+# STDD Copilot Ultra 用户实操手册：从零构建一个完整项目
 
-> **版本**: v1.0.5 | **更新日期**: 2026-05-24
-> **适用场景**: 从零开始的新项目，完整掌握 STDD Copilot 工作流
+> **版本**: v2.0.0 | **更新日期**: 2026-06-01
+> **适用场景**: 从零开始的新项目，完整掌握 STDD Copilot Ultra 工作流
 
 ---
 
@@ -26,7 +26,7 @@
 
 ---
 
-## 安装 STDD Copilot
+## 安装 STDD Copilot Ultra
 
 三种方式任选其一：
 
@@ -36,13 +36,13 @@ npm install -g @marcher-lam/stdd-copilot-ultra@latest
 stdd --version
 
 # B: 源码安装
-git clone https://github.com/Marcher-lam/STDD-COPILOT-ULTRA.git ~/stdd-copilot
-cd ~/stdd-copilot && npm install && npm link
+git clone https://github.com/Marcher-lam/STDD-COPILOT-ULTRA.git ~/stdd-copilot-ultra
+cd ~/stdd-copilot-ultra && npm install && npm link
 stdd --version
 
 # C: Docker
-docker pull marcher-lam/stdd-copilot:latest
-docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help
+docker pull marcher-lam/stdd-copilot-ultra:latest
+docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot-ultra:latest --help
 ```
 
 ---
@@ -744,7 +744,7 @@ node --test
 
 ---
 
-> **STDD Copilot Ultra v1.1.0**
+> **STDD Copilot Ultra v2.0.0**
 > - 88 个 CLI 命令
 > - 86 个 Command 模板
 > - 53 个 Skill 模板

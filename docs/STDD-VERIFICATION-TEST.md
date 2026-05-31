@@ -1,7 +1,7 @@
 # STDD Copilot Ultra 全命令验证文档
 
-> **项目**: STDD Copilot Ultra CLI v1.1.0
-> **验证日期**: 2026-05-26
+> **项目**: STDD Copilot Ultra CLI v2.0.0
+> **验证日期**: 2026-06-01
 > **覆盖范围**: 88 个 CLI 命令 + 86 个 Command 模板 + 53 个 Skill 模板 (全部审查完成 ✅)
 > **质量基线**: `npm run premerge` (audit + zero-warning lint + docs + coverage)
 
@@ -23,7 +23,7 @@
 
 ## 环境准备
 
-### 安装 STDD Copilot
+### 安装 STDD Copilot Ultra
 
 ```bash
 # A: npm 全局安装（推荐）
@@ -31,12 +31,12 @@ npm install -g @marcher-lam/stdd-copilot-ultra@latest
 stdd --version
 
 # B: 源码安装
-git clone https://github.com/Marcher-lam/STDD-COPILOT-ULTRA.git ~/stdd-copilot
-cd ~/stdd-copilot && npm install && npm link
+git clone https://github.com/Marcher-lam/STDD-COPILOT-ULTRA.git ~/stdd-copilot-ultra
+cd ~/stdd-copilot-ultra && npm install && npm link
 
 # C: Docker
-docker pull marcher-lam/stdd-copilot:latest
-docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help
+docker pull marcher-lam/stdd-copilot-ultra:latest
+docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot-ultra:latest --help
 ```
 
 ### 创建验证项目
@@ -91,7 +91,7 @@ stdd commands
 ```
 
 **验证点:**
-- [ ] 列出 47 个 Skill 模板
+- [ ] 列出 53 个 Skill 模板
 - [ ] 列出 86 个 Command 模板
 
 ### T04 — `stdd list` / `stdd status`
@@ -869,11 +869,11 @@ T42-T44  → 进度追踪与辅助工具
 
 ---
 
-> **STDD Copilot v1.0.5**
+> **STDD Copilot Ultra v2.0.0**
 > - 88 个 CLI 命令 ✅
 > - 86 个 Command 模板 ✅
 > - 53 个 Skill 模板 ✅
 > - 196 测试套件，4151 测试用例，100% 通过率 ✅
-> - 97.33% 语句覆盖，91.03% 分支覆盖 ✅
+> - 97.7% 语句覆盖，93.2% 分支覆盖 ✅
 >
 > 全部审查完成 ✅

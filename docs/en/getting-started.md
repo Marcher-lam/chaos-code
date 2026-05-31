@@ -29,7 +29,7 @@ stdd apply <name> --allow-no-tests
 
 ## Docker Quick Start
 
-docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help
+docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot-ultra:latest --help
 
 ## Documentation
 - [English Docs Index](README.md) — English documentation hub

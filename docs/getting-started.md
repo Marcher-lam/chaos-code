@@ -37,7 +37,7 @@ stdd adapt list
 
 ## Docker 快速启动
 
-docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help
+docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot-ultra:latest --help
 
 ## 文档导航
 - [项目首页](../README.md) - 项目概览和顶层示例

@@ -1,6 +1,6 @@
-# STDD Copilot - AI Agent Instructions
+# STDD Copilot Ultra - AI Agent Instructions
 
-> Version: 2.4 | Last Updated: 2026-05-24
+> Version: 2.0 | Last Updated: 2026-06-01
 
 ---
 
@@ -20,7 +20,7 @@
 
 ## 双模式设计：用户交互 + Agent 自主编排
 
-STDD Copilot 支持 **两种并行模式**，Agent 根据用户输入自动选择：
+STDD Copilot Ultra 支持 **两种并行模式**，Agent 根据用户输入自动选择：
 
 ### 模式 A：用户交互模式 (User-Driven)
 
@@ -86,7 +86,7 @@ Agent: [读取 Skill Graph] → [检测状态] → [自动推进全流程]
 
 ## 双场景支持：从0到1 + 接手已有项目
 
-STDD Copilot 支持 **两种项目场景**，Agent 根据项目状态自动选择：
+STDD Copilot Ultra 支持 **两种项目场景**，Agent 根据项目状态自动选择：
 
 ### 场景 1：从 0 到 1（Greenfield）
 
@@ -276,7 +276,7 @@ Agent: [自动检测到这是 Brownfield 项目]
 
 ## 前端设计能力：DESIGN.md
 
-STDD Copilot 集成了 Google Stitch 的 [DESIGN.md](https://github.com/VoltAgent/awesome-design-md) 设计系统规范。
+STDD Copilot Ultra 集成了 Google Stitch 的 [DESIGN.md](https://github.com/VoltAgent/awesome-design-md) 设计系统规范。
 
 ### 什么是 DESIGN.md
 

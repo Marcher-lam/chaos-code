@@ -1,4 +1,4 @@
-# STDD Copilot CLI 使用指南
+# STDD Copilot Ultra CLI 使用指南
 
 ## CLI 命令速查
 stdd init

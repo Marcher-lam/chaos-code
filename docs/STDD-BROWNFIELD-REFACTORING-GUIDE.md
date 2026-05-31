@@ -1,7 +1,7 @@
-# STDD Copilot 老项目修改与重构实操文档
+# STDD Copilot Ultra 老项目修改与重构实操文档
 
-> **版本**: v1.0.5 | **更新日期**: 2026-05-24
-> **适用场景**: 已有代码库接入 STDD Copilot，用于 bug 修复、功能修改、模块重构、架构迁移和质量治理
+> **版本**: v2.0.0 | **更新日期**: 2026-06-01
+> **适用场景**: 已有代码库接入 STDD Copilot Ultra，用于 bug 修复、功能修改、模块重构、架构迁移和质量治理
 > **推荐环境**: Claude Code + 已安装 `stdd` CLI
 > **项目类型**: Brownfield / Legacy / 已上线系统
 > **核心原则**: 先理解现状，再提出变更；先锁定行为，再安全修改；先小范围验证，再逐步扩大重构
@@ -10,7 +10,7 @@
 
 ## 文档目标
 
-这份文档说明：如果你已经有一个老项目，想通过 STDD Copilot 来做修改或重构，应该怎么操作。
+这份文档说明：如果你已经有一个老项目，想通过 STDD Copilot Ultra 来做修改或重构，应该怎么操作。
 
 它不是从空目录创建新项目，而是假设你面对的是一个真实已有系统：
 
@@ -56,7 +56,7 @@ STDD 在老项目中的定位是：
 
 ## 环境准备
 
-### 安装 STDD Copilot
+### 安装 STDD Copilot Ultra
 
 **方式 A: npm 全局安装**
 
@@ -68,8 +68,8 @@ stdd --version
 **方式 B: 源码安装**
 
 ```bash
-git clone https://github.com/Marcher-lam/STDD-COPILOT-ULTRA.git ~/stdd-copilot
-cd ~/stdd-copilot
+git clone https://github.com/Marcher-lam/STDD-COPILOT-ULTRA.git ~/stdd-copilot-ultra
+cd ~/stdd-copilot-ultra
 npm install
 npm link
 stdd --version
@@ -78,8 +78,8 @@ stdd --version
 **方式 C: Docker 隔离运行**
 
 ```bash
-docker pull marcher-lam/stdd-copilot:latest
-docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot:latest --help
+docker pull marcher-lam/stdd-copilot-ultra:latest
+docker run --rm -v "$PWD:/workspace" marcher-lam/stdd-copilot-ultra:latest --help
 ```
 
 常规开发推荐 npm 全局安装。Docker 更适合 CI、隔离审查或企业内部分发。
@@ -879,21 +879,21 @@ stdd archive refactor-target-module
 
 ---
 
-# STDD Copilot 质量基线
+# STDD Copilot Ultra 质量基线
 
 | 指标 | 数值 |
 |------|------|
-| 版本 | v1.0.5 |
-| 测试套件 | 171 |
-| 测试用例 | 3810 |
+| 版本 | v2.0.0 |
+| 测试套件 | 196 |
+| 测试用例 | 4151 |
 | 通过率 | 100% |
-| 语句覆盖 | 97.33% |
-| 分支覆盖 | 91.03% |
-| 函数覆盖 | 97.15% |
-| 行覆盖 | 97.87% |
-| CLI 命令 | 75 |
-| Command 模板 | 75 |
-| Skill 模板 | 47 |
+| 语句覆盖 | 97.7% |
+| 分支覆盖 | 93.2% |
+| 函数覆盖 | ~97% |
+| 行覆盖 | ~97% |
+| CLI 命令 | 88 |
+| Command 模板 | 86 |
+| Skill 模板 | 53 |
 
 ---
 
