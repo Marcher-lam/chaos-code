@@ -333,6 +333,7 @@ function generateDashboardHTML(data) {
       <button class="tab active" onclick="switchTab('overview')">Overview</button>
       <button class="tab" onclick="switchTab('quality')">Quality</button>
       <button class="tab" onclick="switchTab('progress')">Progress</button>
+      <button class="tab" onclick="switchTab('performance')">Performance & Cost</button>
       <button class="tab" onclick="switchTab('constitution')">Constitution</button>
       <button class="tab" onclick="switchTab('evidence')">Evidence</button>
     </div>
@@ -399,6 +400,14 @@ function generateDashboardHTML(data) {
       </div>
     </div>
 
+    <!-- Tab: Performance & Cost -->
+    <div id="tab-performance" class="tab-panel">
+      <div class="card">
+        <h3>Trace Duration (ms) & API Cost ($) Trend</h3>
+        <svg id="trace-cost-svg" width="100%" height="200" viewBox="0 0 600 200" style="overflow: visible; margin-top: 20px;"></svg>
+      </div>
+    </div>
+
     <!-- Tab: Constitution -->
     <div id="tab-constitution" class="tab-panel">
       <div class="card">
@@ -422,31 +431,58 @@ function generateDashboardHTML(data) {
   </div>
 
   <script>
-    function renderTrendChart(progressData) {
-      const svg = document.getElementById('trend-svg');
-      if (!svg || !progressData || progressData.length < 2) return;
-      const w = 580, h = 160, padX = 20, padY = 10;
-      const maxVal = Math.max(...progressData.map(p => p.quality || 50), 100);
-      const points = progressData.map((p, i) => {
-        const x = padX + (i / (progressData.length - 1)) * w;
-        const y = padY + h - ((p.quality || 50) / maxVal) * h;
+    const traceMetrics = ${JSON.stringify(data.traceMetrics || { dates: [], durations: [], costs: [] })};
+
+    function renderTraceCostChart() {
+      const svg = document.getElementById('trace-cost-svg');
+      if (!svg || !traceMetrics.dates || traceMetrics.dates.length < 2) {
+        if(svg) svg.innerHTML = '<text x="10" y="100" fill="var(--c-muted)">Not enough data to display trend.</text>';
+        return;
+      }
+      const w = 560, h = 160, padX = 30, padY = 10;
+      const maxDur = Math.max(...traceMetrics.durations, 1000);
+      const maxCost = Math.max(...traceMetrics.costs, 0.001);
+      
+      const durPoints = traceMetrics.durations.map((d, i) => {
+        const x = padX + (i / (traceMetrics.dates.length - 1)) * w;
+        const y = padY + h - (d / maxDur) * h;
         return x + ',' + y;
       });
-      svg.innerHTML = '<polyline points="' + points.join(' ') + '" fill="none" stroke="var(--color-primary,#3b82f6)" stroke-width="2"/>' +
-        progressData.map((p, i) => {
-          const x = padX + (i / (progressData.length - 1)) * w;
-          const y = padY + h - ((p.quality || 50) / maxVal) * h;
-          return '<circle cx="' + x + '" cy="' + y + '" r="3" fill="var(--color-primary,#3b82f6)"/>' +
-            '<text x="' + x + '" y="' + (y - 6) + '" font-size="9" fill="var(--color-text-muted,#6b7280)">' + (p.quality || 0) + '</text>';
+      
+      const costPoints = traceMetrics.costs.map((c, i) => {
+        const x = padX + (i / (traceMetrics.dates.length - 1)) * w;
+        const y = padY + h - (c / maxCost) * h;
+        return x + ',' + y;
+      });
+
+      svg.innerHTML = '<polyline points="' + durPoints.join(' ') + '" fill="none" stroke="var(--c-primary)" stroke-width="2"/>' +
+        '<polyline points="' + costPoints.join(' ') + '" fill="none" stroke="var(--c-warning)" stroke-width="2"/>' +
+        traceMetrics.durations.map((d, i) => {
+          const x = padX + (i / (traceMetrics.dates.length - 1)) * w;
+          const y = padY + h - (d / maxDur) * h;
+          return '<circle cx="' + x + '" cy="' + y + '" r="3" fill="var(--c-primary)"/>' +
+            '<text x="' + x + '" y="' + (y - 8) + '" font-size="9" fill="var(--c-muted)">' + d + 'ms</text>';
         }).join('') +
-        '<line x1="' + padX + '" y1="' + (padY + h) + '" x2="' + (padX + w) + '" y2="' + (padY + h) + '" stroke="var(--color-border,#e5e7eb)" stroke-width="1"/>';
+        traceMetrics.costs.map((c, i) => {
+          const x = padX + (i / (traceMetrics.dates.length - 1)) * w;
+          const y = padY + h - (c / maxCost) * h;
+          return '<circle cx="' + x + '" cy="' + y + '" r="3" fill="var(--c-warning)"/>' +
+            '<text x="' + x + '" y="' + (y + 12) + '" font-size="9" fill="var(--c-muted)">$' + c.toFixed(4) + '</text>';
+        }).join('') +
+        '<line x1="' + padX + '" y1="' + (padY + h) + '" x2="' + (padX + w) + '" y2="' + (padY + h) + '" stroke="var(--c-border)" stroke-width="1"/>' +
+        '<text x="' + padX + '" y="195" font-size="10" fill="var(--c-primary)">● Duration (ms)</text>' +
+        '<text x="' + (padX + 120) + '" y="195" font-size="10" fill="var(--c-warning)">● API Cost ($)</text>';
     }
+
     function switchTab(name) {
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.getElementById('tab-' + name).classList.add('active');
       event.target.classList.add('active');
     }
+
+    // Initialize charts
+    renderTraceCostChart();
   </script>
 </body>
 </html>`;

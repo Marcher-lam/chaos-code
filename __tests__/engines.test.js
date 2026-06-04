@@ -17,8 +17,8 @@ describe('Engines Config Validation', () => {
       expect(engine).toHaveProperty('name');
       expect(engine).toHaveProperty('value');
       
-      // Value must start with dot (.) as it represents a hidden directory
-      expect(engine.value.startsWith('.')).toBeTruthy();
+      // Value must start with dot (.) or end with .md as it represents a config file/directory
+      expect(engine.value.startsWith('.') || engine.value.endsWith('.md')).toBeTruthy();
       
       // Values must be unique to avoid multi-write collisions
     });

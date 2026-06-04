@@ -335,7 +335,7 @@ describe('GraphRunCommand', () => {
     expect(typeCheckIdx).toBeGreaterThan(applyIdx);
     expect(verifyIdx).toBeGreaterThan(typeCheckIdx);
 
-    expect(exec).toHaveBeenCalled();
+    expect(spawnSync).toHaveBeenCalled();
   });
 
   describe('_evaluateCondition - has_dependency', () => {
@@ -717,21 +717,21 @@ describe('GraphRunCommand', () => {
     });
 
     test('stdd-commit catches errors gracefully (line 217)', async () => {
-      exec.mockImplementation((cmd, opts, cb) => cb(new Error('git not available'), { stdout: '', stderr: '' }));
+      spawnSync.mockImplementation(() => ({ status: 1, error: new Error('git not available') }));
       const result = await command._executeNode('stdd-commit', 'test-change', {});
       expect(result.status).toBe('success');
       expect(result.detail).toContain('commit skipped');
     });
 
     test('stdd-type-check with stderr and no stdout (line 228)', async () => {
-      exec.mockImplementation((cmd, opts, cb) => cb(null, { stdout: '', stderr: 'some warning' }));
+      spawnSync.mockImplementation(() => ({ status: 0, stdout: '', stderr: 'some warning' }));
       const result = await command._executeNode('stdd-type-check', 'test-change', {});
       expect(result.status).toBe('success');
       expect(result.detail).toBe('some warning');
     });
 
     test('stdd-type-check throws on error (line 232)', async () => {
-      exec.mockImplementation((cmd, opts, cb) => cb(new Error('tsc failed'), { stdout: '', stderr: '' }));
+      spawnSync.mockImplementation(() => ({ status: 1, error: new Error('tsc failed') }));
       await expect(command._executeNode('stdd-type-check', 'test-change', {})).rejects.toThrow('Type check failed');
     });
 

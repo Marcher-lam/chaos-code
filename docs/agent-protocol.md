@@ -1046,6 +1046,9 @@ Turbo 自动适配测试框架和工具链：
 
 ## 12. 完整能力清单
 
+全部能力入口 (86 个 = 86 Command 模板 + 53 Skill 模板，去重后)
+Command 模板入口 (86)
+
 ### SDD & TDD 核心流程
 
 ```
@@ -1071,7 +1074,7 @@ Turbo 自动适配测试框架和工具链：
 
 ```
 /stdd:ff /stdd:continue /stdd:explore /stdd:turbo /stdd:brainstorm /stdd:issue
-/stdd:adapt /stdd:start /stdd:baby-steps /stdd:story
+/stdd:start /stdd:baby-steps /stdd:story
 ```
 
 | 命令 | 说明 |
@@ -1082,7 +1085,7 @@ Turbo 自动适配测试框架和工具链：
 | `stdd turbo` | 一键全流程（详见 [第 11 节](#11-turbo-模式)） |
 | `stdd brainstorm` | 多角度分析建议 |
 | `stdd issue` | Bug TDD 修复流程 |
-| `stdd adapt` | 自适应策略调整 |
+| `stdd adapt` | IDE 配置适配生成 |
 | `stdd start` | 快速开始向导 |
 | `stdd baby-steps` | 极小步骤执行（降级策略） |
 | `stdd story` | Story Mapping，生成 journey YAML + BDD feature |

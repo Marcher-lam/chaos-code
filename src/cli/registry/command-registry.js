@@ -758,11 +758,23 @@ const commandRegistry = [
     options: [
       { flags: '--json', description: 'Output raw dashboard data as JSON' },
       { flags: '--output <path>', description: 'Custom output file path' },
+      { flags: '--port <n>', description: 'Port for dashboard serve action (default: 3456)' },
     ],
     action: 'DashboardCommand',
     create: () => new (require('../commands/dashboard').DashboardCommand)(process.cwd()),
     mapper: (action, options) => [action || 'generate', [], options],
-    helpText: `Actions: generate (default), open\n\nExamples:\n  stdd dashboard                # Generate dashboard to stdd/dashboard/index.html\n  stdd dashboard generate       # Same as above\n  stdd dashboard open           # Generate and open in browser\n  stdd dashboard --json         # Output raw data as JSON\n  stdd dashboard --output ./report.html`,
+    helpText: `Actions: generate (default), open, serve\n\nExamples:\n  stdd dashboard                # Generate dashboard to stdd/dashboard/index.html\n  stdd dashboard generate       # Same as above\n  stdd dashboard open           # Generate and open in browser\n  stdd dashboard serve --port 3456 # Serve dashboard locally\n  stdd dashboard --json         # Output raw data as JSON\n  stdd dashboard --output ./report.html`,
+  },
+  {
+    name: 'adapt [action] [ide]',
+    description: 'Generate IDE-specific configuration files for cross-platform AI tooling',
+    options: [
+      { flags: '--json', description: 'JSON output' },
+    ],
+    action: 'AdaptCommand',
+    create: () => new (require('../commands/adapt').AdaptCommand)(process.cwd()),
+    mapper: (action, ide, options) => [action || 'all', [ide || ''], options],
+    helpText: `Actions: all (default), generate, setup, list\n\nExamples:\n  stdd adapt              # Generate all IDE configurations\n  stdd adapt list         # List supported IDE adapters\n  stdd adapt generate cursor\n  stdd adapt setup claude --json`,
   },
   {
     name: 'builder [action] [name]',

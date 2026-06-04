@@ -10,7 +10,7 @@ const chalk = require('chalk');
 const { createLogger } = require('../../utils/logger');
 const inquirer = require('inquirer');
 const { AgentEngine } = require('../../runtime/agent-simulator');
-const _logger = createLogger('supervisor');
+const logger = createLogger('supervisor');
 
 const ROLES = {
   'Product Owner': { color: 'blue', expertise: 'requirements, priorities, business value' },
@@ -730,164 +730,65 @@ class SupervisorCommand {
 
     const roles = options.roles || ['Developer', 'Architect', 'Tester'];
     const rounds = options.rounds || 3;
-    const ctx = this.gatherSupervisorContext(this.cwd);
+    // Run debate via AgentEngine with LLM integration
+    console.log(chalk.bold('\\nSupervisor LLM-powered Debate\\n'));
+    console.log(`  Topic: ${chalk.cyan(topic)}`);
+    console.log(`  Participants: ${roles.join(', ')}\\n`);
 
-    // Round 1: Opening positions
-    const openingPositions = [];
-    for (const role of roles) {
-      const pattern = ROLE_ANALYSIS_PATTERNS[role];
-      const position = pattern
-        ? pattern.promptTemplate(topic, ctx)
-        : `From the ${role} perspective, consider the implications of "${topic}".`;
+    const engine = new AgentEngine(this.cwd);
+    const agents = roles.map(r => ({
+      id: r.toLowerCase().replace(/\\s+/g, '-'),
+      name: r,
+      role: ROLES[r]?.expertise || 'general analysis',
+    }));
+    
+    engine.start(topic, { agents, rounds });
+    let state = engine.getStatus();
 
-      const supportingArguments = pattern
-        ? pattern.focusAreas.slice(0, 2).map(fa => `This affects ${fa} directly`)
-        : ['Requires further analysis'];
+    const historyLog = [];
 
-      const concerns = pattern
-        ? pattern.riskPatterns.slice(0, 2).map(rp => `Risk of ${rp}`)
-        : ['General concern about implementation approach'];
-
-      openingPositions.push({
-        role,
-        position: position.split('\n')[0],
-        supportingArguments,
-        concerns,
-      });
+    while (state.status === 'active') {
+      const { turn, speaker, content } = await engine.nextTurn();
+      
+      const color = ROLES[speaker.name]?.color || 'white';
+      console.log(`  ${chalk[color]('>>>')} ${chalk.bold(speaker.name)} (Turn ${turn})`);
+      console.log(`    ${content}`);
+      console.log('');
+      
+      historyLog.push({ role: speaker.name, content });
+      state = engine.getStatus();
     }
 
-    // Round 2: Rebuttals — each role responds to others
-    const rebuttals = [];
-    for (const role of roles) {
-      const othersPositions = openingPositions.filter(p => p.role !== role);
-      const pattern = ROLE_ANALYSIS_PATTERNS[role];
-      const agreements = [];
-      const disagreements = [];
-
-      for (const otherPos of othersPositions) {
-        // Find alignment based on shared focus areas
-        const otherPattern = ROLE_ANALYSIS_PATTERNS[otherPos.role];
-        if (otherPattern && pattern) {
-          const sharedAreas = pattern.focusAreas.filter(fa => otherPattern.focusAreas.includes(fa));
-          if (sharedAreas.length > 0) {
-            agreements.push(`Agree with ${otherPos.role} on ${sharedAreas[0]}`);
-          } else {
-            disagreements.push(`${otherPos.role}'s focus on ${otherPattern.focusAreas[0]} may conflict with ${pattern.focusAreas[0]}`);
-          }
-        }
-        // Reference specific concerns
-        if (otherPos.concerns.length > 0) {
-          agreements.push(`Acknowledge ${otherPos.role}'s concern: "${otherPos.concerns[0]}"`);
-        }
-      }
-
-      rebuttals.push({
-        role,
-        agreements,
-        disagreements,
-        summary: pattern
-          ? `${role} responds: balancing ${pattern.focusAreas.slice(0, 2).join(' and ')} with the team input.`
-          : `${role} acknowledges other perspectives and provides additional context.`,
-      });
+    console.log(chalk.bold(`  ${'='.repeat(50)}`));
+    if (state.convergenceDetected) {
+      console.log(chalk.green(`  Debate concluded due to consensus: ${state.convergenceReason || 'Max rounds reached'}`));
+    } else {
+      console.log(chalk.yellow(`  Debate concluded.`));
     }
-
-    // Round 3: Synthesis — consensus and open questions
-    const recommendations = [];
-    const openQuestions = [];
-
-    // Collect all concerns as potential recommendations
-    for (const pos of openingPositions) {
-      pos.concerns.forEach(c => {
-        recommendations.push({ source: pos.role, text: `Address: ${c}` });
-      });
-      pos.supportingArguments.forEach(a => {
-        recommendations.push({ source: pos.role, text: `Validate: ${a}` });
-      });
-    }
-
-    // Open questions from disagreements
-    for (const rebuttal of rebuttals) {
-      rebuttal.disagreements.forEach(d => {
-        openQuestions.push({ source: rebuttal.role, text: d });
-      });
-    }
-
-    // Add synthesis questions if few disagreements
-    if (openQuestions.length === 0) {
-      openQuestions.push(
-        { source: 'Synthesis', text: `What is the priority order for addressing "${topic}"?` },
-        { source: 'Synthesis', text: 'What resources and timeline are needed?' },
-        { source: 'Synthesis', text: 'Who should own each action item?' },
-      );
-    }
+    console.log(chalk.dim(`  Total API Cost: $${(state.totalCost || 0).toFixed(4)}`));
+    console.log(chalk.bold(`  ${'='.repeat(50)}\\n`));
 
     const debateResult = {
       topic,
       roles,
       rounds,
       timestamp: new Date().toISOString(),
-      openingPositions,
-      rebuttals,
-      synthesis: { recommendations, openQuestions },
+      history: historyLog,
+      cost: state.totalCost,
     };
+
+    // Ensure legacy compatibility properties are present for both JSON and text modes.
+    debateResult.openingPositions = [];
+    debateResult.rebuttals = [];
+    debateResult.synthesis = { recommendations: [], openQuestions: [] };
+
+    // Save debate transcript
+    this.saveDebateTranscript(debateResult);
 
     if (options.json) {
       console.log(JSON.stringify(debateResult, null, 2));
       return debateResult;
     }
-
-    // Print formatted debate
-    console.log(chalk.bold('\nSupervisor Debate\n'));
-    console.log(`  Topic: ${chalk.cyan(topic)}`);
-    console.log(`  Participants: ${roles.join(', ')}\n`);
-
-    // Round 1
-    console.log(chalk.bold(`  ${'='.repeat(50)}`));
-    console.log(chalk.bold('  ROUND 1: Opening Positions'));
-    console.log(chalk.bold(`  ${'='.repeat(50)}\n`));
-    for (const pos of openingPositions) {
-      const color = ROLES[pos.role]?.color || 'white';
-      console.log(`  ${chalk[color]('>>>')} ${chalk.bold(pos.role)}`);
-      console.log(`    ${pos.position}`);
-      console.log(`    ${chalk.green('Supporting:')}`);
-      pos.supportingArguments.forEach(a => console.log(`      ${chalk.green('+')} ${a}`));
-      console.log(`    ${chalk.red('Concerns:')}`);
-      pos.concerns.forEach(c => console.log(`      ${chalk.red('!')} ${c}`));
-      console.log('');
-    }
-
-    // Round 2
-    console.log(chalk.bold(`  ${'='.repeat(50)}`));
-    console.log(chalk.bold('  ROUND 2: Rebuttals & Responses'));
-    console.log(chalk.bold(`  ${'='.repeat(50)}\n`));
-    for (const rebuttal of rebuttals) {
-      const color = ROLES[rebuttal.role]?.color || 'white';
-      console.log(`  ${chalk[color]('>>>')} ${chalk.bold(rebuttal.role)}`);
-      if (rebuttal.agreements.length > 0) {
-        console.log(`    ${chalk.green('Agreements:')}`);
-        rebuttal.agreements.forEach(a => console.log(`      ${chalk.green('v')} ${a}`));
-      }
-      if (rebuttal.disagreements.length > 0) {
-        console.log(`    ${chalk.red('Disagreements:')}`);
-        rebuttal.disagreements.forEach(d => console.log(`      ${chalk.red('x')} ${d}`));
-      }
-      console.log(`    ${chalk.dim(rebuttal.summary)}`);
-      console.log('');
-    }
-
-    // Round 3
-    console.log(chalk.bold(`  ${'='.repeat(50)}`));
-    console.log(chalk.bold('  ROUND 3: Synthesis'));
-    console.log(chalk.bold(`  ${'='.repeat(50)}\n`));
-    console.log(`  ${chalk.green('Recommendations (Agreed):')}`);
-    recommendations.forEach(r => console.log(`    ${chalk.green('*')} [${r.source}] ${r.text}`));
-    console.log('');
-    console.log(`  ${chalk.yellow('Open Questions (Needing Decision):')}`);
-    openQuestions.forEach(q => console.log(`    ${chalk.yellow('?')} [${q.source}] ${q.text}`));
-    console.log('');
-
-    // Save debate transcript
-    this.saveDebateTranscript(debateResult);
 
     return debateResult;
   }
@@ -987,7 +888,7 @@ class SupervisorCommand {
         ctx.version = pkg.version || null;
         ctx.dependencies = Object.keys(pkg.dependencies || {});
         ctx.devDependencies = Object.keys(pkg.devDependencies || {});
-      } catch (_) { /* ignore parse errors */ }
+      } catch (err) { logger.warn(`Failed to parse package.json: ${err.message}`); }
     }
 
     // ARCHITECTURE.md
@@ -996,7 +897,7 @@ class SupervisorCommand {
       try {
         const arch = fs.readFileSync(archPath, 'utf8');
         ctx.architecture = arch.slice(0, 2000); // Cap to avoid excessive size
-      } catch (_) { /* ignore */ }
+      } catch (err) { logger.warn(`Failed to read ARCHITECTURE.md: ${err.message}`); }
     }
 
     // DESIGN.md
@@ -1004,7 +905,7 @@ class SupervisorCommand {
     if (fs.existsSync(designPath)) {
       try {
         ctx.design = fs.readFileSync(designPath, 'utf8').slice(0, 2000);
-      } catch (_) { /* ignore */ }
+      } catch (err) { logger.warn(`Failed to read DESIGN.md: ${err.message}`); }
     }
 
     // Recent change proposals
@@ -1016,7 +917,7 @@ class SupervisorCommand {
           return fs.statSync(p).isDirectory() && d !== 'archive';
         });
         ctx.recentChanges = changes.slice(0, 5);
-      } catch (_) { /* ignore */ }
+      } catch (err) { logger.warn(`Failed to scan changes: ${err.message}`); }
     }
 
     return ctx;

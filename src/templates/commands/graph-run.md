@@ -8,7 +8,7 @@ description: Dynamic DAG execution engine
 ```
 stdd graph run <intent>          # Execute by intent
 stdd graph run --change-name=<name>
-stdd graph run --parallel        # Enable parallel execution
+stdd parallel execute <intent>   # Use the dedicated parallel execution command
 ```
 
 ## Description

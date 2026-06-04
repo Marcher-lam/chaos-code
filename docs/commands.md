@@ -127,7 +127,7 @@
 | `stdd dashboard [action]` | 静态 HTML 仪表板 |
 | `stdd docs [action]` | 静态文档站点 |
 | `stdd profile [action]` | 自适应规划深度 |
-| `stdd adapt [action]` | IDE 适配器 |
+| `stdd adapt [action] [ide]` | IDE 适配器 |
 
 ### 11. 辅助工具（15 个）
 
@@ -197,7 +197,7 @@ propose → spec → plan → outside-in → apply → verify
 ### hotfix（热修复）
 
 ```
-fix-packet → apply → verify
+issue → apply → verify → archive
 ```
 
 ### repair（修复模式）
@@ -237,15 +237,11 @@ explore → init → propose → ... → archive
 
 ---
 
-## 五、文档导航
-
-- [核心概念](concepts.md) — STDD 核心理念深入解读
-- [工作流程](workflows.md) — 常见工作流模式与实战示例
-- [命令参考](command-reference.md) — 86 个命令完整详解
-- [CLI 使用指南](cli-guide.md) — CLI 命令行完整手册
-- [快速开始](getting-started.md) — 5 分钟上手指南
-- [能力边界](capabilities.md) — 工具能力与 AI 职责边界
-- [Agent 协议](agent-protocol.md) — Agent 行为协议规范
-- [项目首页](../README.md) — 项目概览
-- [使用手册](../USAGE.md) — 完整使用指南
-- [英文文档](en/README.md) — English docs index
+## 文档导航
+- [工作流程](workflows.md) - 常见工作流程
+- [核心概念](concepts.md) - 深入理解 specs、changes 和 schemas
+- [CLI 使用指南](cli-guide.md) - CLI 完整文档
+- [项目首页](../README.md) - 项目概览和顶层示例
+- [快速开始](getting-started.md) - 首次使用流程和 CLI 速查
+- [使用手册](../USAGE.md) - 完整使用指南
+- [英文文档入口](en/README.md) - English docs index

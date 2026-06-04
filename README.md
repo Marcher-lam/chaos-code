@@ -71,10 +71,14 @@ stdd archive add-dark-mode             # 归档合并
 ### AI 助手方式（Claude Code / Cursor 等）
 
 ```
-/stdd:ff 实现用户 OAuth 登录
-/stdd:apply --phase red
-/stdd:verify
-/stdd:archive
+/stdd:init                             # 初始化项目并加载角色
+/stdd:propose --desc "添加深色模式"       # 创建并澄清需求
+/stdd:spec                             # 自动分析并提取规格
+/stdd:plan                             # 任务拆解与设计决策
+/stdd:apply --phase red                # 执行 TDD 红灯测试阶段
+/stdd:verify                           # 执行多维度宪法验证
+/stdd:archive                          # 归档已完成变更
+/stdd:turbo "一键实现用户登录"            # 快速全流程执行
 ```
 
 ### 一键全流程

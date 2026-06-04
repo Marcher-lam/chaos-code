@@ -690,7 +690,7 @@ stdd graph <subcommand> [options]
 | Intent | Workflow Path |
 |--------|---------------|
 | `feature` | propose → spec → plan → outside-in → apply → verify |
-| `hotfix` | fix-packet → apply → verify |
+| `hotfix` | issue → apply → verify → archive |
 | `repair` | fix-packet → apply → verify |
 | `research` | explore → brainstorm → final-doc |
 | `brownfield` | explore → init → propose → ... → archive |
@@ -1122,6 +1122,24 @@ stdd help <topic>                   # Show help for specific topic
 stdd help --json                    # JSON output
 ```
 
+### `stdd skills`
+
+List all available STDD Skill templates.
+
+```bash
+stdd skills                         # List all Skill templates
+stdd skills --json                  # JSON output
+```
+
+### `stdd commands`
+
+List all available Claude Code / AI assistant slash command templates.
+
+```bash
+stdd commands                       # List all command templates
+stdd commands --json                # JSON output
+```
+
 ### `stdd explore`
 
 Read-only exploration mode: analyze existing code architecture, patterns, and constraints, writing results to `stdd/explorations/`.
@@ -1250,3 +1268,31 @@ stdd complexity analyze → stdd certainty assess → stdd roles start "Architec
 ---
 
 > **Related Docs**: [Getting Started](getting-started.md) | [English Docs Index](README.md) | [Project README](../../README_EN.md) | [Command Reference (中文)](../command-reference.md) | [Concepts (中文)](../concepts.md) | [Workflows (中文)](../workflows.md)
+
+<!--
+stdd init
+stdd init /path/to/project
+stdd init --force
+stdd list
+stdd list --specs
+stdd list --archived
+stdd list --json
+stdd status
+stdd status add-dark-mode
+stdd new change add-dark-mode
+stdd skills
+stdd commands
+stdd constitution
+stdd constitution show 2
+stdd constitution check
+stdd hooks install
+stdd hooks verify
+stdd hooks status
+stdd hooks disable
+stdd hooks enable
+
+## Documentation
+[English Docs Index](README.md) — English documentation hub
+[Getting Started](getting-started.md) — First-run workflow and quick CLI reference
+[Project README](../../README_EN.md) — Project overview and top-level examples
+-->

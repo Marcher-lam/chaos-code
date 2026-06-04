@@ -3,7 +3,10 @@
 > **Spec + Test Driven Development · AI 全生命周期开发平台**
 > 最后更新：2026-06-01 · 适用于 `@marcher-lam/stdd-copilot-ultra@2.0.0`
 
+实践用法请参阅 [快速开始](getting-started.md) 和 [工作流程](workflows.md)。
+
 ---
+
 
 ## 1. STDD — Smart Team-Driven Development
 
@@ -345,7 +348,7 @@ Graph 引擎是基于 DAG（有向无环图）的工作流编排引擎。
 | 意图 | 路径 |
 |------|------|
 | `feature` | propose → spec → plan → outside-in → apply → verify |
-| `hotfix` | fix-packet → apply → verify |
+| `hotfix` | issue → apply → verify → archive |
 | `repair` | fix-packet → apply → verify |
 | `research` | explore → brainstorm → final-doc |
 | `brownfield` | explore → init → propose → ... → archive |
@@ -543,14 +546,11 @@ stdd roles adversarial src/auth       # 风险优先扫描
 ---
 
 ## 文档导航
-
-- [命令速查](commands.md) — CLI 命令与斜杠命令完整清单
-- [工作流程](workflows.md) — 常见工作流模式与实战示例
-- [命令参考](command-reference.md) — 86 个命令完整详解
-- [CLI 使用指南](cli-guide.md) — CLI 命令行完整手册
-- [快速开始](getting-started.md) — 5 分钟上手指南
-- [能力边界](capabilities.md) — 工具能力与 AI 职责边界
-- [Agent 协议](agent-protocol.md) — Agent 行为协议规范
-- [项目首页](../README.md) — 项目概览
-- [使用手册](../USAGE.md) — 完整使用指南
-- [英文文档](en/README.md) — English docs index
+- [快速开始](getting-started.md) - 实践第一步
+- [工作流程](workflows.md) - 常见模式和使用场景
+- [命令参考](commands.md) - 完整命令参考
+- [CLI 使用指南](cli-guide.md) - CLI 完整文档
+- [项目首页](../README.md) - 项目概览和顶层示例
+- [快速开始](getting-started.md) - 首次使用流程和 CLI 速查
+- [使用手册](../USAGE.md) - 完整使用指南
+- [英文文档入口](en/README.md) - English docs index

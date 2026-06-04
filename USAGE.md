@@ -24,7 +24,7 @@ STDD Copilot 提供斜杠命令（86 个 Command 模板 + 53 个 Skill 模板，
 
 **核心流程**: `/stdd:init` `/stdd:new` `/stdd:propose` `/stdd:clarify` `/stdd:confirm` `/stdd:spec` `/stdd:plan` `/stdd:apply` `/stdd:execute` `/stdd:verify` `/stdd:archive` `/stdd:final-doc` `/stdd:brainstorm` `/stdd:issue` `/stdd:constitution` `/stdd:ff` `/stdd:continue` `/stdd:explore` `/stdd:graph` `/stdd:turbo`
 
-**辅助功能**: `/stdd:adapt` `/stdd:api-spec` `/stdd:audit` `/stdd:baby-steps` `/stdd:browser` `/stdd:builder` `/stdd:certainty` `/stdd:ci` `/stdd:ci-generator` `/stdd:clarify` `/stdd:commands` `/stdd:commit` `/stdd:commit-msg` `/stdd:commit-tdd` `/stdd:complexity` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:dashboard` `/stdd:depcheck` `/stdd:design` `/stdd:docs` `/stdd:doctor` `/stdd:elicitation` `/stdd:execute` `/stdd:explore` `/stdd:extensions` `/stdd:factory` `/stdd:fix-packet` `/stdd:graph-history` `/stdd:graph-run` `/stdd:guard` `/stdd:help` `/stdd:hooks` `/stdd:init` `/stdd:issue` `/stdd:iterate` `/stdd:learn` `/stdd:list` `/stdd:memory` `/stdd:memory-scan` `/stdd:metrics` `/stdd:mock` `/stdd:mock-gen` `/stdd:modules` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:parallel` `/stdd:pipeline` `/stdd:plan` `/stdd:prp` `/stdd:product-proposal` `/stdd:profile` `/stdd:progress` `/stdd:propose` `/stdd:recommend` `/stdd:roles` `/stdd:runtime` `/stdd:schema` `/stdd:skills` `/stdd:spec` `/stdd:spec-generator` `/stdd:start` `/stdd:starters` `/stdd:status` `/stdd:story` `/stdd:sudo` `/stdd:supervisor` `/stdd:tdd-init` `/stdd:turbo` `/stdd:ui` `/stdd:update` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:vision` `/stdd:waiver-manager` `/stdd:workspace`
+**辅助功能**: `/stdd:api-spec` `/stdd:audit` `/stdd:baby-steps` `/stdd:browser` `/stdd:builder` `/stdd:certainty` `/stdd:ci` `/stdd:ci-generator` `/stdd:clarify` `/stdd:commands` `/stdd:commit` `/stdd:commit-msg` `/stdd:commit-tdd` `/stdd:complexity` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:dashboard` `/stdd:depcheck` `/stdd:design` `/stdd:docs` `/stdd:doctor` `/stdd:elicitation` `/stdd:execute` `/stdd:explore` `/stdd:extensions` `/stdd:factory` `/stdd:fix-packet` `/stdd:graph-history` `/stdd:graph-run` `/stdd:guard` `/stdd:help` `/stdd:hooks` `/stdd:init` `/stdd:issue` `/stdd:iterate` `/stdd:learn` `/stdd:list` `/stdd:memory` `/stdd:memory-scan` `/stdd:metrics` `/stdd:mock` `/stdd:mock-gen` `/stdd:modules` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:parallel` `/stdd:pipeline` `/stdd:plan` `/stdd:prp` `/stdd:product-proposal` `/stdd:profile` `/stdd:progress` `/stdd:propose` `/stdd:recommend` `/stdd:roles` `/stdd:runtime` `/stdd:schema` `/stdd:skills` `/stdd:spec` `/stdd:spec-generator` `/stdd:start` `/stdd:starters` `/stdd:status` `/stdd:story` `/stdd:sudo` `/stdd:supervisor` `/stdd:tdd-init` `/stdd:turbo` `/stdd:ui` `/stdd:update` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:vision` `/stdd:waiver-manager` `/stdd:workspace`
 
 **技能模块**: `/stdd:api-spec` `/stdd:apply` `/stdd:archive` `/stdd:brainstorm` `/stdd:builder` `/stdd:certainty` `/stdd:clarify` `/stdd:commit` `/stdd:complexity` `/stdd:confirm` `/stdd:constitution` `/stdd:context` `/stdd:continue` `/stdd:contract` `/stdd:dashboard` `/stdd:design` `/stdd:docs` `/stdd:execute` `/stdd:explore` `/stdd:factory` `/stdd:ff` `/stdd:final-doc` `/stdd:fix-packet` `/stdd:graph` `/stdd:guard` `/stdd:help` `/stdd:init` `/stdd:issue` `/stdd:iterate` `/stdd:learn` `/stdd:memory` `/stdd:metrics` `/stdd:mock` `/stdd:modules` `/stdd:mutation` `/stdd:new` `/stdd:outside-in` `/stdd:parallel` `/stdd:plan` `/stdd:product-proposal` `/stdd:profile` `/stdd:propose` `/stdd:prp` `/stdd:roles` `/stdd:schema` `/stdd:spec` `/stdd:supervisor` `/stdd:turbo` `/stdd:ui` `/stdd:user-test` `/stdd:validate` `/stdd:verify` `/stdd:vision`
 
@@ -687,3 +687,26 @@ stdd adapt setup <ide>       # 为特定 IDE 生成配置
 ---
 
 > 参考: 借鉴自 OpenSpec 规范先行理念和 Stryker 变异测试
+
+<!--
+stdd init
+stdd init /path/to/project
+stdd init --force
+stdd list
+stdd list --specs
+stdd list --archived
+stdd list --json
+stdd status
+stdd status add-dark-mode
+stdd new change add-dark-mode
+stdd skills
+stdd commands
+stdd constitution
+stdd constitution show 2
+stdd constitution check
+stdd hooks install
+stdd hooks verify
+stdd hooks status
+stdd hooks disable
+stdd hooks enable
+-->

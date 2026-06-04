@@ -6,9 +6,7 @@
 const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const execAsync = promisify(exec);
+
 const { createLogger } = require('../../utils/logger');
 const logger = createLogger('graph-run');
 const DynamicGraphRouter = require('../../utils/dynamic-router');
@@ -216,12 +214,22 @@ class GraphRunCommand {
       case 'stdd-commit': {
         const cwd = process.cwd();
         try {
-          const { stdout: diffStdout } = await execAsync('git diff --cached --stat', { cwd });
+          const diffResult = runParsedCommand('git diff --cached --stat', { cwd });
+          if (diffResult.error || diffResult.status !== 0) {
+            throw diffResult.error || new Error(`Exit code ${diffResult.status}`);
+          }
+          const diffStdout = diffResult.stdout || '';
           if (!diffStdout.trim()) {
-            await execAsync('git add -A', { cwd });
+            const addResult = runParsedCommand('git add -A', { cwd });
+            if (addResult.error || addResult.status !== 0) {
+              throw addResult.error || new Error(`Exit code ${addResult.status}`);
+            }
           }
           const msg = `stdd: complete graph run for ${changeName}`;
-          await execAsync(`git commit -m ${JSON.stringify(msg)} --allow-empty`, { cwd });
+          const commitResult = runParsedCommand(`git commit -m ${JSON.stringify(msg)} --allow-empty`, { cwd });
+          if (commitResult.error || commitResult.status !== 0) {
+            throw commitResult.error || new Error(`Exit code ${commitResult.status}`);
+          }
           return { status: 'success', node: nodeName, detail: msg };
         } catch (err) {
           return { status: 'success', node: nodeName, detail: `commit skipped: ${err.message}` };
@@ -230,10 +238,15 @@ class GraphRunCommand {
 
       case 'stdd-type-check': {
         try {
-          const { stdout, stderr } = await execAsync('npx tsc --noEmit', {
+          const result = runParsedCommand('npx tsc --noEmit', {
             cwd: process.cwd(),
             timeout: 120000,
           });
+          if (result.error || result.status !== 0) {
+            throw result.error || new Error(result.stderr || result.stdout || `Exit code ${result.status}`);
+          }
+          const stdout = result.stdout || '';
+          const stderr = result.stderr || '';
           if (stderr && !stdout) {
             return { status: 'success', node: nodeName, detail: stderr.trim() };
           }
@@ -277,8 +290,11 @@ class GraphRunCommand {
       default:
         if (nodeDef && nodeDef.command) {
           try {
-            const { stdout, stderr } = await execAsync(nodeDef.command, { cwd: process.cwd() });
-            return { status: 'success', node: nodeName, detail: (stdout || stderr || '').trim() };
+            const result = runParsedCommand(nodeDef.command, { cwd: process.cwd() });
+            if (result.error || result.status !== 0) {
+              throw result.error || new Error(result.stderr || result.stdout || `Exit code ${result.status}`);
+            }
+            return { status: 'success', node: nodeName, detail: (result.stdout || result.stderr || '').trim() };
           } catch (err) {
             throw new Error(`Custom node command failed: ${err.message}`);
           }

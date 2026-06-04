@@ -49,6 +49,7 @@ class DashboardCommand {
       progress: [],
       constitution: { articles: [], healthPercent: null },
       evidence: [],
+      traceMetrics: { dates: [], durations: [], costs: [] },
     };
 
     // package.json → projectName, version
@@ -236,6 +237,34 @@ class DashboardCommand {
       }
 
       data.evidence = evidenceList;
+
+      // Also parse evidence-ledger.jsonl for Trace and API Cost metrics
+      const ledgerPath = path.join(evidenceDir, 'evidence-ledger.jsonl');
+      if (fs.existsSync(ledgerPath)) {
+        const metricsMap = {}; // { 'YYYY-MM-DD': { duration: 0, cost: 0 } }
+        const lines = fs.readFileSync(ledgerPath, 'utf8').trim().split('\\n').filter(Boolean);
+        
+        for (const line of lines) {
+          try {
+            const entry = JSON.parse(line);
+            if (entry.timestamp) {
+              const dateStr = entry.timestamp.split('T')[0];
+              if (!metricsMap[dateStr]) metricsMap[dateStr] = { duration: 0, cost: 0 };
+              if (entry.duration_ms) metricsMap[dateStr].duration += entry.duration_ms;
+              if (entry.cost || entry.api_cost || (entry.metadata && entry.metadata.cost)) {
+                metricsMap[dateStr].cost += (entry.cost || entry.api_cost || entry.metadata.cost || 0);
+              }
+            }
+          } catch (_) { /* ignore JSON parse error */ }
+        }
+        
+        const sortedDates = Object.keys(metricsMap).sort();
+        // Last 14 days
+        const recentDates = sortedDates.slice(-14);
+        data.traceMetrics.dates = recentDates;
+        data.traceMetrics.durations = recentDates.map(d => metricsMap[d].duration);
+        data.traceMetrics.costs = recentDates.map(d => metricsMap[d].cost);
+      }
     } catch (err) {
       logger.warn(`Failed to scan evidence: ${err.message}`);
     }

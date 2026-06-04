@@ -61,38 +61,38 @@ describe('AgentEngine', () => {
       engine.start('test-topic', { rounds: 2 });
     });
 
-    test('returns error when not active', () => {
+    test('returns error when not active', async () => {
       engine.forceStop();
-      const result = engine.nextTurn();
+      const result = await engine.nextTurn();
       expect(result.error).toBeDefined();
     });
 
-    test('cycles through agents', () => {
-      const turn1 = engine.nextTurn();
+    test('cycles through agents', async () => {
+      const turn1 = await engine.nextTurn();
       expect(turn1.speaker.id).toBe('po');
       expect(turn1.turn).toBe(0);
 
-      const turn2 = engine.nextTurn();
+      const turn2 = await engine.nextTurn();
       expect(turn2.speaker.id).toBe('arch');
     });
 
-    test('increments round when all agents have spoken', () => {
+    test('increments round when all agents have spoken', async () => {
       const agentCount = DEFAULT_AGENTS.length;
-      for (let i = 0; i < agentCount; i++) engine.nextTurn();
+      for (let i = 0; i < agentCount; i++) await engine.nextTurn();
       const state = engine.getStatus();
       expect(state.round).toBe(1);
     });
 
-    test('completes simulation after max rounds', () => {
+    test('completes simulation after max rounds', async () => {
       engine.start('test-topic', { rounds: 1 });
       const agentCount = DEFAULT_AGENTS.length;
-      for (let i = 0; i < agentCount; i++) engine.nextTurn();
+      for (let i = 0; i < agentCount; i++) await engine.nextTurn();
       const state = engine.getStatus();
       expect(state.status).toBe('completed');
       expect(state.convergenceDetected).toBe(true);
     });
 
-    test('triggers product proposal generation on completed state', () => {
+    test('triggers product proposal generation on completed state', async () => {
       // Create stdd directory and package.json in tmpDir so fs.existsSync passes
       const stddDir = path.join(tmpDir, 'stdd');
       fs.mkdirSync(stddDir, { recursive: true });
@@ -101,7 +101,7 @@ describe('AgentEngine', () => {
       // Start simulation
       engine.start('test-topic', { rounds: 1 });
       const agentCount = DEFAULT_AGENTS.length;
-      for (let i = 0; i < agentCount; i++) engine.nextTurn();
+      for (let i = 0; i < agentCount; i++) await engine.nextTurn();
 
       // Check if PRODUCT-PROPOSAL.md was generated
       const proposalPath = path.join(tmpDir, 'PRODUCT-PROPOSAL.md');
@@ -112,23 +112,23 @@ describe('AgentEngine', () => {
   });
 
   describe('keyword convergence', () => {
-    test('detects convergence when last two turns contain agreement keywords', () => {
+    test('detects convergence when last two turns contain agreement keywords', async () => {
       engine.start('topic', { rounds: 100 });
       engine.recordTurn('po', 'I agree with the proposal');
       engine.recordTurn('arch', 'consensus reached');
 
-      engine.nextTurn();
+      await engine.nextTurn();
       const state = engine.getStatus();
       expect(state.status).toBe('completed');
       expect(state.convergenceDetected).toBe(true);
     });
 
-    test('does not converge with fewer than two agreeing turns', () => {
+    test('does not converge with fewer than two agreeing turns', async () => {
       engine.start('topic', { rounds: 100 });
       engine.recordTurn('po', 'I agree');
       engine.recordTurn('arch', 'Still debating');
 
-      engine.nextTurn();
+      await engine.nextTurn();
       const state = engine.getStatus();
       expect(state.status).toBe('active');
     });

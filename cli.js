@@ -47,6 +47,7 @@ const {
   UICommand,
   DocsCommand,
   MemoryCommand,
+  AdaptCommand,
 } = require('./src/cli/commands/index');
 
 const { ProgressCommand } = require('./src/cli/commands/progress');
@@ -140,6 +141,7 @@ const commandFactories = {
   BuilderCommand,
   UICommand,
   DocsCommand,
+  AdaptCommand,
 };
 
 const loader = new CommandLoader(program, {
@@ -347,7 +349,7 @@ agentCmd.command('agent <action> [topic]')
       console.log(chalk.green(`Simulation started: ${topic}`));
       if (options.json) console.log(JSON.stringify(state, null, 2));
     } else if (action === 'next') {
-      const turn = engine.nextTurn();
+      const turn = await engine.nextTurn();
       if (turn.error) return console.error(chalk.red(turn.error));
       console.log(chalk.bold(`\nTurn ${turn.turn}: ${turn.speaker.name}`));
       console.log(`Role: ${turn.speaker.role}`);

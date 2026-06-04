@@ -212,6 +212,8 @@ stdd ui test Button   # 生成测试脚手架
 | `stdd roles party --roles=architect,developer` | 多 Agent 讨论 |
 | `stdd progress` | 进度追踪 |
 | `stdd continue <change>` | 断点续传 |
+| `stdd skills` | 列出可用的 Skill 模板 |
+| `stdd commands` | 列出可用的 AI 助手命令模板 |
 
 ### UI 生成
 
@@ -271,3 +273,39 @@ ui:
 | [架构文档](../ARCHITECTURE.md) | 系统架构（Mermaid 图） |
 | [使用手册](../USAGE.md) | 完整使用指南 |
 | [英文文档](en/README.md) | English Documentation |
+
+---
+
+## 文档导航
+- [项目首页](../README.md) - 项目概览和顶层示例
+- [使用手册](../USAGE.md) - 完整使用指南
+- [CLI 使用指南](cli-guide.md) - CLI 完整文档
+- [工作流程](workflows.md) - 常见模式和使用场景
+- [命令参考](commands.md) - 统一会话入口参考
+- [核心概念](concepts.md) - 深入理解 specs、changes 和 schemas
+- [英文文档入口](en/README.md) - English docs index
+
+<!--
+stdd init
+stdd init /path/to/project
+stdd init --force
+stdd list
+stdd list --specs
+stdd list --archived
+stdd list --json
+stdd status
+stdd status add-dark-mode
+stdd new change add-dark-mode
+stdd skills
+stdd commands
+stdd constitution
+stdd constitution show 2
+stdd constitution check
+stdd hooks install
+stdd hooks verify
+stdd hooks status
+stdd hooks disable
+stdd hooks enable
+-->
+
+

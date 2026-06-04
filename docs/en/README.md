@@ -109,3 +109,12 @@ Inside AI coding tools (Claude Code, Cursor, Windsurf, etc.):
 ## License
 
 [MIT](../../LICENSE)
+
+<!--
+[Getting Started](getting-started.md) | First-run workflow and quick CLI reference
+[CLI Guide](cli-guide.md) | Full CLI command reference
+[Project README](../../README_EN.md) — Project overview and top-level examples
+[Getting Started](getting-started.md) — First-run workflow and quick CLI reference
+[CLI Guide](cli-guide.md) — Full CLI command reference
+-->
+

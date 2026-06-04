@@ -61,21 +61,21 @@ describe('round20: AgentEngine uncovered branches', () => {
     expect(engine.getHistory()).toEqual([]);
   });
 
-  test('detectKeywordConvergence: history with single entry does not converge', () => {
+  test('detectKeywordConvergence: history with single entry does not converge', async () => {
     engine.start('topic', { rounds: 100 });
     engine.recordTurn('po', 'I agree');
     // Only 1 turn -- convergence requires >= 2
-    const _result = engine.nextTurn();
+    const _result = await engine.nextTurn();
     // Simulation should still be active (rounds=100, only 1 turn so no keyword convergence)
     const state = engine.getStatus();
     expect(state.status).toBe('active');
   });
 
-  test('nextTurn completes by maxRounds even without keyword convergence', () => {
+  test('nextTurn completes by maxRounds even without keyword convergence', async () => {
     const agents = [{ id: 'a', name: 'A', role: 'r' }];
     engine.start('topic', { agents, rounds: 1 });
     // 1 agent, 1 round: after 1 nextTurn call, round increments to 1 which equals maxRounds
-    engine.nextTurn();
+    await engine.nextTurn();
     const state = engine.getStatus();
     expect(state.status).toBe('completed');
     expect(state.convergenceDetected).toBe(true);

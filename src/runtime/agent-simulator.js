@@ -6,6 +6,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const llmClient = require('./llm-client');
+const { createLogger } = require('../utils/logger');
+const logger = createLogger('agent-simulator');
 
 const CONVERGENCE_KEYWORDS = ['agree', 'consensus', 'approved', 'done', 'resolved', 'confirmed', '达成共识', '同意', '通过'];
 
@@ -157,6 +160,8 @@ class AgentEngine {
       agents,
       maxRounds: options.rounds || 6,
       currentSpeakerIndex: 0,
+      totalCost: 0,
+      totalTokens: 0,
     };
     this.saveState(state);
     // Clear turns history
@@ -164,26 +169,70 @@ class AgentEngine {
     return state;
   }
 
-  nextTurn() {
+  async nextTurn() {
     const state = this.loadState();
     if (state.status !== 'active') return { error: 'Simulation not active.' };
 
     const speaker = state.agents[state.currentSpeakerIndex];
+    
+    // Construct messages from history for LLM context
+    const history = this.getHistory();
+    if (detectKeywordConvergence(history)) {
+      state.status = 'completed';
+      state.convergenceDetected = true;
+      state.convergenceReason = 'keyword_consensus';
+      this.saveState(state);
+      return { turn: state.round, speaker, history, content: '' };
+    }
+
+    const messages = history.map(turn => ({
+      role: turn.speakerId === speaker.id ? 'assistant' : 'user',
+      content: `[${turn.speakerId.toUpperCase()}]: ${turn.content}`
+    }));
+    
+    // Add current topic context
+    if (messages.length === 0) {
+      messages.push({
+        role: 'user',
+        content: `Let's discuss the following topic: ${state.topic}`
+      });
+    }
+
+    const systemPrompt = `You are a ${speaker.name}. ${speaker.role}\n`
+      + `Analyze the topic and current discussion. Provide your perspective clearly and concisely.\n`
+      + `If you agree with the current consensus, explicitly state it using words like 'agree' or 'confirmed'.`;
+
+    let generatedContent = '';
+    try {
+      const response = await llmClient.generateResponse(messages, systemPrompt, { max_tokens: 500 });
+      generatedContent = response.content;
+      
+      // Update usage
+      state.totalCost = (state.totalCost || 0) + (response.cost_estimate || 0);
+      state.totalTokens = (state.totalTokens || 0) + (response.token_usage?.total_tokens || 0);
+    } catch (err) {
+      logger.error(`LLM generation failed for ${speaker.name}: ${err.message}`);
+      generatedContent = `[Mock] I am ${speaker.name}. I agree with the consensus so far due to LLM error.`;
+    }
+
+    this.recordTurn(speaker.id, generatedContent);
+    
+    // Advance state
     state.currentSpeakerIndex = (state.currentSpeakerIndex + 1) % state.agents.length;
     if (state.currentSpeakerIndex === 0) state.round++;
 
-    // Check convergence (rounds limit or keyword)
-    const history = this.getHistory();
+    // Re-fetch updated history
+    const updatedHistory = this.getHistory();
     if (state.round >= state.maxRounds) {
       state.status = 'completed';
       state.convergenceDetected = true;
-    } else if (detectKeywordConvergence(history)) {
+    } else if (detectKeywordConvergence(updatedHistory)) {
       state.status = 'completed';
       state.convergenceDetected = true;
     }
     // Structural convergence: participation coverage + content stability + unanimous positive
     if (state.status === 'active') {
-      const structural = detectStructuralConvergence(history, state);
+      const structural = detectStructuralConvergence(updatedHistory, state);
       if (structural.converged) {
         state.status = 'completed';
         state.convergenceDetected = true;
@@ -206,7 +255,7 @@ class AgentEngine {
     }
 
     this.saveState(state);
-    return { turn: state.round, speaker, history: this.getHistory() };
+    return { turn: state.round, speaker, history: updatedHistory, content: generatedContent };
   }
 
   recordTurn(speakerId, content) {
