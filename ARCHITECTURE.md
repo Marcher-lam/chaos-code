@@ -1,11 +1,11 @@
-# STDD Copilot 系统架构
+# STDD Copilot Ultra 系统架构
 
 version: "3.0"
 last_updated: "2026-05-26"
 
 ## 概述
 
-STDD Copilot 基于 Skill Graph (技能图谱) 将 Spec-First 与 TDD 深度融合。包含 53 个 Skills、12 个 Agent 角色、9 篇 Constitution 条例、Hook Enforcement System，以及 88 个 CLI 命令。
+STDD Copilot Ultra 基于 Skill Graph (技能图谱) 将 Spec-First 与 TDD 深度融合。包含 53 个 Skills、12 个 Agent 角色、9 篇 Constitution 条例、Hook Enforcement System，以及 88 个 CLI 命令实现。
 
 **架构边界**: CLI 负责产物生成、测试执行、mutation evidence、证据采集、质量门禁和工作区编排。真实 AI 自动编码、多 Agent runtime、contract/mock/factory 等仍由 Skill 和外部 AI 执行器承载。Quick mutation 是启发式 anti-fake-green 检查；真实 mutation 依赖项目安装并配置 Stryker。
 
@@ -213,7 +213,14 @@ graph TB
 
 #### `stdd graph run` 与运行时工具
 
-`stdd graph run` 是用户可用的 CLI 编排入口，位于 `src/cli/commands/graph-run.js`。它通过 `DynamicGraphRouter` 编译 `feature`、`hotfix`、`repair`、`research` 等意图 DAG，并把节点映射到已实现 CLI 能力：`ff`、`spec`、`outside-in`、`fix-packet`、`apply`、`verify`、`archive` 等。
+`stdd graph run` 是用户可用的 CLI 编排入口，位于 `src/cli/commands/graph-run.js`。它通过 `DynamicGraphRouter` 编译意图 DAG，并把节点映射到已实现 CLI 能力：`ff`、`spec`、`outside-in`、`issue`、`fix-packet`、`apply`、`verify`、`archive` 等。
+
+当前关键路径：
+
+| 意图 | 路径 |
+|------|------|
+| `hotfix` | `issue → apply → verify → archive` |
+| `repair` | `fix-packet → apply → verify` |
 
 底层运行时能力由 `graph-cache.js`、`evidence-capture.js`、`error-propagator.js`、`heterogeneous-adapter.js` 和 `parallel-executor.js` 组合提供：缓存、证据采集、失败传播、异构引擎适配和 DAG 分层并行执行。真实编码节点仍需要外部 AI 工具或 Skill 调用完成。
 

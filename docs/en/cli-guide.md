@@ -1,6 +1,6 @@
 # STDD Copilot Ultra v2.0.0 CLI Guide
 
-> Spec + Test Driven Development Framework — Complete Command Line Reference
+> Smart Team-Driven Development Framework — Complete Command Line Reference
 
 ## Table of Contents
 

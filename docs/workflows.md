@@ -1,6 +1,6 @@
 # STDD Copilot Ultra v2.0.0 — 工作流程
 
-> **Spec + Test Driven Development · AI 全生命周期开发平台**
+> **Smart Team-Driven Development · AI 全生命周期开发平台**
 > 最后更新：2026-06-01 · 适用于 `@marcher-lam/stdd-copilot-ultra@2.0.0`
 
 ---

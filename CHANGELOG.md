@@ -20,7 +20,7 @@ All notable changes to STDD Copilot will be documented in this file.
 - **.gitignore**: Added `stdd/runtime/generated/` and `stdd/memory/*.bin`.
 
 ### Docs
-- Updated all documentation (README, ARCHITECTURE, CONTRIBUTING, USAGE, agent-protocol, capabilities) with current metrics: 88 command implementations, 86 command templates, 53 skills, 28 utils modules, 196 test suites.
+- Updated all documentation (README, ARCHITECTURE, CONTRIBUTING, USAGE, agent-protocol, capabilities) with current metrics: 88 command implementations, 86 command templates, 53 skills, 28 utils modules, 197 test suites.
 
 ## [1.1.0] - 2026-05-26
 

@@ -1,6 +1,6 @@
 # STDD Copilot Ultra 能力边界说明
 
-> **@marcher-lam/stdd-copliot-ultra v2.0.0** — STDD（Smart Team-Driven Development）能力边界文档
+> **@marcher-lam/stdd-copilot-ultra v2.0.0** — STDD（Smart Team-Driven Development）能力边界文档
 >
 > 本文档严格区分工具自身已实现的功能与需要外部 AI 执行器才能完成的功能。
 
@@ -12,7 +12,7 @@ STDD Copilot Ultra 是一个 **CLI 工具 + 模板框架**，定位为 AI 编码
 
 | 项目 | 详情 |
 |------|------|
-| 包名 | `@marcher-lam/stdd-copliot-ultra` |
+| 包名 | `@marcher-lam/stdd-copilot-ultra` |
 | 版本 | 2.0.0 |
 | 运行时 | Node.js CLI |
 | 依赖 | `chalk` `commander` `inquirer` `js-yaml`（共 4 个） |
@@ -23,7 +23,7 @@ STDD Copilot Ultra 是一个 **CLI 工具 + 模板框架**，定位为 AI 编码
 
 ## 一、工具自身已实现的能力
 
-> 以下所有命令和功能在安装 `@marcher-lam/stdd-copliot-ultra` 后即可直接使用，不依赖任何外部 AI 工具。
+> 以下所有命令和功能在安装 `@marcher-lam/stdd-copilot-ultra` 后即可直接使用，不依赖任何外部 AI 工具。
 
 ### 1.1 核心工作流命令
 

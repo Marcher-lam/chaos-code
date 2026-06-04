@@ -53,7 +53,7 @@ It unifies three dimensions:
 | CLI Commands | 88 (including subcommand entries) |
 | Command Templates | 86 (`/stdd:*` slash commands) |
 | Skill Templates | 53 |
-| Test Suites | **196** suites, **4,151** tests, 100% passing |
+| Test Suites | **197** suites, **4,151+** tests, 100% passing |
 | Statement Coverage | **97.7%** |
 | Branch Coverage | **93.2%** |
 | Supported AI Engines | 24 (Claude Code, Cursor, Windsurf, etc. across 4 tiers) |
@@ -425,7 +425,7 @@ stdd-copilot-ultra/
 │   ├── memory/                     # Project memory store
 │   ├── config/                     # Additional config (engines.yaml, etc.)
 │   └── reporters/                  # Test reporter plugins
-├── __tests__/                      # 196 suites / 4,151 tests
+├── __tests__/                      # 197 suites / 4,151+ tests
 ├── docs/                           # Documentation
 ├── schemas/                        # JSON / YAML Schemas
 └── tools/                          # Utility scripts
@@ -473,7 +473,7 @@ docker compose up -d
 ### Development & Testing
 
 ```bash
-npm test                # Run 196 suites / 4,151 tests
+npm test                # Run 197 suites / 4,151+ tests
 npm run lint            # ESLint check
 npm run premerge        # Full pre-merge check (audit + lint + docs + coverage)
 npm run test:coverage   # Run with coverage report

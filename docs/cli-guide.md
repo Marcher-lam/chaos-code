@@ -1,6 +1,6 @@
 # STDD Copilot Ultra v2.0.0 CLI 使用指南
 
-> Spec + Test Driven Development Framework — 完整命令行参考手册
+> Smart Team-Driven Development Framework — 完整命令行参考手册
 
 ## 目录
 
@@ -1150,5 +1150,4 @@ stdd hooks status
 stdd hooks disable
 stdd hooks enable
 -->
-
 
