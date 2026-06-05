@@ -17,7 +17,7 @@ STDD Copilot Ultra 是一个 **CLI 工具 + 模板框架**，定位为 AI 编码
 | 运行时 | Node.js CLI |
 | 依赖 | `chalk` `commander` `inquirer` `js-yaml`（共 4 个） |
 | 开发依赖 | `eslint` `jest`（共 2 个） |
-| 测试基线 | 197 个测试套件，4151+ 个测试用例，97.7% 覆盖率 |
+| 测试基线 | 199 个测试套件，4151+ 个测试用例，97.7% 覆盖率 |
 
 ---
 

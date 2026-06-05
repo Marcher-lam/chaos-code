@@ -1,11 +1,11 @@
 # STDD Copilot Ultra 实测示例：在 STDD-TEST 跑通一次变更闭环
 
-本文档基于 `/Users/marcher/Desktop/STDD-TEST` 的真实执行结果重写。目标不是展示概念，而是给出一套可以复现的最小流程：初始化项目、创建变更、生成规格、执行任务、生成 mutation evidence、验证、推荐下一步、归档。
+本文档基于真实执行结果重写。目标不是展示概念，而是给出一套可以复现的最小流程：初始化项目、创建变更、生成规格、执行任务、生成 mutation evidence、验证、推荐下一步、归档。
 
 本示例直接调用仓库内 CLI，避免依赖全局 `npm link`：
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" <command>
+node /path/to/stdd-copilot-ultra/cli.js <command>
 ```
 
 如果已经执行过 `npm link`，可替换为：
@@ -16,10 +16,10 @@ stdd <command>
 
 ## 1. 准备测试项目
 
-测试目录：
+在一个空目录中创建最小 Node.js 项目：
 
 ```bash
-cd /Users/marcher/Desktop/STDD-TEST
+cd /path/to/your-test-project
 ```
 
 本次实测创建了一个最小 Node.js 项目：
@@ -86,7 +86,7 @@ npm test
 ## 2. 初始化 STDD
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" init --skip-skills --yes
+node cli.js init --skip-skills --yes
 ```
 
 实测输出要点：
@@ -122,7 +122,7 @@ test:
 本次目标：为 `calculator` 增加乘法能力。
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" ff "为 calculator 增加乘法能力" --change-name add-multiply
+node cli.js ff "为 calculator 增加乘法能力" --change-name add-multiply
 ```
 
 实测输出：
@@ -155,7 +155,7 @@ stdd/changes/add-multiply/
 ## 4. 生成规格
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" spec add-multiply
+node cli.js spec add-multiply
 ```
 
 实测后生成：
@@ -171,7 +171,7 @@ stdd/changes/add-multiply/specs/
 ## 5. dry-run apply
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply add-multiply --dry-run
+node cli.js apply add-multiply --dry-run
 ```
 
 实测输出：
@@ -189,7 +189,7 @@ dry-run 用于确认 STDD 将运行什么测试命令，不修改任务状态。
 ## 6. 执行第一个任务
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply add-multiply
+node cli.js apply add-multiply
 ```
 
 实测结果：
@@ -246,8 +246,8 @@ test('multiply returns the product of two numbers', () => {
 继续执行剩余任务：
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply add-multiply
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply add-multiply
+node cli.js apply add-multiply
+node cli.js apply add-multiply
 ```
 
 实测结果：
@@ -262,7 +262,7 @@ pass 3
 ## 8. 生成 mutation evidence
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" mutation add-multiply --threshold 50
+node cli.js mutation add-multiply --threshold 50
 ```
 
 实测输出：
@@ -282,7 +282,7 @@ Mutation Gate
 ## 9. 验证变更
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" verify add-multiply --no-constitution
+node cli.js verify add-multiply --no-constitution
 ```
 
 实测输出要点：
@@ -301,7 +301,7 @@ Verification passed for add-multiply
 ## 10. 查看推荐下一步
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" recommend
+node cli.js recommend
 ```
 
 实测输出：
@@ -314,7 +314,7 @@ Reason: All 3 tasks completed and verified. Archive with `stdd archive`.
 ## 11. 查看 evidence 历史
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" graph history --change add-multiply --json
+node cli.js graph history --change add-multiply --json
 ```
 
 实测输出包含：
@@ -342,7 +342,7 @@ node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" graph history --change a
 ## 12. 归档变更
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" archive add-multiply
+node cli.js archive add-multiply
 ```
 
 实测输出：
@@ -385,7 +385,7 @@ stdd/changes/archive/add-multiply-20260513134058/
 确认归档列表：
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" list --archived --json
+node cli.js list --archived --json
 ```
 
 实测输出：
@@ -408,26 +408,26 @@ npm test
 ## 13. 完整复现命令
 
 ```bash
-cd /Users/marcher/Desktop/STDD-TEST
+cd /path/to/your-test-project
 
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" init --skip-skills --yes
+node cli.js init --skip-skills --yes
 npm test
 
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" ff "为 calculator 增加乘法能力" --change-name add-multiply
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" spec add-multiply
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply add-multiply --dry-run
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply add-multiply
+node cli.js ff "为 calculator 增加乘法能力" --change-name add-multiply
+node cli.js spec add-multiply
+node cli.js apply add-multiply --dry-run
+node cli.js apply add-multiply
 
 # 在这里实现 multiply 并补测试
 
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply add-multiply
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply add-multiply
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" mutation add-multiply --threshold 50
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" verify add-multiply --no-constitution
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" recommend
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" graph history --change add-multiply --json
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" archive add-multiply
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" list --archived --json
+node cli.js apply add-multiply
+node cli.js apply add-multiply
+node cli.js mutation add-multiply --threshold 50
+node cli.js verify add-multiply --no-constitution
+node cli.js recommend
+node cli.js graph history --change add-multiply --json
+node cli.js archive add-multiply
+node cli.js list --archived --json
 npm test
 ```
 
@@ -438,7 +438,7 @@ npm test
 尝试：
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" starters create demo-js --type javascript
+node cli.js starters create demo-js --type javascript
 ```
 
 实测结果：
@@ -471,7 +471,7 @@ stdd/changes/add-multiply/specs/.feature
 执行：
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" metrics add-multiply --json
+node cli.js metrics add-multiply --json
 ```
 
 实测返回中 `constitutionHealth` 为 `FAIL`。这是因为最小 demo 没有完整治理条件，不代表本次功能闭环失败。真实项目中应补齐 CI、lint、测试组织和文档后再把 metrics/constitution 作为强门禁。
@@ -482,21 +482,21 @@ node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" metrics add-multiply --j
 
 ```bash
 npm test
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" status --json
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" recommend
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" doctor --deep   # 深度项目健康检查
+node cli.js status --json
+node cli.js recommend
+node cli.js doctor --deep   # 深度项目健康检查
 ```
 
 对进行中的 change：
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply <change> --dry-run
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" mutation <change> --threshold 50
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" verify <change> --no-constitution
+node cli.js apply <change> --dry-run
+node cli.js mutation <change> --threshold 50
+node cli.js verify <change> --no-constitution
 ```
 
 跳过测试缺失的 apply (适用于仅有文档/配置变更)：
 
 ```bash
-node "/Users/marcher/Desktop/stdd-copliot-ultra/cli.js" apply <change> --allow-no-tests
+node cli.js apply <change> --allow-no-tests
 ```

@@ -2,6 +2,32 @@
 
 All notable changes to STDD Copilot will be documented in this file.
 
+## [2.0.0] - 2026-06-03
+
+### Added
+- **Smart Team-Driven Development rebrand**: STDD redefined as "Smart Team-Driven Development" with full upstream ideation → downstream TDD lifecycle coverage.
+- **6 new utils modules**: `artifact-registry.js` (产物注册表), `css-extractor.js` (CSS 样式提取), `evidence-ledger.js` (证据账本), `visual-regression.js` (视觉回归比对), `workflow-dsl-interpreter.js` (工作流 DSL 解析), `workspace-cache.js` (工作区缓存).
+- **UI generation engine** (`stdd ui`): Full a11y, responsive, and multi-framework support (React/Vue/Angular/Svelte) with enhanced component and page templates.
+- **Trace logging** (`src/utils/evidence-ledger.js`): Structured evidence ledger for audit trail and trace ID support.
+- **Visual regression module** (`src/utils/visual-regression.js`): Screenshot comparison, baseline management, diff ratio calculation.
+- **CSS extractor** (`src/utils/css-extractor.js`): Design token extraction from CSS/SCSS/Tailwind for reverse design system generation.
+- **Workflow DSL interpreter** (`src/utils/workflow-dsl-interpreter.js`): YAML workflow definition parsing with Kahn topological sort DAG compilation.
+- **New test suites**: `css-extractor.test.js`, `design-awesome-md.test.js`, `trace-logging.test.js`, `ui-enhanced.test.js`, `visual-regression.test.js`, `workflow-dsl.test.js` (+6 suites).
+
+### Changed
+- **Utils module count**: 28 → 29 (6 new modules added, existing modules unchanged).
+- **Test suite count**: 197 → 199 (net +2 after consolidation and new suites).
+- **brainstorm.js**: Expanded reasoning methods and structured output formats.
+- **roles.js**: Enhanced 12-role agent collaboration with adversarial review support.
+- **supervisor.js**: Major expansion (+900 lines) with improved multi-agent orchestration.
+- **dynamic-router.js**: Enhanced intent routing with profile-aware path selection.
+- **All documentation**: Updated metrics to reflect current state (88 commands, 86 templates, 53 skills, 29 utils, 199 suites).
+
+### Fixed
+- Async agent orchestration runtime repairs.
+- Security hardening and command wiring fixes.
+- Documentation alignment with actual codebase metrics.
+
 ## [1.2.0] - 2026-05-26
 
 ### Changed
@@ -20,7 +46,7 @@ All notable changes to STDD Copilot will be documented in this file.
 - **.gitignore**: Added `stdd/runtime/generated/` and `stdd/memory/*.bin`.
 
 ### Docs
-- Updated all documentation (README, ARCHITECTURE, CONTRIBUTING, USAGE, agent-protocol, capabilities) with current metrics: 88 command implementations, 86 command templates, 53 skills, 28 utils modules, 197 test suites.
+- Updated all documentation (README, ARCHITECTURE, CONTRIBUTING, USAGE, agent-protocol, capabilities) with current metrics: 88 command implementations, 86 command templates, 53 skills, 29 utils modules, 199 test suites.
 
 ## [1.1.0] - 2026-05-26
 
