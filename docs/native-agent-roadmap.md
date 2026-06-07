@@ -119,7 +119,10 @@ If the cycle fails, the result includes an `agent-fix-packet` with failed test o
 
 ```bash
 stdd agent --fix-packet --patch --json
+stdd agent --fix-packet --write-prompt --json
 ```
+
+`--write-prompt` persists JSON and Markdown under `stdd/agent/fix-packets/`. The Markdown prompt instructs a model to return only a unified diff, which can then be passed to `stdd agent --repair --patch-file`.
 
 ## Repair Cycle
 

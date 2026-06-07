@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 function tail(value, max = 8000) {
   const text = String(value || '');
   return text.length > max ? text.slice(-max) : text;
@@ -40,11 +43,57 @@ class FixPacketBuilder {
     return packet;
   }
 
+  write(packet, options = {}) {
+    const dir = options.outputDir || path.join(this.cwd, 'stdd', 'agent', 'fix-packets');
+    fs.mkdirSync(dir, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const baseName = options.name || `fix-packet-${stamp}`;
+    const jsonPath = path.join(dir, `${baseName}.json`);
+    const mdPath = path.join(dir, `${baseName}.md`);
+    fs.writeFileSync(jsonPath, JSON.stringify(packet, null, 2), 'utf8');
+    fs.writeFileSync(mdPath, this.toMarkdown(packet), 'utf8');
+    const output = {
+      json: path.relative(this.cwd, jsonPath).replace(/\\/g, '/'),
+      markdown: path.relative(this.cwd, mdPath).replace(/\\/g, '/'),
+    };
+    this.record('fix-packet.written', output);
+    return output;
+  }
+
+  toMarkdown(packet) {
+    const lines = [
+      '# Agent Fix Packet',
+      '',
+      `Generated: ${packet.generatedAt}`,
+      `Goal: ${packet.goal || '(none)'}`,
+      `Status: ${packet.status}`,
+      '',
+      '## Instructions For The Repair Model',
+      '',
+      ...packet.instructions.map(item => `- ${item}`),
+      '- Return only a unified diff. Do not include prose outside the diff.',
+      '- Do not apply changes directly; the caller will run fs.patch preview/apply.',
+      '',
+    ];
+    appendJsonBlock(lines, 'Summary', packet.summary);
+    appendJsonBlock(lines, 'Patch Metadata', packet.patch);
+    appendJsonBlock(lines, 'Test Results', packet.tests);
+    appendJsonBlock(lines, 'Git Context', packet.git);
+    appendJsonBlock(lines, 'Before Context', packet.before);
+    lines.push('## Required Output', '', '```diff', 'diff --git a/path b/path', '--- a/path', '+++ b/path', '@@ -1 +1 @@', '-old', '+new', '```', '');
+    return lines.join('\n');
+  }
+
   record(type, payload) {
     if (this.trace && typeof this.trace.append === 'function') {
       this.trace.append(type, payload);
     }
   }
+}
+
+function appendJsonBlock(lines, title, value) {
+  if (!value) return;
+  lines.push(`## ${title}`, '', '```json', JSON.stringify(value, null, 2), '```', '');
 }
 
 function compactPatch(patch) {

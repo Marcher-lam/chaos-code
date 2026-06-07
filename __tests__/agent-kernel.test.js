@@ -416,6 +416,26 @@ describe('native agent kernel scaffolding', () => {
     expect(trace.read()[0]).toEqual(expect.objectContaining({ type: 'fix-packet.generated' }));
   });
 
+  test('fix packet builder writes JSON and Markdown prompt files', () => {
+    const root = tempProject();
+    const builder = new FixPacketBuilder({ cwd: root });
+    const packet = builder.build({
+      goal: 'repair checkout',
+      summary: { status: 'fail', filesChanged: ['README.md'], additions: 1, deletions: 1 },
+      tests: { status: 'fail', passed: false, resultCount: 1, results: [{ workspaceName: 'root', cwd: '.', command: 'npm test', exitCode: 1, passed: false, stdout: '', stderr: 'boom' }] },
+    });
+
+    const output = builder.write(packet, { name: 'demo-fix' });
+
+    expect(output.json).toBe('stdd/agent/fix-packets/demo-fix.json');
+    expect(output.markdown).toBe('stdd/agent/fix-packets/demo-fix.md');
+    const json = JSON.parse(fs.readFileSync(path.join(root, output.json), 'utf8'));
+    const md = fs.readFileSync(path.join(root, output.markdown), 'utf8');
+    expect(json.type).toBe('agent-fix-packet');
+    expect(md).toContain('Return only a unified diff');
+    expect(md).toContain('```diff');
+  });
+
   test('agent CLI emits JSON plan without editing files', () => {
     const cliPath = path.join(__dirname, '..', 'cli.js');
     const root = tempProject('stdd-agent-cli-preview-');
@@ -613,6 +633,24 @@ describe('native agent kernel scaffolding', () => {
     const payload = JSON.parse(result.stdout);
     expect(payload).toEqual(expect.objectContaining({ type: 'agent-fix-packet', status: 'needs-fix', goal: 'repair' }));
     expect(payload.git.status).toBe('unavailable');
+  });
+
+  test('agent CLI writes fix packet prompt files', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-fix-prompt-');
+
+    const result = spawnSync(process.execPath, [cliPath, 'agent', 'repair', '--fix-packet', '--write-prompt', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.output).toEqual(expect.objectContaining({ json: expect.any(String), markdown: expect.any(String) }));
+    expect(fs.existsSync(path.join(root, payload.output.json))).toBe(true);
+    expect(fs.existsSync(path.join(root, payload.output.markdown))).toBe(true);
+    expect(fs.readFileSync(path.join(root, payload.output.markdown), 'utf8')).toContain('Return only a unified diff');
   });
 
   test('agent CLI runs repair cycle', () => {

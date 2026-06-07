@@ -118,6 +118,9 @@ class AgentCommand {
         git,
         summary: { status: 'needs-fix', filesChanged: [], additions: 0, deletions: 0 },
       });
+      if (options.writePrompt) {
+        packet.output = kernel.fixPacketBuilder.write(packet);
+      }
       if (options.json) console.log(JSON.stringify(packet, null, 2));
       else {
         console.log(chalk.bold('Agent fix packet'));
