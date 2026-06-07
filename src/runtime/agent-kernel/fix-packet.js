@@ -13,6 +13,8 @@ class FixPacketBuilder {
   }
 
   build(input = {}) {
+    const filePaths = input.files || (input.patch && input.patch.files ? input.patch.files.map(f => f.path) : []);
+    const contextFiles = this.readContextFiles(filePaths);
     const packet = {
       schemaVersion: 1,
       type: 'agent-fix-packet',
@@ -20,7 +22,7 @@ class FixPacketBuilder {
       status: 'needs-fix',
       goal: input.goal || null,
       instructions: [
-        'Use the failed test output and git diff to identify the smallest corrective patch.',
+        'Use the failed test output, git diff, and file content to identify the smallest corrective patch.',
         'Do not weaken tests unless the spec or task is explicitly wrong.',
         'Prefer a minimal code change and rerun the failing test command.',
         'Return a unified diff that can be processed by fs.patch preview/apply.',
@@ -30,6 +32,7 @@ class FixPacketBuilder {
       tests: compactTests(input.tests),
       git: compactGit(input.after || input.git),
       before: compactGit(input.before),
+      contextFiles,
       metadata: {
         cwd: this.cwd,
         source: input.source || 'agent.cycle',
@@ -39,8 +42,22 @@ class FixPacketBuilder {
       status: packet.status,
       testsStatus: packet.tests ? packet.tests.status : null,
       filesChanged: packet.summary ? packet.summary.filesChanged : [],
+      contextFileCount: contextFiles.length,
     });
     return packet;
+  }
+
+  readContextFiles(paths) {
+    return (paths || []).slice(0, 10).map(filePath => {
+      const resolved = path.resolve(this.cwd, filePath);
+      if (!fs.existsSync(resolved)) return { path: filePath, content: null, bytes: 0 };
+      try {
+        const content = fs.readFileSync(resolved, 'utf8');
+        return { path: filePath, content: tail(content, 6000), bytes: Buffer.byteLength(content, 'utf8') };
+      } catch (_) {
+        return { path: filePath, content: null, bytes: 0 };
+      }
+    });
   }
 
   write(packet, options = {}) {
@@ -80,6 +97,7 @@ class FixPacketBuilder {
     appendJsonBlock(lines, 'Test Results', packet.tests);
     appendJsonBlock(lines, 'Git Context', packet.git);
     appendJsonBlock(lines, 'Before Context', packet.before);
+    appendContextFiles(lines, packet.contextFiles);
     lines.push('## Required Output', '', '```diff', 'diff --git a/path b/path', '--- a/path', '+++ b/path', '@@ -1 +1 @@', '-old', '+new', '```', '');
     return lines.join('\n');
   }
@@ -94,6 +112,20 @@ class FixPacketBuilder {
 function appendJsonBlock(lines, title, value) {
   if (!value) return;
   lines.push(`## ${title}`, '', '```json', JSON.stringify(value, null, 2), '```', '');
+}
+
+function appendContextFiles(lines, files) {
+  if (!files || files.length === 0) return;
+  lines.push('## Changed File Content', '');
+  for (const file of files) {
+    lines.push(`### ${file.path}`, '');
+    if (file.content) {
+      const lang = file.path.endsWith('.js') || file.path.endsWith('.ts') ? 'javascript' : '';
+      lines.push(lang ? `\`\`\`${lang}` : '```', file.content, '```', '');
+    } else {
+      lines.push('_Unable to read file._', '');
+    }
+  }
 }
 
 function compactPatch(patch) {

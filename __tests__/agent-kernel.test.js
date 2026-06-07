@@ -843,6 +843,29 @@ describe('native agent kernel scaffolding', () => {
     expect(payload.suggestedCommand).toContain('--llm-repair');
   });
 
+  test('fix packet builder includes changed file content', () => {
+    const root = tempProject();
+    fs.writeFileSync(path.join(root, 'README.md'), 'patched content\n', 'utf8');
+    fs.mkdirSync(path.join(root, 'src'));
+    fs.writeFileSync(path.join(root, 'src', 'app.js'), 'bad code\n', 'utf8');
+    const builder = new FixPacketBuilder({ cwd: root });
+    const packet = builder.build({
+      goal: 'repair',
+      summary: { status: 'fail', filesChanged: ['README.md', 'src/app.js'] },
+      patch: { mode: 'apply', fileCount: 2, additions: 2, deletions: 2, files: [{ path: 'README.md' }, { path: 'src/app.js' }] },
+      tests: { status: 'fail', passed: false, resultCount: 1, results: [{ workspaceName: 'root', cwd: '.', command: 'npm test', exitCode: 1, passed: false, stdout: '', stderr: 'boom' }] },
+    });
+
+    expect(packet.contextFiles).toHaveLength(2);
+    expect(packet.contextFiles[0]).toEqual(expect.objectContaining({ path: 'README.md', content: 'patched content\n' }));
+    expect(packet.contextFiles[1]).toEqual(expect.objectContaining({ path: 'src/app.js', content: 'bad code\n' }));
+
+    const writer = builder.write(packet, { name: 'context-fix' });
+    const md = fs.readFileSync(path.join(root, writer.markdown), 'utf8');
+    expect(md).toContain('## Changed File Content');
+    expect(md).toContain('patched content');
+  });
+
   test('agent CLI emits standalone fix packet JSON', () => {
     const cliPath = path.join(__dirname, '..', 'cli.js');
     const root = tempProject('stdd-agent-cli-fix-packet-');
