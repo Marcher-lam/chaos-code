@@ -11,6 +11,7 @@ const { LlmDiffProvider } = require('./llm-diff');
 const { RunReportWriter } = require('./run-report');
 const { AgentHistoryStore } = require('./history');
 const { AgentConfig } = require('./config');
+const { AgentDoctor } = require('./doctor');
 
 const STDD_NATIVE_PHASES = [
   'inspect',
@@ -146,11 +147,16 @@ class AgentKernel {
   getConfig() {
     return this.config;
   }
+
+  runDoctor() {
+    return new AgentDoctor(this.cwd).run();
+  }
 }
 
 module.exports = {
   AgentCycleRunner,
   AgentConfig,
+  AgentDoctor,
   AgentHistoryStore,
   AgentKernel,
   AgentSessionTrace,

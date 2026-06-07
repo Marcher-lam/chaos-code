@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { AgentConfig, AgentHistoryStore, AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
+const { AgentConfig, AgentDoctor, AgentHistoryStore, AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
 const { extractUnifiedDiff } = require('../src/runtime/agent-kernel/llm-diff');
 
 function tempProject(prefix = 'stdd-agent-kernel-') {
@@ -963,5 +963,35 @@ describe('native agent kernel scaffolding', () => {
     expect(payload).toEqual(expect.objectContaining({ tool: 'agent.llm-repair', status: 'pass' }));
     expect(payload.llm.output).toBe('repair.diff');
     expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
+  });
+
+  test('agent doctor checks readiness including config and git', () => {
+    const root = tempProject();
+    fs.mkdirSync(path.join(root, 'stdd', 'agent'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'stdd', 'agent', 'config.yaml'), 'mode: guarded\ndefaults:\n  test_command: npm test\n');
+    const doctor = new AgentDoctor(root);
+    const items = doctor.run();
+    const ids = items.map(item => item.id);
+    expect(ids).toContain('agent-config');
+    expect(ids).toContain('test-command');
+    expect(ids).toContain('patch-apply-policy');
+    expect(ids).toContain('recommend-next');
+    expect(items.find(item => item.id === 'agent-config').status).toBe('pass');
+  });
+
+  test('agent CLI runs doctor', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-doctor-');
+
+    const result = spawnSync(process.execPath, [cliPath, 'agent', '--doctor', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.find(item => item.id === 'git-repo')).toBeDefined();
+    expect(payload.find(item => item.id === 'node-version').status).toBe('pass');
   });
 });

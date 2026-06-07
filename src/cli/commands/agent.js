@@ -14,6 +14,15 @@ class AgentCommand {
     const defaultModel = options.model || config.defaults.model || undefined;
     const writeReport = Boolean(options.writeReport || config.defaults.write_report);
 
+    if (options.doctor) {
+      const result = kernel.runDoctor();
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else {
+        for (const item of result) console.log(`${item.id}: ${item.status}`);
+      }
+      return result;
+    }
+
     if (options.initConfig) {
       const output = kernel.initConfig({ force: options.force });
       const result = { path: output, config: kernel.getConfig() };
