@@ -281,9 +281,27 @@ class AgentCommand {
     }
 
     if (options.verify) {
-      const result = kernel.executeTool('stdd.verify', { change: options.change });
+      const result = await kernel.executeTool('stdd.verify', { change: options.change });
       if (options.json) console.log(JSON.stringify(result, null, 2));
       else console.log(result.output);
+      return result;
+    }
+
+    if (options.shellRun) {
+      const result = kernel.executeTool('shell.run', {
+        command: options.shellRun,
+        cwd: this.cwd,
+        timeout: options.timeout,
+        approved: true,
+      });
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        const marker = result.passed ? chalk.green('PASS') : chalk.red('FAIL');
+        console.log(chalk.bold(`Shell: ${marker}`));
+        if (result.stdout) console.log(result.stdout.trimEnd());
+        if (result.stderr) console.error(result.stderr.trimEnd());
+      }
       return result;
     }
 

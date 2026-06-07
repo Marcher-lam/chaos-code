@@ -5,6 +5,7 @@ const { ReadOnlyToolExecutor } = require('./read-only-tools');
 const { PatchTool } = require('./patch-tool');
 const { TestTool } = require('./test-tool');
 const { GitTool } = require('./git-tool');
+const { ShellTool } = require('./shell-tool');
 const { AgentCycleRunner } = require('./cycle');
 const { FixPacketBuilder } = require('./fix-packet');
 const { LlmDiffProvider } = require('./llm-diff');
@@ -37,6 +38,7 @@ class AgentKernel {
     this.patchTool = options.patchTool || new PatchTool({ cwd: this.cwd, trace: this.trace });
     this.testTool = options.testTool || new TestTool({ cwd: this.cwd, trace: this.trace });
     this.gitTool = options.gitTool || new GitTool({ cwd: this.cwd, trace: this.trace });
+    this.shellTool = options.shellTool || new ShellTool({ cwd: this.cwd, trace: this.trace });
     this.fixPacketBuilder = options.fixPacketBuilder || new FixPacketBuilder({ cwd: this.cwd, trace: this.trace });
     this.llmDiffProvider = options.llmDiffProvider || new LlmDiffProvider({ cwd: this.cwd, trace: this.trace });
     this.runReportWriter = options.runReportWriter || new RunReportWriter({ cwd: this.cwd, trace: this.trace });
@@ -103,6 +105,9 @@ class AgentKernel {
     if (name === 'git.diff') {
       return this.gitTool.diff(args);
     }
+    if (name === 'shell.run') {
+      return this.shellTool.run(args);
+    }
     if (name === 'stdd.status') {
       return this.stddTools.status();
     }
@@ -111,6 +116,9 @@ class AgentKernel {
     }
     if (name === 'stdd.verify') {
       return this.stddTools.verify(args.change);
+    }
+    if (name === 'stdd.apply') {
+      return this.stddTools.apply(args);
     }
     throw new Error(`Tool execution not implemented yet: ${name}`);
   }
@@ -178,6 +186,7 @@ module.exports = {
   PermissionPolicy,
   ReadOnlyToolExecutor,
   RunReportWriter,
+  ShellTool,
   STDD_NATIVE_PHASES,
   StddTools,
   TestTool,

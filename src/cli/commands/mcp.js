@@ -147,6 +147,11 @@ const TOOLS = [
     name: "stdd_agent_resume",
     description: "Return resume context and suggested next command for an agent run",
     inputSchema: { type: "object", properties: { runId: { type: "string" } }, required: ["runId"] }
+  },
+  {
+    name: "stdd_agent_doctor",
+    description: "Run agent readiness checks and return diagnostic results",
+    inputSchema: { type: "object", properties: {} }
   }
 ];
 
@@ -155,6 +160,17 @@ function jsonText(value) {
 }
 
 class McpCommand {
+  constructor() {
+    this._kernelCache = new Map();
+  }
+
+  getKernel(cwd) {
+    if (!this._kernelCache.has(cwd)) {
+      this._kernelCache.set(cwd, new AgentKernel({ cwd }));
+    }
+    return this._kernelCache.get(cwd);
+  }
+
   async execute() {
     // 1) Redirect process.stdout.write to stderr EXCEPT for JSON-RPC messages
     const originalStdoutWrite = process.stdout.write;
@@ -324,40 +340,47 @@ class McpCommand {
         return this.runCapture(() => cmd.execute(cwd, options));
       }
       case 'stdd_agent_plan': {
-        const kernel = new AgentKernel({ cwd, mode: args.mode });
+        const kernel = this.getKernel(cwd);
+        kernel.configManager = kernel.configManager || new (require('../../runtime/agent-kernel/config').AgentConfig)(cwd);
+        kernel.config = kernel.config || kernel.configManager.load();
+        kernel.policy = kernel.policy || new (require('../../runtime/agent-kernel/permission-policy').PermissionPolicy)({ mode: args.mode });
         return jsonText(kernel.createPlan(args.goal || 'No goal provided'));
       }
       case 'stdd_agent_read': {
-        const kernel = new AgentKernel({ cwd });
+        const kernel = this.getKernel(cwd);
         return jsonText(kernel.executeTool('fs.read', { path: args.path }));
       }
       case 'stdd_agent_search': {
-        const kernel = new AgentKernel({ cwd });
+        const kernel = this.getKernel(cwd);
         return jsonText(kernel.executeTool('fs.search', { query: args.query, path: args.path || '.', maxResults: args.maxResults }));
       }
       case 'stdd_agent_patch_preview': {
-        const kernel = new AgentKernel({ cwd });
+        const kernel = this.getKernel(cwd);
         return jsonText(kernel.executeTool('fs.patch', { file: args.file, approved: true }));
       }
       case 'stdd_agent_test_run': {
-        const kernel = new AgentKernel({ cwd });
+        const kernel = this.getKernel(cwd);
         return jsonText(kernel.executeTool('test.run', { command: args.command, workspace: args.workspace, timeout: args.timeout }));
       }
       case 'stdd_agent_git_diff': {
-        const kernel = new AgentKernel({ cwd });
+        const kernel = this.getKernel(cwd);
         return jsonText(kernel.executeTool('git.diff', { patch: !!args.patch, maxBytes: args.maxBytes }));
       }
       case 'stdd_agent_history': {
-        const kernel = new AgentKernel({ cwd });
+        const kernel = this.getKernel(cwd);
         return jsonText(kernel.listHistory());
       }
       case 'stdd_agent_show_run': {
-        const kernel = new AgentKernel({ cwd });
+        const kernel = this.getKernel(cwd);
         return jsonText(kernel.showRun(args.runId));
       }
       case 'stdd_agent_resume': {
-        const kernel = new AgentKernel({ cwd });
+        const kernel = this.getKernel(cwd);
         return jsonText(kernel.resumeRun(args.runId));
+      }
+      case 'stdd_agent_doctor': {
+        const kernel = this.getKernel(cwd);
+        return jsonText(kernel.runDoctor());
       }
       default:
         throw new Error(`Unknown tool: ${name}`);

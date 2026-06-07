@@ -189,3 +189,66 @@ stdd agent --config --json
 ```
 
 Config values provide defaults for permission mode, test command, model, report writing, and MCP write-tool exposure. CLI flags override config values.
+
+## Agent Doctor
+
+Run readiness checks for the native agent environment.
+
+```bash
+stdd agent --doctor
+stdd agent --doctor --json
+```
+
+Checks (11 items):
+- `agent-config` — stdd/agent/config.yaml exists
+- `git-repo` — Git repository detected
+- `test-command` — Test command configured in config or package.json
+- `llm-key` — LLM API key (STDD_LLM_API_KEY or OPENAI_API_KEY)
+- `node-version` — Node.js >= 18
+- `package-manager` — Lockfile or package.json detected
+- `run-reports` — Run report history and failure count
+- `mcp-expose-write` — MCP write-capable tools exposure policy
+- `patch-apply-policy` — fs.patch.apply policy (ask is safest)
+- `working-tree` — Git working tree cleanliness
+- `recommend-next` — Suggested next actions
+
+## STDD Native Tools
+
+The kernel bridges three STDD CLI commands as executable kernel tools:
+
+```bash
+stdd agent --status --json
+stdd agent --recommend [change] --json
+stdd agent --verify --change add-feature --json
+```
+
+- `stdd.status` — Inspects specs, changes, and memory counts
+- `stdd.recommend` — Recommends next STDD workflow step
+- `stdd.verify` — Runs verification and quality checks
+
+## Shell Tool
+
+`shell.run` executes bounded shell commands through the command runner with dangerous command detection and injection prevention.
+
+```bash
+stdd agent --shell-run "npm run lint" --json
+```
+
+The tool rejects dangerous commands (rm -rf, eval, shell injection patterns) and records results in the session trace.
+
+## MCP Agent Tools
+
+Nine safe agent tools are exposed through the MCP server for external AI integration:
+
+- `stdd_agent_plan` — Create dry-run native agent plan
+- `stdd_agent_read` — Safely read workspace text files
+- `stdd_agent_search` — Safely search workspace text files
+- `stdd_agent_patch_preview` — Validate diff without applying
+- `stdd_agent_test_run` — Run tests with normalized results
+- `stdd_agent_git_diff` — Inspect git status and diff
+- `stdd_agent_history` — List agent run reports
+- `stdd_agent_show_run` — Show a specific run report
+- `stdd_agent_resume` — Get resume context and next command
+- `stdd_agent_doctor` — Run agent readiness checks
+
+Write-capable tools (patch apply, repair) are not exposed via MCP by default. Enable `mcp.expose_write_tools: true` in config if needed.

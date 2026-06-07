@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { AgentConfig, AgentDoctor, AgentHistoryStore, AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
+const { AgentConfig, AgentDoctor, AgentHistoryStore, AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, ShellTool, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
 const { extractUnifiedDiff } = require('../src/runtime/agent-kernel/llm-diff');
 
 function tempProject(prefix = 'stdd-agent-kernel-') {
@@ -1047,5 +1047,192 @@ describe('native agent kernel scaffolding', () => {
     expect(statusResult.status).toBe(0);
     expect(JSON.parse(statusResult.stdout).tool).toBe('stdd.status');
     expect(recommendResult.status).toBe(0);
+  });
+
+  test('shell tool runs a safe passing command', () => {
+    const root = tempProject();
+    const trace = new AgentSessionTrace(root, { sessionId: 'shell-session' });
+    const tool = new ShellTool({ cwd: root, trace });
+
+    const result = tool.run({ command: `${process.execPath} -e "console.log('shell-ok')"` });
+
+    expect(result).toEqual(expect.objectContaining({
+      tool: 'shell.run',
+      status: 'pass',
+      passed: true,
+      exitCode: 0,
+    }));
+    expect(result.stdout).toContain('shell-ok');
+    expect(trace.read()[0]).toEqual(expect.objectContaining({ type: 'tool.shell.run' }));
+  });
+
+  test('shell tool reports failing command', () => {
+    const root = tempProject();
+    const tool = new ShellTool({ cwd: root });
+
+    const result = tool.run({ command: `${process.execPath} -e "throw new Error('shell-fail')"` });
+
+    expect(result).toEqual(expect.objectContaining({ status: 'fail', passed: false, exitCode: 1 }));
+    expect(result.stderr).toContain('shell-fail');
+  });
+
+  test('shell tool rejects dangerous commands', () => {
+    const root = tempProject();
+    const tool = new ShellTool({ cwd: root });
+
+    const result = tool.run({ command: 'rm -rf /tmp/something' });
+
+    expect(result).toEqual(expect.objectContaining({ status: 'rejected', passed: false }));
+    expect(result.reason).toContain('Dangerous');
+  });
+
+  test('shell tool requires a command argument', () => {
+    const root = tempProject();
+    const tool = new ShellTool({ cwd: root });
+
+    expect(() => tool.run({})).toThrow('requires a command');
+  });
+
+  test('agent kernel executes shell.run tool', () => {
+    const root = tempProject();
+    const kernel = new AgentKernel({ cwd: root, mode: 'autonomous' });
+
+    const result = kernel.executeTool('shell.run', { command: `${process.execPath} -e "process.exit(0)"`, approved: true });
+
+    expect(result.tool).toBe('shell.run');
+    expect(result.passed).toBe(true);
+  });
+
+  test('agent kernel requires approval for shell.run in guarded mode', () => {
+    const root = tempProject();
+    const kernel = new AgentKernel({ cwd: root, mode: 'guarded' });
+
+    expect(() => kernel.executeTool('shell.run', { command: 'echo hi' })).toThrow('requires approval');
+  });
+
+  test('permission policy autonomous mode allows shell.run with approval', () => {
+    const registry = new ToolRegistry();
+    const policy = new PermissionPolicy({ mode: 'autonomous' });
+
+    const decision = policy.decide(registry.get('shell.run'));
+    expect(decision.decision).toBe('ask');
+    expect(decision.reason).toBe('approval-required');
+  });
+
+  test('permission policy suggest mode asks for shell.run', () => {
+    const registry = new ToolRegistry();
+    const policy = new PermissionPolicy({ mode: 'suggest' });
+
+    const decision = policy.decide(registry.get('shell.run'));
+    expect(decision.decision).toBe('ask');
+    expect(decision.reason).toBe('suggest-mode-no-write');
+  });
+
+  test('permission policy denies unknown tools', () => {
+    const policy = new PermissionPolicy({ mode: 'guarded' });
+
+    expect(policy.decide(null)).toEqual(expect.objectContaining({ decision: 'deny' }));
+    expect(policy.decide({})).toEqual(expect.objectContaining({ decision: 'deny' }));
+  });
+
+  test('permission policy respects explicit allow and deny lists', () => {
+    const registry = new ToolRegistry();
+    const policy = new PermissionPolicy({
+      mode: 'guarded',
+      allowedTools: ['fs.patch'],
+      deniedTools: ['fs.read'],
+    });
+
+    expect(policy.decide(registry.get('fs.patch')).decision).toBe('allow');
+    expect(policy.decide(registry.get('fs.read')).decision).toBe('deny');
+  });
+
+  test('run report writer writes actual files', () => {
+    const root = tempProject();
+    const writer = new RunReportWriter({ cwd: root });
+    const result = { tool: 'agent.cycle', mode: 'patch', status: 'pass', summary: { status: 'pass' } };
+
+    const output = writer.write(result, { runId: 'file-check' });
+
+    const jsonPath = path.join(root, output.json);
+    const mdPath = path.join(root, output.markdown);
+    expect(fs.existsSync(jsonPath)).toBe(true);
+    expect(fs.existsSync(mdPath)).toBe(true);
+    const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    expect(json.runId).toBe('file-check');
+    expect(json.status).toBe('pass');
+  });
+
+  test('history show throws for missing run', () => {
+    const root = tempProject();
+    const store = new AgentHistoryStore({ cwd: root });
+
+    expect(() => store.show('nonexistent')).toThrow('Run report not found');
+  });
+
+  test('history resume throws for missing run', () => {
+    const root = tempProject();
+    const store = new AgentHistoryStore({ cwd: root });
+
+    expect(() => store.resume('nonexistent')).toThrow('Run report not found');
+  });
+
+  test('agent CLI runs shell command through shell.run', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-shell-');
+
+    const result = spawnSync(process.execPath, [
+      cliPath,
+      'agent',
+      '--shell-run',
+      `${process.execPath} -e "console.log('cli-shell-ok')"`,
+      '--json',
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload).toEqual(expect.objectContaining({ tool: 'shell.run', status: 'pass', passed: true }));
+    expect(payload.stdout).toContain('cli-shell-ok');
+  });
+
+  test('agent CLI runs doctor and returns diagnostic items', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-doctor-json-');
+
+    const result = spawnSync(process.execPath, [cliPath, 'agent', '--doctor', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    const ids = payload.map(item => item.id);
+    expect(ids).toContain('agent-config');
+    expect(ids).toContain('git-repo');
+    expect(ids).toContain('test-command');
+    expect(ids).toContain('llm-key');
+    expect(ids).toContain('node-version');
+    expect(ids).toContain('package-manager');
+    expect(ids).toContain('recommend-next');
+  });
+
+  test('agent kernel describe includes all registered tools with permissions', () => {
+    const root = tempProject();
+    const kernel = new AgentKernel({ cwd: root, mode: 'guarded' });
+    const desc = kernel.describe();
+
+    const names = desc.tools.map(t => t.name);
+    expect(names).toContain('shell.run');
+    expect(names).toContain('stdd.apply');
+    expect(names).toContain('stdd.status');
+    expect(names).toContain('stdd.verify');
+
+    const shellTool = desc.tools.find(t => t.name === 'shell.run');
+    expect(shellTool.permission.decision).toBe('ask');
   });
 });

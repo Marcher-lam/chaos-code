@@ -31,15 +31,35 @@ class StddTools {
     return engine.recommend(null, {});
   }
 
-  verify(changeName) {
+  async verify(changeName) {
     const { VerifyCommand } = require('../../cli/commands/verify');
     const cmd = new VerifyCommand();
-    const captured = this.runCaptured(() => cmd.execute(changeName, { json: false }));
+    const captured = await this.runCapturedAsync(() => cmd.execute(changeName, { json: false }));
     return {
       tool: 'stdd.verify',
       change: changeName || this.autoDetectChange(),
       output: captured.replace(/\u001b\[\d+m/g, ''),
       failed: captured.includes('✗') || captured.includes('FAIL'),
+    };
+  }
+
+  async apply(args = {}) {
+    const { ApplyCommand } = require('../../cli/commands/apply');
+    const cmd = new ApplyCommand();
+    const changeName = args.change || this.autoDetectChange();
+    if (!changeName) {
+      return { tool: 'stdd.apply', status: 'error', reason: 'No active change found.' };
+    }
+    const captured = await this.runCapturedAsync(() => cmd.execute(changeName, {
+      phase: args.phase,
+      allowNoTests: args.allowNoTests,
+      workspace: args.workspace,
+    }));
+    return {
+      tool: 'stdd.apply',
+      change: changeName,
+      output: captured.replace(/\u001b\[\d+m/g, ''),
+      passed: !captured.includes('✗') && !captured.includes('FAIL') && !captured.includes('failed'),
     };
   }
 
@@ -88,6 +108,27 @@ class StddTools {
     };
     try {
       fn();
+    } catch (err) {
+      output += `[Exception] ${err.message}`;
+    } finally {
+      console.log = originalLog;
+      console.error = originalError;
+    }
+    return output;
+  }
+
+  async runCapturedAsync(fn) {
+    const originalLog = console.log;
+    const originalError = console.error;
+    let output = '';
+    console.log = (...args) => {
+      output += args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ') + '\n';
+    };
+    console.error = (...args) => {
+      output += args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ') + '\n';
+    };
+    try {
+      await fn();
     } catch (err) {
       output += `[Exception] ${err.message}`;
     } finally {
