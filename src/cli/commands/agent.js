@@ -9,6 +9,25 @@ class AgentCommand {
   async execute(goalParts = [], options = {}) {
     const goal = Array.isArray(goalParts) ? goalParts.join(' ').trim() : String(goalParts || '').trim();
     const kernel = new AgentKernel({ cwd: this.cwd, mode: options.mode });
+    const config = kernel.getConfig();
+    const defaultTestCommand = options.testCommand || config.defaults.test_command || undefined;
+    const defaultModel = options.model || config.defaults.model || undefined;
+    const writeReport = Boolean(options.writeReport || config.defaults.write_report);
+
+    if (options.initConfig) {
+      const output = kernel.initConfig({ force: options.force });
+      const result = { path: output, config: kernel.getConfig() };
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(`Agent config written: ${output}`);
+      return result;
+    }
+
+    if (options.config) {
+      const result = kernel.getConfig();
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(JSON.stringify(result, null, 2));
+      return result;
+    }
 
     if (options.listTools) {
       const description = kernel.describe();
@@ -104,7 +123,7 @@ class AgentCommand {
 
     if (options.testRun) {
       const result = kernel.executeTool('test.run', {
-        command: options.testCommand,
+        command: defaultTestCommand,
         workspace: options.workspace,
         timeout: options.timeout,
       });
@@ -160,13 +179,13 @@ class AgentCommand {
     if (options.cycle) {
       const result = kernel.runPatchCycle({
         patchFile: options.patchFile,
-        testCommand: options.testCommand,
+        testCommand: defaultTestCommand,
         workspace: options.workspace,
         timeout: options.timeout,
         includePatch: options.patch,
         maxBytes: options.maxBytes,
       });
-      if (options.writeReport) result.report = kernel.writeRunReport(result);
+      if (writeReport) result.report = kernel.writeRunReport(result);
       if (options.json) {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -182,13 +201,13 @@ class AgentCommand {
     if (options.repair) {
       const result = kernel.runRepairCycle({
         patchFile: options.patchFile,
-        testCommand: options.testCommand,
+        testCommand: defaultTestCommand,
         workspace: options.workspace,
         timeout: options.timeout,
         includePatch: options.patch,
         maxBytes: options.maxBytes,
       });
-      if (options.writeReport) result.report = kernel.writeRunReport(result);
+      if (writeReport) result.report = kernel.writeRunReport(result);
       if (options.json) {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -205,7 +224,7 @@ class AgentCommand {
       const result = await kernel.generateLlmDiff({
         prompt: options.prompt,
         output: options.output,
-        model: options.model,
+        model: defaultModel,
         timeout: options.timeout,
         mockResponse: options.mockResponse,
       });
@@ -221,12 +240,12 @@ class AgentCommand {
         model: options.model,
         timeout: options.timeout,
         mockResponse: options.mockResponse,
-        testCommand: options.testCommand,
+        testCommand: defaultTestCommand,
         workspace: options.workspace,
         includePatch: options.patch,
         maxBytes: options.maxBytes,
       });
-      if (options.writeReport) result.report = kernel.writeRunReport(result);
+      if (writeReport) result.report = kernel.writeRunReport(result);
       if (options.json) console.log(JSON.stringify(result, null, 2));
       else {
         const marker = result.status === 'pass' ? chalk.green('PASS') : chalk.red('FAIL');

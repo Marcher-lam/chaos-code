@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { AgentHistoryStore, AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
+const { AgentConfig, AgentHistoryStore, AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
 const { extractUnifiedDiff } = require('../src/runtime/agent-kernel/llm-diff');
 
 function tempProject(prefix = 'stdd-agent-kernel-') {
@@ -66,6 +66,18 @@ describe('native agent kernel scaffolding', () => {
       'inspect', 'propose', 'spec', 'plan', 'patch', 'test', 'verify', 'summarize'
     ]);
     expect(trace.read()[0]).toEqual(expect.objectContaining({ type: 'plan.created' }));
+  });
+
+  test('agent config writes and loads default config', () => {
+    const root = tempProject();
+    const manager = new AgentConfig(root);
+
+    const written = manager.writeDefault();
+    const loaded = manager.load();
+
+    expect(written).toBe('stdd/agent/config.yaml');
+    expect(loaded).toEqual(expect.objectContaining({ mode: 'guarded' }));
+    expect(loaded.defaults.model).toBe('gpt-4o-mini');
   });
 
   test('read-only executor reads workspace text files and records trace', () => {
@@ -555,6 +567,54 @@ describe('native agent kernel scaffolding', () => {
     expect(payload.goal).toBe('implement checkout');
     expect(payload.dryRun).toBe(true);
     expect(payload.phases.find(phase => phase.id === 'patch').tools).toContain('fs.patch');
+  });
+
+  test('agent CLI initializes and shows config', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-config-');
+
+    const init = spawnSync(process.execPath, [cliPath, 'agent', '--init-config', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+    const show = spawnSync(process.execPath, [cliPath, 'agent', '--config', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(init.status).toBe(0);
+    expect(JSON.parse(init.stdout).path).toBe('stdd/agent/config.yaml');
+    expect(show.status).toBe(0);
+    expect(JSON.parse(show.stdout)).toEqual(expect.objectContaining({ mode: 'guarded' }));
+  });
+
+  test('agent CLI uses config defaults for cycle test command and report', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-config-cycle-');
+    fs.mkdirSync(path.join(root, 'stdd', 'agent'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'stdd', 'agent', 'config.yaml'), [
+      'mode: guarded',
+      'defaults:',
+      `  test_command: ${JSON.stringify(`${process.execPath} -e "console.log('config-test-ok')"`)}`,
+      '  write_report: true',
+      '  model: gpt-4o-mini',
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
+    writeSimplePatch(root);
+
+    const result = spawnSync(process.execPath, [cliPath, 'agent', '--cycle', '--patch-file', 'change.diff', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.status).toBe('pass');
+    expect(payload.tests.results[0].stdout).toContain('config-test-ok');
+    expect(payload.report).toEqual(expect.objectContaining({ json: expect.any(String) }));
   });
 
   test('agent CLI lists tool permissions', () => {

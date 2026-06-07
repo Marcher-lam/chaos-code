@@ -10,6 +10,7 @@ const { FixPacketBuilder } = require('./fix-packet');
 const { LlmDiffProvider } = require('./llm-diff');
 const { RunReportWriter } = require('./run-report');
 const { AgentHistoryStore } = require('./history');
+const { AgentConfig } = require('./config');
 
 const STDD_NATIVE_PHASES = [
   'inspect',
@@ -25,8 +26,10 @@ const STDD_NATIVE_PHASES = [
 class AgentKernel {
   constructor(options = {}) {
     this.cwd = options.cwd || process.cwd();
+    this.configManager = options.configManager || new AgentConfig(this.cwd);
+    this.config = options.config || this.configManager.load();
     this.tools = options.tools || new ToolRegistry();
-    this.policy = options.policy || new PermissionPolicy({ mode: options.mode });
+    this.policy = options.policy || new PermissionPolicy({ mode: options.mode || this.config.mode });
     this.trace = options.trace || new AgentSessionTrace(this.cwd, options.traceOptions || {});
     this.readOnlyTools = options.readOnlyTools || new ReadOnlyToolExecutor({ cwd: this.cwd, trace: this.trace });
     this.patchTool = options.patchTool || new PatchTool({ cwd: this.cwd, trace: this.trace });
@@ -48,6 +51,7 @@ class AgentKernel {
       schemaVersion: 1,
       kind: 'stdd-agent-kernel',
       cwd: this.cwd,
+      config: this.config,
       phases: STDD_NATIVE_PHASES,
       tools,
     };
@@ -134,10 +138,19 @@ class AgentKernel {
   resumeRun(runId) {
     return this.historyStore.resume(runId);
   }
+
+  initConfig(options = {}) {
+    return this.configManager.writeDefault(options);
+  }
+
+  getConfig() {
+    return this.config;
+  }
 }
 
 module.exports = {
   AgentCycleRunner,
+  AgentConfig,
   AgentHistoryStore,
   AgentKernel,
   AgentSessionTrace,

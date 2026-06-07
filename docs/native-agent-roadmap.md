@@ -178,3 +178,14 @@ stdd agent --history --json
 stdd agent --show-run <run-id> --json
 stdd agent --resume <run-id> --json
 ```
+
+## Agent Config
+
+Agent defaults can be stored in `stdd/agent/config.yaml`.
+
+```bash
+stdd agent --init-config
+stdd agent --config --json
+```
+
+Config values provide defaults for permission mode, test command, model, report writing, and MCP write-tool exposure. CLI flags override config values.
