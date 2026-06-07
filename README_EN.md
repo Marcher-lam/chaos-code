@@ -390,7 +390,7 @@ STDD Copilot Ultra fuses exploration, specification, and TDD via a **Skill Graph
 │  DAG Runner  │  Visualizer  │  Analyzer  │  Recommender   │
 ├──────────────────────────────────────────────────────────┤
 │              Core Executors                                │
-│  88 Commands  │  28 Utilities  │  Agent Simulator  │  RT   │
+│  88 Commands  │  29 Utilities  │  Agent Simulator  │  RT   │
 ├──────────────────────────────────────────────────────────┤
 │              Infrastructure                                │
 │  Templates  │  Hooks  │  Logger  │  Security  │  Memory   │

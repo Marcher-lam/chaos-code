@@ -293,7 +293,7 @@ Spec-Driven Development 工具链，在编码前锁定接口和数据契约。
 | 斜杠命令模板 | **86** |
 | Skill 模板 | **53** |
 | 顶级 CLI 命令 | **83** |
-| 测试套件 | **197** |
+| 测试套件 | **199** |
 | 测试用例 | **4151+** |
 | 测试通过率 | **100%** |
 | 代码覆盖率 | **97.7% statements / 93% branches** |
@@ -460,4 +460,4 @@ STDD Copilot Ultra 兼容 22 种 AI 编码引擎，通过 4 层适配：
 - [核心概念](./concepts.md) — STDD 核心概念
 - [快速开始](./getting-started.md) — 5 分钟上手
 - [Agent 协议](./agent-protocol.md) — Agent 通信协议
-- [English Version](./en/command-reference.md) — 英文版命令参考
+- [English CLI Guide](./en/cli-guide.md) — 英文版 CLI 指南

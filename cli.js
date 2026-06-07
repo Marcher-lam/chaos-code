@@ -48,6 +48,7 @@ const {
   DocsCommand,
   MemoryCommand,
   AdaptCommand,
+  McpCommand,
 } = require('./src/cli/commands/index');
 
 const { ProgressCommand } = require('./src/cli/commands/progress');
@@ -142,6 +143,7 @@ const commandFactories = {
   UICommand,
   DocsCommand,
   AdaptCommand,
+  McpCommand,
 };
 
 const loader = new CommandLoader(program, {
@@ -297,12 +299,40 @@ program.command('constitution [action] [target]')
       }
     } else if (action === 'check') {
       const spinner = createSpinner('Running constitution check...').start();
-      const checker = new ConstitutionChecker(process.cwd());
+      const { resolveWorkspace } = require('./src/utils/workspace-detector');
+      const WorkspaceCache = require('./src/utils/workspace-cache');
+      
+      const resolvedWorkspace = options.workspace ? resolveWorkspace(process.cwd(), options.workspace) : null;
+      const wsCache = new WorkspaceCache(process.cwd());
+
+      if (options.workspace && !options.force) {
+        const cached = wsCache.getValidCache(options.workspace, 'constitution');
+        if (cached) {
+          const violations = cached.issues;
+          if (options.json) {
+            console.log(JSON.stringify({ status: cached.status, ...violations, workspace: options.workspace || null, cached: true }, null, 2));
+          } else {
+            const all = [...(violations.blocking || []), ...(violations.warning || []), ...(violations.suggestion || [])];
+            all.forEach(v => console.log(`  ${v.severity === 'blocking' ? chalk.red('✗') : v.severity === 'warning' ? chalk.yellow('⚠') : chalk.dim('ℹ')} Article ${v.article}: ${v.message}`));
+            console.log(all.length ? '' : chalk.green('✓ All articles pass\n'));
+          }
+          spinner.succeed('Constitution check passed [Cached]');
+          return;
+        }
+      }
+
+      const checker = new ConstitutionChecker(process.cwd(), { ...options, workspace: resolvedWorkspace });
       checker.loadWaivers();
       checker.run();
       const violations = checker.issues;
       const hasBlocking = (violations.blocking || []).length > 0;
       if (hasBlocking) process.exitCode = 1;
+
+      // Save to cache if scoped to workspace and passes
+      if (options.workspace && !hasBlocking) {
+        wsCache.setCache(options.workspace, 'constitution', { status: 'pass', issues: violations });
+      }
+
       if (options.json) {
         console.log(JSON.stringify({ status: hasBlocking ? 'fail' : 'pass', ...violations, workspace: options.workspace || null }, null, 2));
       } else {

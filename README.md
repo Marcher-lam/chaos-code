@@ -184,7 +184,7 @@ stdd constitution audit               # 历史审计
 ├──────────────────────────────────────────────────────────┤
 │  Skill Graph    DAG Runner · Visualizer · Analyzer       │
 ├──────────────────────────────────────────────────────────┤
-│  执行层       88 Commands  ·  28 Utils  ·  Agent Runtime │
+│  执行层       88 Commands  ·  29 Utils  ·  Agent Runtime │
 ├──────────────────────────────────────────────────────────┤
 │  基础设施     Templates · Hooks · Logger · Security      │
 └──────────────────────────────────────────────────────────┘

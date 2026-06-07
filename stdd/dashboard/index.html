@@ -1,0 +1,1778 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>@marcher-lam/stdd-copilot-ultra — STDD Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --c-primary: #3B82F6;
+      --c-secondary: #6366F1;
+      --c-success: #10B981;
+      --c-warning: #F59E0B;
+      --c-error: #EF4444;
+      --c-bg: #0D1117;
+      --c-surface: #161B22;
+      --c-surface-alt: #21262D;
+      --c-border: #30363D;
+      --c-text: #F0F6FC;
+      --c-muted: #8B949E;
+      --c-text-secondary: #C9D1D9;
+      --r-sm: 4px;
+      --r-md: 6px;
+      --r-lg: 8px;
+      --r-xl: 12px;
+      --font: Inter, system-ui, -apple-system, sans-serif;
+    }
+    body {
+      font-family: var(--font);
+      background: var(--c-bg);
+      color: var(--c-text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    a { color: var(--c-primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+    /* Card */
+    .card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-lg);
+      padding: 20px;
+    }
+    .card h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--c-muted); margin-bottom: 12px; }
+    .card-value { font-size: 1.8rem; font-weight: 700; }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .header-left h1 { font-size: 1.5rem; font-weight: 700; }
+    .header-left .subtitle { color: var(--c-muted); font-size: 0.9rem; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-success { background: rgba(16,185,129,0.15); color: var(--c-success); }
+    .badge-warning { background: rgba(245,158,11,0.15); color: var(--c-warning); }
+    .badge-error   { background: rgba(239,68,68,0.15); color: var(--c-error); }
+    .badge-info    { background: rgba(59,130,246,0.15); color: var(--c-primary); }
+    .badge-muted   { background: rgba(139,148,158,0.15); color: var(--c-muted); }
+
+    /* Score Circle */
+    .score-circle {
+      position: relative;
+      width: 140px;
+      height: 140px;
+    }
+    .score-circle svg { transform: rotate(-90deg); }
+    .score-circle-bg { fill: none; stroke: var(--c-border); stroke-width: 8; }
+    .score-circle-fg { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+    .score-circle-label {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .score-circle-label .value { font-size: 2rem; font-weight: 700; }
+    .score-circle-label .unit { font-size: 0.75rem; color: var(--c-muted); }
+    .score-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+    .tab {
+      padding: 8px 16px;
+      border-radius: var(--r-md);
+      background: transparent;
+      color: var(--c-muted);
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-family: var(--font);
+      transition: background 0.2s, color 0.2s;
+    }
+    .tab:hover { background: var(--c-surface-alt); color: var(--c-text); }
+    .tab.active { background: var(--c-surface); color: var(--c-primary); border-color: var(--c-border); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--c-border);
+    }
+    .timeline-entry {
+      position: relative;
+      padding-bottom: 16px;
+    }
+    .timeline-entry::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--c-primary);
+      border: 2px solid var(--c-surface);
+    }
+    .timeline-entry.fail::before { background: var(--c-error); }
+    .timeline-entry.complete::before { background: var(--c-success); }
+    .timeline-ts { font-size: 0.75rem; color: var(--c-muted); }
+    .timeline-body { font-size: 0.9rem; color: var(--c-text-secondary); }
+
+    /* Evidence list */
+    .evidence-list { list-style: none; }
+    .evidence-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .evidence-item:last-child { border-bottom: none; }
+    .evidence-path { font-family: monospace; font-size: 0.85rem; }
+    .evidence-meta { font-size: 0.75rem; color: var(--c-muted); }
+
+    /* Constitution */
+    .constitution-list { list-style: none; }
+    .constitution-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .constitution-item:last-child { border-bottom: none; }
+    .constitution-name { font-size: 0.9rem; }
+
+    /* Change cards */
+    .change-card {
+      background: var(--c-surface-alt);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      padding: 14px;
+      margin-bottom: 8px;
+    }
+    .change-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .change-name { font-weight: 600; font-size: 0.95rem; }
+    .change-status { font-size: 0.8rem; }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 48px 24px; color: var(--c-muted); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { padding: 16px; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .score-wrap { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* Generated timestamp */
+    .footer {
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--c-border);
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--c-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>@marcher-lam/stdd-copilot-ultra</h1>
+        <div class="subtitle">v2.0.0 &middot; STDD Copilot Dashboard</div>
+      </div>
+      <div class="header-right">
+        
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">Overview</button>
+      <button class="tab" onclick="switchTab('quality')">Quality</button>
+      <button class="tab" onclick="switchTab('progress')">Progress</button>
+      <button class="tab" onclick="switchTab('performance')">Performance & Cost</button>
+      <button class="tab" onclick="switchTab('constitution')">Constitution</button>
+      <button class="tab" onclick="switchTab('evidence')">Evidence</button>
+    </div>
+
+    <!-- Tab: Overview -->
+    <div id="tab-overview" class="tab-panel active">
+      <div class="grid grid-3" style="margin-bottom:24px">
+        <div class="card">
+          <h3>Active Changes</h3>
+          <div class="card-value" style="color:var(--c-primary)">2</div>
+        </div>
+        <div class="card">
+          <h3>Verified</h3>
+          <div class="card-value" style="color:var(--c-success)">0</div>
+        </div>
+        <div class="card">
+          <h3>Archived</h3>
+          <div class="card-value" style="color:var(--c-muted)">0</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Active Changes</h3>
+        <div class="change-card">
+        <div class="change-card-header">
+          <span class="change-name">archive</span>
+          <span class="badge badge-info">active</span>
+        </div>
+        
+      </div>
+<div class="change-card">
+        <div class="change-card-header">
+          <span class="change-name">test-change</span>
+          <span class="badge badge-info">active</span>
+        </div>
+        
+      </div>
+      </div>
+    </div>
+
+    <!-- Tab: Quality -->
+    <div id="tab-quality" class="tab-panel">
+      <div class="card">
+        <h3>Quality Score</h3>
+        <div class="score-wrap">
+          <div class="score-circle">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle class="score-circle-bg" cx="70" cy="70" r="58" />
+              <circle class="score-circle-fg" cx="70" cy="70" r="58"
+                stroke="var(--c-error)"
+                stroke-dasharray="364.424747816416"
+                stroke-dashoffset="364.424747816416" />
+            </svg>
+            <div class="score-circle-label">
+              <div class="value" style="color:var(--c-error)">-</div>
+              <div class="unit">/ 100</div>
+            </div>
+          </div>
+          <div>
+            <div style="margin-bottom:12px">
+              <div style="color:var(--c-muted);font-size:0.8rem;margin-bottom:2px">Complexity Score</div>
+              <div style="font-size:1.2rem;font-weight:600">N/A</div>
+            </div>
+            <div>
+              <div style="color:var(--c-muted);font-size:0.8rem;margin-bottom:2px">Certainty Score</div>
+              <div style="font-size:1.2rem;font-weight:600">N/A</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Progress -->
+    <div id="tab-progress" class="tab-panel">
+      <div class="card">
+        <h3>Recent Progress</h3>
+        <div class="timeline"><div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-03T15:58:10.814Z</div>
+        <div class="timeline-body"><strong>dashboard</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry fail">
+        <div class="timeline-ts">2026-06-03T15:57:43.860Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-error" style="margin-left:6px">fail</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-03T15:57:43.858Z</div>
+        <div class="timeline-body"><strong>dashboard</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry fail">
+        <div class="timeline-ts">2026-06-03T15:56:17.703Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-error" style="margin-left:6px">fail</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-03T15:56:17.702Z</div>
+        <div class="timeline-body"><strong>dashboard</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry complete">
+        <div class="timeline-ts">2026-06-03T15:54:11.837Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-success" style="margin-left:6px">complete</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-03T15:54:11.653Z</div>
+        <div class="timeline-body"><strong>supervisor</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-02T19:11:17.710Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-info" style="margin-left:6px">interrupt</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-02T19:11:17.709Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-info" style="margin-left:6px">interrupt</span></div>
+      </div>
+<div class="timeline-entry complete">
+        <div class="timeline-ts">2026-06-02T19:11:10.985Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-success" style="margin-left:6px">complete</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-02T19:11:10.984Z</div>
+        <div class="timeline-body"><strong>hooks</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry complete">
+        <div class="timeline-ts">2026-06-02T19:11:10.857Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-success" style="margin-left:6px">complete</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-02T19:11:10.855Z</div>
+        <div class="timeline-body"><strong>hooks</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry complete">
+        <div class="timeline-ts">2026-06-02T19:11:10.726Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-success" style="margin-left:6px">complete</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-02T19:11:10.724Z</div>
+        <div class="timeline-body"><strong>status</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry complete">
+        <div class="timeline-ts">2026-06-02T19:11:10.598Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-success" style="margin-left:6px">complete</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-02T19:11:10.597Z</div>
+        <div class="timeline-body"><strong>list</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry complete">
+        <div class="timeline-ts">2026-06-02T19:11:10.470Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-success" style="margin-left:6px">complete</span></div>
+      </div>
+<div class="timeline-entry ">
+        <div class="timeline-ts">2026-06-02T19:11:10.469Z</div>
+        <div class="timeline-body"><strong>init</strong> <span class="badge badge-info" style="margin-left:6px">start</span></div>
+      </div>
+<div class="timeline-entry fail">
+        <div class="timeline-ts">2026-06-02T19:11:10.187Z</div>
+        <div class="timeline-body"><strong></strong> <span class="badge badge-error" style="margin-left:6px">fail</span></div>
+      </div></div>
+      </div>
+    </div>
+
+    <!-- Tab: Performance & Cost -->
+    <div id="tab-performance" class="tab-panel">
+      <div class="card">
+        <h3>Trace Duration (ms) & API Cost ($) Trend</h3>
+        <svg id="trace-cost-svg" width="100%" height="200" viewBox="0 0 600 200" style="overflow: visible; margin-top: 20px;"></svg>
+      </div>
+    </div>
+
+    <!-- Tab: Constitution -->
+    <div id="tab-constitution" class="tab-panel">
+      <div class="card">
+        <h3>Constitution Status</h3>
+        <span class="badge badge-success" style="margin-bottom:16px">Health: 100%</span><ul class="constitution-list"><li class="constitution-item">
+        <span class="constitution-name">Article 1: Library-First</span>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="constitution-item">
+        <span class="constitution-name">Article 2: TDD</span>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="constitution-item">
+        <span class="constitution-name">Article 3: Small Commits</span>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="constitution-item">
+        <span class="constitution-name">Article 4: Code Style</span>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="constitution-item">
+        <span class="constitution-name">Article 5: Documentation</span>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="constitution-item">
+        <span class="constitution-name">Article 6: Error Handling</span>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="constitution-item">
+        <span class="constitution-name">Article 7: Security</span>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="constitution-item">
+        <span class="constitution-name">Article 8: Performance</span>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="constitution-item">
+        <span class="constitution-name">Article 9: CI/CD</span>
+        <span class="badge badge-success">pass</span>
+      </li></ul>
+      </div>
+    </div>
+
+    <!-- Tab: Evidence -->
+    <div id="tab-evidence" class="tab-panel">
+      <div class="card">
+        <h3>Evidence Gallery</h3>
+        <ul class="evidence-list"><li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T16-07-03-769Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T16-08-22-528Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T16-29-11-212Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T16-30-28-816Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T16-41-08-859Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T16-55-23-658Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T16-56-27-320Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T16-57-27-460Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T17-00-34-533Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T17-02-05-719Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T17-06-01-816Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T17-08-15-132Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T17-08-26-246Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T17-12-32-296Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T17-12-48-465Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T17-13-20-613Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T18-11-24-918Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T18-20-32-969Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-23T18-23-43-598Z.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T04-28-52-875Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T04-42-33-594Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T04-44-11-687Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T04-45-47-990Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T08-53-01-410Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T08-59-44-020Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T10-03-59-935Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T10-08-41-960Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T10-11-40-111Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T10-30-41-203Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-24T10-51-37-654Z.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-25T09-04-08-712Z.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-25T09-09-21-032Z.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-26T05-24-10-981Z.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-26T05-30-16-436Z.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-26T05-33-29-987Z.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-26T05-36-30-941Z.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-26T05-50-30-137Z.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-26T06-00-06-381Z.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-26T12-53-28-358Z.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-30T16-48-11-600Z.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-30T18-45-27-802Z.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-30T18-56-08-620Z.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-31T10-14-51-640Z.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-31T10-53-57-364Z.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-31T11-13-36-884Z.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-31T11-41-40-261Z.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-31T18-11-25-120Z.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-31T18-32-53-791Z.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-05-31T19-44-13-010Z.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-06-02T18-55-00-211Z.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/depcheck-2026-06-02T19-11-22-358Z.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779596757961.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779596761477.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779596794004.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779596797665.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779596840111.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779596843372.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779596875074.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779596879035.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779597689995.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779597693131.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779597788076.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779597791446.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779597888932.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779597892078.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779612597060.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779612600825.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779612713947.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779612717834.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779613114980.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779613118954.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779616969347.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779616973967.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779617253976.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779617257679.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779617422886.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779617426419.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779618575775.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779618580105.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779619827471.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779619831151.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779700002417.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779700143969.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779700311817.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779700449867.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779773199332.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779773939409.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779774081738.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779774319671.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779774471153.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779774949807.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779775091602.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779799752303.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1779799898645.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780159844878.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780159992612.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780166146771.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780166294303.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780166784684.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780166934188.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780221932030.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780222080672.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780224269802.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780224426596.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780225780141.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780225927156.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780227476615.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780227618563.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780250863007.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780251008609.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780256798506.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780426651423.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780426794693.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780427250077.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/guard-1780427386616.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1778606126108.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1778639428910.json</div>
+          <div class="evidence-meta">  — 2026-05-23</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779596756457.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779596759976.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779596792506.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779596796167.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779596838628.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779596841857.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779596873580.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779596877549.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779597688404.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779597691604.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779597786556.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779597789932.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779597887449.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779597890573.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779612595508.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779612599306.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779612712378.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779612716301.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779613113428.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779613117386.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779616967806.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779616972406.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779617252457.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779617256150.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779617421330.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779617424896.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779618574196.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779618578512.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779619825911.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779619829597.json</div>
+          <div class="evidence-meta">  — 2026-05-24</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779700000758.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779700142234.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779700310175.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779700448223.json</div>
+          <div class="evidence-meta">  — 2026-05-25</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779773197682.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779773937752.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779774080079.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779774318002.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779774469468.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779774948182.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779775089962.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779799750576.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1779799896916.json</div>
+          <div class="evidence-meta">  — 2026-05-26</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780159843241.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780159991066.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780166145079.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780166292733.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780166783043.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780166932586.json</div>
+          <div class="evidence-meta">  — 2026-05-30</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780221930351.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780222079038.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780224268183.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780224424943.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780225778498.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780225925488.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780227474962.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780227616939.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780250861369.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780251006934.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780256796798.json</div>
+          <div class="evidence-meta">  — 2026-05-31</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780426649741.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780426792977.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780427248430.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li>
+<li class="evidence-item">
+        <div>
+          <div class="evidence-path">stdd/evidence/schema-validation-1780427384906.json</div>
+          <div class="evidence-meta">  — 2026-06-02</div>
+        </div>
+        <span class="badge badge-success">pass</span>
+      </li></ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Generated by STDD Copilot &middot; 2026-06-03T15:58:10.818Z
+    </div>
+  </div>
+
+  <script>
+    const traceMetrics = {"dates":[],"durations":[],"costs":[]};
+
+    function renderTraceCostChart() {
+      const svg = document.getElementById('trace-cost-svg');
+      if (!svg || !traceMetrics.dates || traceMetrics.dates.length < 2) {
+        if(svg) svg.innerHTML = '<text x="10" y="100" fill="var(--c-muted)">Not enough data to display trend.</text>';
+        return;
+      }
+      const w = 560, h = 160, padX = 30, padY = 10;
+      const maxDur = Math.max(...traceMetrics.durations, 1000);
+      const maxCost = Math.max(...traceMetrics.costs, 0.001);
+      
+      const durPoints = traceMetrics.durations.map((d, i) => {
+        const x = padX + (i / (traceMetrics.dates.length - 1)) * w;
+        const y = padY + h - (d / maxDur) * h;
+        return x + ',' + y;
+      });
+      
+      const costPoints = traceMetrics.costs.map((c, i) => {
+        const x = padX + (i / (traceMetrics.dates.length - 1)) * w;
+        const y = padY + h - (c / maxCost) * h;
+        return x + ',' + y;
+      });
+
+      svg.innerHTML = '<polyline points="' + durPoints.join(' ') + '" fill="none" stroke="var(--c-primary)" stroke-width="2"/>' +
+        '<polyline points="' + costPoints.join(' ') + '" fill="none" stroke="var(--c-warning)" stroke-width="2"/>' +
+        traceMetrics.durations.map((d, i) => {
+          const x = padX + (i / (traceMetrics.dates.length - 1)) * w;
+          const y = padY + h - (d / maxDur) * h;
+          return '<circle cx="' + x + '" cy="' + y + '" r="3" fill="var(--c-primary)"/>' +
+            '<text x="' + x + '" y="' + (y - 8) + '" font-size="9" fill="var(--c-muted)">' + d + 'ms</text>';
+        }).join('') +
+        traceMetrics.costs.map((c, i) => {
+          const x = padX + (i / (traceMetrics.dates.length - 1)) * w;
+          const y = padY + h - (c / maxCost) * h;
+          return '<circle cx="' + x + '" cy="' + y + '" r="3" fill="var(--c-warning)"/>' +
+            '<text x="' + x + '" y="' + (y + 12) + '" font-size="9" fill="var(--c-muted)">$' + c.toFixed(4) + '</text>';
+        }).join('') +
+        '<line x1="' + padX + '" y1="' + (padY + h) + '" x2="' + (padX + w) + '" y2="' + (padY + h) + '" stroke="var(--c-border)" stroke-width="1"/>' +
+        '<text x="' + padX + '" y="195" font-size="10" fill="var(--c-primary)">● Duration (ms)</text>' +
+        '<text x="' + (padX + 120) + '" y="195" font-size="10" fill="var(--c-warning)">● API Cost ($)</text>';
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Initialize charts
+    renderTraceCostChart();
+  </script>
+</body>
+</html>

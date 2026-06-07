@@ -57,15 +57,15 @@ STDD Copilot Ultra 是一个 **CLI 工具 + 模板框架**，定位为 AI 编码
 
 | 序号 | 条例名称 | 级别 | 检查能力 |
 |------|---------|------|---------|
-| 1 | Library-First | **Blocking** | 检测未使用依赖、重复造轮子 |
-| 2 | TDD | **Blocking** | 测试文件存在性、反模式检查、阶段合规 |
-| 3 | Small Commits | **Blocking** | Git 历史记录检查 |
+| 1 | Library-First | Warning | 检测未使用依赖、重复造轮子 |
+| 2 | TDD | **Blocking** | 测试文件存在性、覆盖率 gate、mutation evidence gate |
+| 3 | Small Commits | Warning | Git 历史记录检查 |
 | 4 | Code Style | Warning | ESLint 集成、文件长度检查 |
-| 5 | Documentation | Warning | JSDoc 覆盖率检查 |
+| 5 | Documentation | Suggestion | JSDoc 覆盖率检查 |
 | 6 | Error Handling | Warning | 空 catch 块检测 |
-| 7 | Security | Warning | 硬编码密码、SQL 注入模式检测 |
+| 7 | Security | **Blocking** | 硬编码密码、SQL 注入、路径遍历检测 |
 | 8 | Performance | Suggestion | useEffect 依赖、N+1 查询模式检测 |
-| 9 | CI/CD | Suggestion | CI 配置检测 |
+| 9 | CI/CD | **Blocking** | CI 配置检测 |
 
 **级别说明：**
 - **Blocking**：验证时强制通过，否则阻止归档

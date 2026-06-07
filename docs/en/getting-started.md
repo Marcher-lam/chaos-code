@@ -11,7 +11,7 @@
 |------------|---------|-------|
 | Node.js | >= 20.0.0 | LTS recommended |
 | Git | Any modern version | Required for change tracking |
-| AI Coding Assistant | Optional | Claude Code / Cursor / Windsurf / Copilot (24 engines) |
+| AI Coding Assistant | Optional | Claude Code / Cursor / Windsurf / Copilot (22 engines) |
 
 Verify your environment:
 

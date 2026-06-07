@@ -11,10 +11,10 @@
 
 | Metric | Value |
 |--------|-------|
-| CLI Commands | **83** |
+| CLI Commands | **88** (implementations) / **86** (slash templates) |
 | Slash Command Templates | **86** |
 | Skill Templates | **53** |
-| Test Suites | **197** |
+| Test Suites | **199** |
 | Test Cases | **4,151** (100% passing) |
 | Statement Coverage | **97.7%** |
 | Branch Coverage | **93.2%** |
@@ -80,7 +80,7 @@ Inside AI coding tools (Claude Code, Cursor, Windsurf, etc.):
 
 ### AI Engine Compatibility
 
-24 engines across 4 tiers: Claude Code, Cursor, Windsurf, GitHub Copilot, and more.
+22 engines across 4 tiers: Claude Code, Cursor, Windsurf, GitHub Copilot, and more.
 
 ---
 

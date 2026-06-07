@@ -138,8 +138,9 @@ const commandRegistry = [
       { flags: '--lint-command <cmd>', description: 'Custom lint command' },
       { flags: '--test-command <cmd>', description: 'Custom test command' },
       { flags: '--workspace <workspace>', description: 'Scope to workspace' },
+      { flags: '--force', description: 'Force verify, bypassing incremental cache' },
     ],
-    helpText: `\nExamples:\n  stdd verify\n  stdd verify --lint\n  stdd verify --workspace packages/api`,
+    helpText: `\nExamples:\n  stdd verify\n  stdd verify --lint\n  stdd verify --workspace packages/api\n  stdd verify --force`,
     action: 'VerifyCommand',
   },
   {
@@ -829,6 +830,13 @@ const commandRegistry = [
     create: () => new (require('../commands/docs').DocsCommand)(process.cwd()),
     mapper: (action, options) => [action || 'generate', [], options],
     helpText: `Actions: generate (default), open, sources, deploy\n\nExamples:\n  stdd docs                     # Generate docs site to stdd/docs-site/\n  stdd docs generate            # Same as above\n  stdd docs open                # Generate and open in browser\n  stdd docs sources             # List documentation sources\n  stdd docs deploy              # Deploy docs site (gh-pages, netlify, custom)\n  stdd docs deploy --provider netlify\n  stdd docs --json              # Output source listing as JSON\n  stdd docs --lang en           # Generate English-only docs\n  stdd docs --output ./my-docs  # Custom output directory`,
+  },
+  {
+    name: 'mcp',
+    description: 'Start the Model Context Protocol stdio server for native AI agent integration',
+    options: [],
+    action: 'McpCommand',
+    helpText: `Examples:\n  stdd mcp\n\nThis starts the stdio server. Use it with Claude Code or Cursor.`,
   },
 ];
 

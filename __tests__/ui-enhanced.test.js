@@ -18,10 +18,8 @@ const { extractTokensFromDesignMD, tokensToCSS } = require('../src/config/ui-tem
 const { generateReactComponent } = require('../src/config/ui-templates/react-component');
 const { generateVueComponent } = require('../src/config/ui-templates/vue-component');
 const { generateVuePage } = require('../src/config/ui-templates/vue-page');
-const { generateAngularPage } = require('../src/config/ui-templates/angular-page');
-const { generateSveltePage } = require('../src/config/ui-templates/svelte-page');
 const { generateTailwindComponent, generateTailwindPage } = require('../src/config/ui-templates/tailwind-templates');
-const { generatePageByType, PAGE_TYPES } = require('../src/config/ui-templates/page-templates');
+const { PAGE_TYPES } = require('../src/config/ui-templates/page-templates');
 const { generateUIState, UI_STATES } = require('../src/config/ui-templates/ui-states');
 
 function makeTempDir() {
