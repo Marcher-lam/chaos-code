@@ -7,6 +7,7 @@ const { TestTool } = require('./test-tool');
 const { GitTool } = require('./git-tool');
 const { AgentCycleRunner } = require('./cycle');
 const { FixPacketBuilder } = require('./fix-packet');
+const { LlmDiffProvider } = require('./llm-diff');
 
 const STDD_NATIVE_PHASES = [
   'inspect',
@@ -30,6 +31,7 @@ class AgentKernel {
     this.testTool = options.testTool || new TestTool({ cwd: this.cwd, trace: this.trace });
     this.gitTool = options.gitTool || new GitTool({ cwd: this.cwd, trace: this.trace });
     this.fixPacketBuilder = options.fixPacketBuilder || new FixPacketBuilder({ cwd: this.cwd, trace: this.trace });
+    this.llmDiffProvider = options.llmDiffProvider || new LlmDiffProvider({ cwd: this.cwd, trace: this.trace });
     this.cycleRunner = options.cycleRunner || new AgentCycleRunner({ kernel: this });
   }
 
@@ -104,6 +106,10 @@ class AgentKernel {
   buildFixPacket(input = {}) {
     return this.fixPacketBuilder.build(input);
   }
+
+  generateLlmDiff(args = {}) {
+    return this.llmDiffProvider.generateDiff(args);
+  }
 }
 
 module.exports = {
@@ -112,6 +118,7 @@ module.exports = {
   AgentSessionTrace,
   FixPacketBuilder,
   GitTool,
+  LlmDiffProvider,
   PatchTool,
   PermissionPolicy,
   ReadOnlyToolExecutor,

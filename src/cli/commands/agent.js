@@ -172,6 +172,19 @@ class AgentCommand {
       return result;
     }
 
+    if (options.llmDiff) {
+      const result = await kernel.generateLlmDiff({
+        prompt: options.prompt,
+        output: options.output,
+        model: options.model,
+        timeout: options.timeout,
+        mockResponse: options.mockResponse,
+      });
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(`LLM diff written: ${result.output}`);
+      return result;
+    }
+
     const plan = kernel.createPlan(goal || 'No goal provided', { dryRun: options.dryRun !== false });
     if (options.json) {
       console.log(JSON.stringify(plan, null, 2));

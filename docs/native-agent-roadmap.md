@@ -137,3 +137,12 @@ Execution order:
 ```text
 git.diff before -> fs.patch preview -> fs.patch apply -> test.run -> git.diff after -> summary
 ```
+
+## LLM Diff Handoff
+
+The first LLM integration is provider-neutral and patch-first. It reads a fix-packet Markdown prompt and writes a candidate unified diff. It does not apply the patch.
+
+```bash
+STDD_LLM_API_KEY=... stdd agent --llm-diff --prompt stdd/agent/fix-packets/fix-packet.md --output repair.diff --json
+stdd agent --repair --patch-file repair.diff --test-command "npm test" --json
+```

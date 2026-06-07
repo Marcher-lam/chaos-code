@@ -3,7 +3,8 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
+const { AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
+const { extractUnifiedDiff } = require('../src/runtime/agent-kernel/llm-diff');
 
 function tempProject(prefix = 'stdd-agent-kernel-') {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -436,6 +437,37 @@ describe('native agent kernel scaffolding', () => {
     expect(md).toContain('```diff');
   });
 
+  test('extractUnifiedDiff extracts fenced diff content', () => {
+    const diff = extractUnifiedDiff('Here is the patch:\n```diff\ndiff --git a/a.md b/a.md\n--- a/a.md\n+++ b/a.md\n@@ -1 +1 @@\n-old\n+new\n```');
+    expect(diff).toContain('diff --git a/a.md b/a.md');
+    expect(diff).toContain('+new');
+  });
+
+  test('llm diff provider writes candidate diff with mock response', async () => {
+    const root = tempProject();
+    fs.writeFileSync(path.join(root, 'prompt.md'), '# Fix\nReturn diff', 'utf8');
+    const trace = new AgentSessionTrace(root, { sessionId: 'llm-diff-session' });
+    const provider = new LlmDiffProvider({ cwd: root, trace });
+
+    const result = await provider.generateDiff({
+      prompt: 'prompt.md',
+      output: 'repair.diff',
+      mockResponse: '```diff\ndiff --git a/a.md b/a.md\n--- a/a.md\n+++ b/a.md\n@@ -1 +1 @@\n-old\n+new\n```',
+    });
+
+    expect(result).toEqual(expect.objectContaining({ tool: 'llm.diff', status: 'generated', output: 'repair.diff' }));
+    expect(fs.readFileSync(path.join(root, 'repair.diff'), 'utf8')).toContain('diff --git a/a.md b/a.md');
+    expect(trace.read()[0]).toEqual(expect.objectContaining({ type: 'tool.llm.diff' }));
+  });
+
+  test('llm diff provider requires API key without mock response', async () => {
+    const root = tempProject();
+    fs.writeFileSync(path.join(root, 'prompt.md'), '# Fix\n', 'utf8');
+    const provider = new LlmDiffProvider({ cwd: root, apiKey: '' });
+
+    await expect(provider.generateDiff({ prompt: 'prompt.md' })).rejects.toThrow('API key');
+  });
+
   test('agent CLI emits JSON plan without editing files', () => {
     const cliPath = path.join(__dirname, '..', 'cli.js');
     const root = tempProject('stdd-agent-cli-preview-');
@@ -679,5 +711,33 @@ describe('native agent kernel scaffolding', () => {
     expect(payload).toEqual(expect.objectContaining({ tool: 'agent.cycle', mode: 'repair', status: 'pass' }));
     expect(payload.summary.repairApplied).toBe(true);
     expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
+  });
+
+  test('agent CLI generates llm diff with mock response', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-llm-diff-');
+    fs.writeFileSync(path.join(root, 'prompt.md'), '# Fix\n', 'utf8');
+
+    const result = spawnSync(process.execPath, [
+      cliPath,
+      'agent',
+      '--llm-diff',
+      '--prompt',
+      'prompt.md',
+      '--output',
+      'repair.diff',
+      '--mock-response',
+      'diff --git a/a.md b/a.md\n--- a/a.md\n+++ b/a.md\n@@ -1 +1 @@\n-old\n+new',
+      '--json',
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload).toEqual(expect.objectContaining({ tool: 'llm.diff', status: 'generated', output: 'repair.diff' }));
+    expect(fs.readFileSync(path.join(root, 'repair.diff'), 'utf8')).toContain('diff --git a/a.md b/a.md');
   });
 });
