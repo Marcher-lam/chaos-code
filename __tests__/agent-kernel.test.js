@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { AgentKernel, AgentSessionTrace, GitTool, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
+const { AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
 
 function tempProject(prefix = 'stdd-agent-kernel-') {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -359,6 +359,28 @@ describe('native agent kernel scaffolding', () => {
     expect(result.status).toBe('fail');
     expect(result.summary).toEqual(expect.objectContaining({ patchApplied: true, testsStatus: 'fail', testsPassed: false }));
     expect(result.tests.results[0].stderr).toContain('cycle-fail');
+    expect(result.fixPacket).toEqual(expect.objectContaining({ type: 'agent-fix-packet', status: 'needs-fix' }));
+    expect(result.fixPacket.tests.results[0].stderr).toContain('cycle-fail');
+  });
+
+  test('fix packet builder compacts patch, tests, and git context', () => {
+    const root = tempProject();
+    const trace = new AgentSessionTrace(root, { sessionId: 'fix-packet-session' });
+    const builder = new FixPacketBuilder({ cwd: root, trace });
+
+    const packet = builder.build({
+      goal: 'repair checkout',
+      summary: { status: 'fail', filesChanged: ['README.md'], additions: 1, deletions: 1 },
+      patch: { mode: 'apply', fileCount: 1, additions: 1, deletions: 1, files: [{ path: 'README.md', additions: 1, deletions: 1, written: true }] },
+      tests: { status: 'fail', passed: false, resultCount: 1, results: [{ workspaceName: 'root', cwd: '.', command: 'npm test', exitCode: 1, passed: false, stdout: '', stderr: 'expected true' }] },
+      git: { status: 'ok', dirty: true, statusShort: ' M README.md\n', diffStat: 'README.md | 2 +-\n', diff: 'diff --git a/README.md b/README.md' },
+    });
+
+    expect(packet).toEqual(expect.objectContaining({ type: 'agent-fix-packet', goal: 'repair checkout', status: 'needs-fix' }));
+    expect(packet.patch.files[0].path).toBe('README.md');
+    expect(packet.tests.results[0].stderr).toContain('expected true');
+    expect(packet.git.diff).toContain('diff --git');
+    expect(trace.read()[0]).toEqual(expect.objectContaining({ type: 'fix-packet.generated' }));
   });
 
   test('agent CLI emits JSON plan without editing files', () => {
@@ -542,5 +564,21 @@ describe('native agent kernel scaffolding', () => {
     expect(payload).toEqual(expect.objectContaining({ tool: 'agent.cycle', mode: 'patch', status: 'pass' }));
     expect(payload.summary.filesChanged).toContain('README.md');
     expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
+  });
+
+  test('agent CLI emits standalone fix packet JSON', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-fix-packet-');
+
+    const result = spawnSync(process.execPath, [cliPath, 'agent', 'repair', '--fix-packet', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload).toEqual(expect.objectContaining({ type: 'agent-fix-packet', status: 'needs-fix', goal: 'repair' }));
+    expect(payload.git.status).toBe('unavailable');
   });
 });

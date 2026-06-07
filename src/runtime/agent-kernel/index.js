@@ -6,6 +6,7 @@ const { PatchTool } = require('./patch-tool');
 const { TestTool } = require('./test-tool');
 const { GitTool } = require('./git-tool');
 const { AgentCycleRunner } = require('./cycle');
+const { FixPacketBuilder } = require('./fix-packet');
 
 const STDD_NATIVE_PHASES = [
   'inspect',
@@ -28,6 +29,7 @@ class AgentKernel {
     this.patchTool = options.patchTool || new PatchTool({ cwd: this.cwd, trace: this.trace });
     this.testTool = options.testTool || new TestTool({ cwd: this.cwd, trace: this.trace });
     this.gitTool = options.gitTool || new GitTool({ cwd: this.cwd, trace: this.trace });
+    this.fixPacketBuilder = options.fixPacketBuilder || new FixPacketBuilder({ cwd: this.cwd, trace: this.trace });
     this.cycleRunner = options.cycleRunner || new AgentCycleRunner({ kernel: this });
   }
 
@@ -94,12 +96,17 @@ class AgentKernel {
   runPatchCycle(args = {}) {
     return this.cycleRunner.runPatchCycle(args);
   }
+
+  buildFixPacket(input = {}) {
+    return this.fixPacketBuilder.build(input);
+  }
 }
 
 module.exports = {
   AgentCycleRunner,
   AgentKernel,
   AgentSessionTrace,
+  FixPacketBuilder,
   GitTool,
   PatchTool,
   PermissionPolicy,

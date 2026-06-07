@@ -16,6 +16,7 @@ The new native agent kernel adds a stable boundary for that future work without 
 - Patch preview: `src/runtime/agent-kernel/patch-tool.js`
 - Test runner: `src/runtime/agent-kernel/test-tool.js`
 - Git diff: `src/runtime/agent-kernel/git-tool.js`
+- Fix packet: `src/runtime/agent-kernel/fix-packet.js`
 - CLI preview: `stdd agent`
 
 ## Target Shape
@@ -112,4 +113,10 @@ Execution order:
 
 ```text
 git.diff before -> fs.patch apply -> test.run -> git.diff after -> summary
+```
+
+If the cycle fails, the result includes an `agent-fix-packet` with failed test output, patch metadata, and git diff context.
+
+```bash
+stdd agent --fix-packet --patch --json
 ```

@@ -27,7 +27,7 @@ class AgentCycleRunner {
 
     const summary = summarizeCycle({ before, patch, tests, after });
     this.kernel.trace.append('cycle.patch.completed', summary);
-    return {
+    const result = {
       tool: 'agent.cycle',
       mode: 'patch',
       status: summary.status,
@@ -37,6 +37,10 @@ class AgentCycleRunner {
       tests,
       after,
     };
+    if (summary.status === 'fail') {
+      result.fixPacket = this.kernel.buildFixPacket({ before, patch, tests, after, summary, source: 'agent.cycle' });
+    }
+    return result;
   }
 }
 

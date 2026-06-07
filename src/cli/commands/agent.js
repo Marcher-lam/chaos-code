@@ -110,6 +110,23 @@ class AgentCommand {
       return result;
     }
 
+    if (options.fixPacket) {
+      const git = kernel.executeTool('git.diff', { patch: options.patch, maxBytes: options.maxBytes });
+      const packet = kernel.buildFixPacket({
+        source: 'stdd.agent.fix-packet',
+        goal: goal || null,
+        git,
+        summary: { status: 'needs-fix', filesChanged: [], additions: 0, deletions: 0 },
+      });
+      if (options.json) console.log(JSON.stringify(packet, null, 2));
+      else {
+        console.log(chalk.bold('Agent fix packet'));
+        console.log(`  Status: ${packet.status}`);
+        console.log(`  Git: ${packet.git ? packet.git.status : 'none'}`);
+      }
+      return packet;
+    }
+
     if (options.cycle) {
       const result = kernel.runPatchCycle({
         patchFile: options.patchFile,
