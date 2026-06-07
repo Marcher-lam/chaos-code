@@ -147,7 +147,7 @@ STDD Doctor — 项目健康检查
 ```bash
 stdd skills        # 列出 53 个 Skill 模板
 stdd commands      # 列出 86 个斜杠命令模板
-stdd --help        # 列出全部 88 个 CLI 命令
+stdd --help        # 列出顶级 CLI 命令和帮助入口
 ```
 
 ---
@@ -839,10 +839,10 @@ node --test
 ---
 
 > **STDD Copilot Ultra v2.0.0**
-> - 88 个 CLI 命令
+> - 84 个顶级 CLI 命令 / 88 个命令实现文件
 > - 86 个 Command 模板
 > - 53 个 Skill 模板
-> - 199 测试套件，4151+ 测试用例，100% 通过率
+> - 200 测试套件，4151+ 测试用例，100% 通过率
 > - 97.7% 语句覆盖，93.2% 分支覆盖
 >
 > 完整列表见 `stdd --help`、`stdd skills`、`stdd commands`。

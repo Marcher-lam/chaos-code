@@ -49,9 +49,26 @@ class VerifyCommand {
     const report = { tasks: null, tests: null, lint: null, constitution: null, mutation: null };
     let healthy = true;
     const requestedWorkspace = options.workspace ? resolveWorkspaceScope(cwd, options.workspace) : null;
+    const taskCheck = checkTasksCompletion(changeDir);
+
+    const getMutationReport = () => {
+      const mutationEvidence = findLatestMutationEvidence(cwd, {
+        changeName: changeNameActual,
+        workspace: requestedWorkspace || null,
+      });
+      if (!mutationEvidence) return { status: 'skipped', reason: 'No mutation evidence found' };
+      const score = (mutationEvidence.data.mutationScore !== undefined && mutationEvidence.data.mutationScore !== null) ? mutationEvidence.data.mutationScore : (mutationEvidence.data.score ?? null);
+      return {
+        status: mutationEvidence.data.status,
+        score,
+        threshold: mutationEvidence.data.threshold,
+        mode: mutationEvidence.data.mode,
+        evidence: path.relative(cwd, mutationEvidence.filePath),
+      };
+    };
 
     // 0) Incremental cache check
-    if (options.workspace && !options.force) {
+    if (options.workspace && !options.force && taskCheck.allDone) {
       const wsCache = new WorkspaceCache(cwd);
       const cached = wsCache.getValidCache(options.workspace, 'verify');
       if (cached && cached.healthy) {
@@ -84,9 +101,10 @@ class VerifyCommand {
           cached: true
         };
         const reportCached = {
-          tasks: { allDone: true, done: 1, total: 1, pending: [] },
+          tasks: taskCheck,
           tests: cached.tests,
           constitution: cached.constitution,
+          mutation: getMutationReport(),
           lint: cached.lint,
           cached: true
         };
@@ -102,7 +120,6 @@ class VerifyCommand {
     // 1) Tasks check
     console.log(chalk.bold(`\n🔍 Verifying ${chalk.cyan(changeNameActual)}\n`));
 
-    const taskCheck = checkTasksCompletion(changeDir);
     report.tasks = taskCheck;
     if (taskCheck.allDone) {
       console.log(`  ${chalk.green('✓')} Tasks: ${taskCheck.done}/${taskCheck.total} completed`);
@@ -230,22 +247,11 @@ class VerifyCommand {
       report.constitution = { status: 'pass', issues: { blocking: [], warning: [], info: [], skipped: [] } };
     }
 
-    const mutationEvidence = findLatestMutationEvidence(cwd, {
-      changeName: changeNameActual,
-      workspace: requestedWorkspace || null,
-    });
-    if (mutationEvidence) {
-      const score = (mutationEvidence.data.mutationScore !== undefined && mutationEvidence.data.mutationScore !== null) ? mutationEvidence.data.mutationScore : (mutationEvidence.data.score ?? null);
-      report.mutation = {
-        status: mutationEvidence.data.status,
-        score,
-        threshold: mutationEvidence.data.threshold,
-        mode: mutationEvidence.data.mode,
-        evidence: path.relative(cwd, mutationEvidence.filePath),
-      };
+    report.mutation = getMutationReport();
+    if (report.mutation.status !== 'skipped') {
+      const score = report.mutation.score;
       console.log(`\n  ${chalk.dim('Mutation: latest evidence')} ${report.mutation.status} (${score === null ? 'n/a' : score + '%'})`);
     } else {
-      report.mutation = { status: 'skipped', reason: 'No mutation evidence found' };
       console.log(`\n  ${chalk.dim('Mutation: skipped (no evidence; run `stdd mutation`)')}`);
     }
 
@@ -372,6 +378,7 @@ class VerifyCommand {
       const cacheData = {
         tests: report.tests,
         constitution: report.constitution,
+        mutation: report.mutation,
         lint: report.lint,
         healthy: true
       };

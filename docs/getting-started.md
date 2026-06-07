@@ -266,7 +266,7 @@ ui:
 |------|------|
 | [实操手册](EvoRL.md) | 从零构建完整项目的分步教程 |
 | [产品方案](PRODUCT-PROPOSAL.md) | 产品定位、架构、功能详解 |
-| [命令参考](command-reference.md) | 88 个命令完整参考 |
+| [命令参考](command-reference.md) | 84 个顶级 CLI 命令和 88 个实现文件参考 |
 | [CLI 指南](cli-guide.md) | CLI 使用详解 |
 | [核心概念](concepts.md) | STDD 核心理念 |
 | [工作流](workflows.md) | 工作流模式详解 |
@@ -307,5 +307,4 @@ stdd hooks status
 stdd hooks disable
 stdd hooks enable
 -->
-
 

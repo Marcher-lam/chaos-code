@@ -88,6 +88,11 @@ class WorkspaceCache {
     return hash.digest('hex');
   }
 
+  cacheKey(workspace) {
+    const relRoot = path.relative(this.cwd, workspace.root || '').replace(/\\/g, '/');
+    return `${workspace.name || 'workspace'}:${relRoot}`;
+  }
+
   /**
    * Check if the workspace cache is valid for a given type of check
    * @param {string} selector Workspace name or path
@@ -95,14 +100,19 @@ class WorkspaceCache {
    * @returns {object|null} The cached result data or null if invalid
    */
   getValidCache(selector, type) {
-    const ws = resolveWorkspace(this.cwd, selector);
+    let ws;
+    try {
+      ws = resolveWorkspace(this.cwd, selector);
+    } catch (_) {
+      return null;
+    }
     if (!ws) return null;
 
     const currentHash = this.calculateWorkspaceHash(ws);
     if (!currentHash) return null;
 
     const cache = this.loadCache();
-    const wsCache = cache[ws.name];
+    const wsCache = cache[this.cacheKey(ws)];
     if (wsCache && wsCache.hash === currentHash && wsCache[type]) {
       return wsCache[type];
     }
@@ -116,20 +126,26 @@ class WorkspaceCache {
    * @param {object} data Cached result data
    */
   setCache(selector, type, data) {
-    const ws = resolveWorkspace(this.cwd, selector);
+    let ws;
+    try {
+      ws = resolveWorkspace(this.cwd, selector);
+    } catch (_) {
+      return;
+    }
     if (!ws) return;
 
     const currentHash = this.calculateWorkspaceHash(ws);
     if (!currentHash) return;
 
     const cache = this.loadCache();
-    if (!cache[ws.name]) {
-      cache[ws.name] = { hash: currentHash };
+    const key = this.cacheKey(ws);
+    if (!cache[key]) {
+      cache[key] = { hash: currentHash };
     }
     
     // Update hash to current hash
-    cache[ws.name].hash = currentHash;
-    cache[ws.name][type] = data;
+    cache[key].hash = currentHash;
+    cache[key][type] = data;
 
     this.saveCacheData(cache);
   }
@@ -139,11 +155,16 @@ class WorkspaceCache {
    * @param {string} selector Workspace name or path
    */
   invalidateCache(selector) {
-    const ws = resolveWorkspace(this.cwd, selector);
+    let ws;
+    try {
+      ws = resolveWorkspace(this.cwd, selector);
+    } catch (_) {
+      return;
+    }
     if (!ws) return;
 
     const cache = this.loadCache();
-    delete cache[ws.name];
+    delete cache[this.cacheKey(ws)];
     this.saveCacheData(cache);
   }
 }

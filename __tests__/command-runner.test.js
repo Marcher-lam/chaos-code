@@ -33,8 +33,12 @@ describe('command-runner', () => {
 
   test('detects dangerous destructive commands', () => {
     expect(isDangerous('rm -rf /tmp/demo')).toBe(true);
+    expect(isDangerous('rm -fr /tmp/demo')).toBe(true);
+    expect(isDangerous('rm -f -r /tmp/demo')).toBe(true);
+    expect(isDangerous('rm -fR /tmp/demo')).toBe(true);
     expect(isDangerous('npm test')).toBe(false);
     expect(() => validateCommand('rm -rf /tmp/demo')).toThrow('Dangerous command detected');
+    expect(() => validateCommand('rm -fr /tmp/demo')).toThrow('Dangerous command detected');
   });
 
   test.each(['npm test && whoami', 'npm test | cat', 'npm test; whoami', 'npm test > out.txt', 'npm test `whoami`'])('rejects shell injection pattern %s', (cmd) => {

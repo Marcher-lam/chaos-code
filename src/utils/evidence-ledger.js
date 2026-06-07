@@ -82,12 +82,11 @@ class EvidenceLedger {
     const entry = {
       event_id: generateEventId(),
       timestamp: new Date().toISOString(),
-      type: event.type || 'unknown',
       trace_id: traceId,
       span_id: spanId,
       ...event,
+      type: event.type || 'unknown',
     };
-    delete entry.type;
 
     if (event.requirement_id) entry.requirement_id = event.requirement_id;
     if (event.spec_id) entry.spec_id = event.spec_id;

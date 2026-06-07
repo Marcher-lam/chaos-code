@@ -3,7 +3,7 @@ const { parseCommand } = require('./parse-command');
 
 // P0-3 Fix: Dangerous commands that should never be allowed
 const DANGEROUS_COMMANDS = [
-  /\brm\s+(-rf?|--recursive)\b/i,
+  /\brm\s+(?:-[\w-]*[rR][\w-]*|-\w*\s+-\w*[rR]\w*|--recursive)\b/i,
   /\bdel\s+\/[fqs]\b/i,
   /\bformat\s+[a-z]:\b/i,
   /\bshred\b/i,

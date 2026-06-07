@@ -1,4 +1,7 @@
 const EventEmitter = require('events');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 const { McpCommand } = require('../src/cli/commands/mcp');
 
@@ -6,11 +9,14 @@ describe('McpCommand', () => {
   let mcp;
   let originalStdoutWrite;
   let originalStdin;
+  let originalCwd;
   let mockStdin;
+  let tempDirs = [];
   let writeCalls = [];
 
   beforeEach(() => {
     writeCalls = [];
+    originalCwd = process.cwd();
     originalStdoutWrite = process.stdout.write;
     process.stdout.write = (chunk) => {
       writeCalls.push(chunk.toString());
@@ -37,12 +43,27 @@ describe('McpCommand', () => {
 
   afterEach(() => {
     process.stdout.write = originalStdoutWrite;
+    process.chdir(originalCwd);
     Object.defineProperty(process, 'stdin', {
       value: originalStdin,
       configurable: true
     });
     mcp.close();
   });
+
+  afterAll(() => {
+    for (const dir of tempDirs) {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  function createTempProject() {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stdd-mcp-test-'));
+    tempDirs.push(root);
+    fs.mkdirSync(path.join(root, 'stdd'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ scripts: { test: 'echo ok' } }), 'utf8');
+    return root;
+  }
 
   it('responds to initialize request correctly', async () => {
     await mcp.execute();
@@ -101,5 +122,15 @@ describe('McpCommand', () => {
     expect(response.jsonrpc).toBe('2.0');
     expect(response.id).toBe(3);
     expect(response.result.content[0].text).toBe('Mocked status output');
+  });
+
+  it('dispatches stdd_check_constitution without module resolution failure', async () => {
+    const project = createTempProject();
+    process.chdir(project);
+
+    const output = await mcp.callTool('stdd_check_constitution', { force: true });
+
+    expect(output).toContain('Constitution check');
+    expect(output).not.toContain('Cannot find module');
   });
 });

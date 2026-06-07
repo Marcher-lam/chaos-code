@@ -57,9 +57,8 @@ class WorkflowDslInterpreter {
       const nodeDef = skills[node];
       if (nodeDef.depends_on && Array.isArray(nodeDef.depends_on)) {
         for (const dep of nodeDef.depends_on) {
-          if (skills[dep]) {
-            dependencies[node].add(dep);
-          }
+          if (!skills[dep]) throw new Error(`Unknown dependency '${dep}' referenced by '${node}'`);
+          dependencies[node].add(dep);
         }
       }
     }
@@ -69,9 +68,8 @@ class WorkflowDslInterpreter {
       const nodeDef = skills[node];
       if (nodeDef.next && Array.isArray(nodeDef.next)) {
         for (const nextNode of nodeDef.next) {
-          if (skills[nextNode]) {
-            dependencies[nextNode].add(node);
-          }
+          if (!skills[nextNode]) throw new Error(`Unknown next node '${nextNode}' referenced by '${node}'`);
+          dependencies[nextNode].add(node);
         }
       }
     }
@@ -79,11 +77,11 @@ class WorkflowDslInterpreter {
     // 3. Gather dependencies from explicit root level dependencies block
     if (workflow.dependencies && typeof workflow.dependencies === 'object') {
       for (const [node, depDef] of Object.entries(workflow.dependencies)) {
-        if (skills[node] && depDef && Array.isArray(depDef.requires)) {
+        if (!skills[node]) throw new Error(`Unknown dependency target '${node}' in workflow dependencies`);
+        if (depDef && Array.isArray(depDef.requires)) {
           for (const dep of depDef.requires) {
-            if (skills[dep]) {
-              dependencies[node].add(dep);
-            }
+            if (!skills[dep]) throw new Error(`Unknown dependency '${dep}' referenced by '${node}'`);
+            dependencies[node].add(dep);
           }
         }
       }

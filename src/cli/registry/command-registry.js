@@ -470,6 +470,7 @@ const commandRegistry = [
       { flags: '--force', description: 'Force overwrite' },
     ],
     action: 'MockCommand',
+    mapper: (action, target, options) => [action || 'generate', target ? [target] : [], options],
   },
   {
     name: 'tdd-init [path]',

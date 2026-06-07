@@ -99,4 +99,25 @@ describe('VisualRegression', () => {
     expect(result.status).toBe('fail');
     expect(result.diffRatio).toBe(0.20);
   });
+
+  it('fails explicitly when image dimensions differ', () => {
+    const vr = new VisualRegression(__dirname);
+
+    const baselineData = Buffer.alloc(100);
+    baselineData.writeUInt32BE(1280, 16);
+    baselineData.writeUInt32BE(800, 20);
+
+    const currentData = Buffer.alloc(100);
+    currentData.writeUInt32BE(1024, 16);
+    currentData.writeUInt32BE(768, 20);
+
+    fs.writeFileSync(baselineFile, baselineData);
+    fs.writeFileSync(currentFile, currentData);
+
+    const result = vr.compare(baselineFile, currentFile);
+    expect(result.status).toBe('fail');
+    expect(result.engine).toBe('dimension-check');
+    expect(result.currentWidth).toBe(1024);
+    expect(result.currentHeight).toBe(768);
+  });
 });

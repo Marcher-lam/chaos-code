@@ -430,4 +430,68 @@ describe('verify CLI command', () => {
     expect(evidenceContent).toHaveProperty('type', 'verify');
     expect(evidenceContent.status).toBe('fail');
   });
+
+  it('does not use workspace cache when tasks become incomplete', () => {
+    const projectPath = createTempProject('workspace-cache-tasks-project', {
+      packageJson: { private: true, workspaces: ['packages/*'] },
+      ciConfig: false,
+    });
+    writeWorkspacePackage(projectPath, 'packages/api', {
+      name: 'api',
+      scripts: { test: 'echo ok' },
+    });
+    fs.writeFileSync(path.join(projectPath, 'stdd', 'config.yaml'), `workspaces:
+  enabled: true
+  items:
+    - name: "api"
+      root: "packages/api"
+`);
+
+    const first = runCli(['verify', 'demo', '--workspace', 'api', '--test-command', 'true', '--no-constitution'], projectPath);
+    expect(first.status).toBe(0);
+
+    fs.writeFileSync(
+      path.join(projectPath, 'stdd', 'changes', 'demo', 'tasks.md'),
+      '- [x] TASK-001 Done\n- [ ] TASK-002 Pending\n'
+    );
+
+    const second = runCli(['verify', 'demo', '--workspace', 'api', '--test-command', 'true', '--no-constitution'], projectPath);
+    expect(second.status).not.toBe(0);
+    expect(second.stdout).toContain('Tasks:       FAIL');
+    expect(second.stdout).not.toContain('[Cached]');
+  });
+
+  it('cached workspace verify evidence preserves mutation section', () => {
+    const projectPath = createTempProject('workspace-cache-evidence-project', {
+      packageJson: { private: true, workspaces: ['packages/*'] },
+      ciConfig: false,
+    });
+    writeWorkspacePackage(projectPath, 'packages/api', {
+      name: 'api',
+      scripts: { test: 'echo ok' },
+    });
+    fs.writeFileSync(path.join(projectPath, 'stdd', 'config.yaml'), `workspaces:
+  enabled: true
+  items:
+    - name: "api"
+      root: "packages/api"
+`);
+
+    const first = runCli(['verify', 'demo', '--workspace', 'api', '--test-command', 'true', '--no-constitution'], projectPath);
+    expect(first.status).toBe(0);
+
+    const second = runCli(['verify', 'demo', '--workspace', 'api', '--test-command', 'true', '--no-constitution'], projectPath);
+    expect(second.status).toBe(0);
+    expect(second.stdout).toContain('[Cached]');
+
+    const evidenceDir = path.join(projectPath, 'stdd', 'changes', 'demo', 'evidence');
+    const latest = fs.readdirSync(evidenceDir)
+      .filter(f => f.startsWith('verify-') && f.endsWith('.json'))
+      .sort()
+      .pop();
+    const evidenceContent = JSON.parse(fs.readFileSync(path.join(evidenceDir, latest), 'utf-8'));
+
+    expect(evidenceContent.results).toHaveProperty('mutation');
+    expect(evidenceContent.results.mutation).toHaveProperty('status', 'skipped');
+  });
 });

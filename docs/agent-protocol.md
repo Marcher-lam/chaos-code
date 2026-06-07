@@ -30,13 +30,13 @@ STDD Copilot Ultra 是一个 **Spec-First + TDD 全生命周期 AI 开发平台*
 
 | 指标 | 数值 |
 |------|------|
-| 顶层 CLI 命令 | 83 个 |
+| 顶层 CLI 命令 | 84 个 |
 | Slash 命令模板（`.md`） | 86 个 |
 | Skill 模板（`SKILL.md`） | 53 个 |
 | 命令实现文件 | 88 个（`src/cli/commands/`） |
-| 测试文件 | 199 个 |
+| 测试文件 | 200 个 |
 | Constitution 条例 | 9 篇（3 Blocking + 4 Warning + 2 Suggestion） |
-| AI 引擎支持 | 4 Tier，22+ 引擎 |
+| AI 引擎支持 | 4 Tier，22 个引擎 |
 | Agent 角色 | 12 个（4 基础 + 8 专用） |
 
 ### 核心架构边界

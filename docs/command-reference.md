@@ -261,7 +261,7 @@ Spec-Driven Development 工具链，在编码前锁定接口和数据契约。
 
 ---
 
-## 11. 辅助工具（15 个）
+## 11. 辅助工具（16 个）
 
 项目管理和辅助工具。
 
@@ -280,6 +280,7 @@ Spec-Driven Development 工具链，在编码前锁定接口和数据契约。
 | `stdd starters <subcommand> [args...]` | 项目启动器模板（TypeScript/JavaScript/Python/Go/Rust） |
 | `stdd ci [platform]` | CI 配置生成（GitHub Actions/GitLab CI/Jenkins 等）。支持 `--force`。别名：`stdd ci-generator` |
 | `stdd browser <subcommand>` | 内置浏览器驱动（E2E 测试和视觉回归）。Subcommands: `snapshot`（截图）、`inspect`（检查页面）、`doctor`（Playwright 健康检查）、`compare`（视觉对比）、`update-baseline`（更新基线） |
+| `stdd mcp [action]` | MCP 工具服务。Actions: `serve`、`tools`，用于向外部 AI 客户端暴露 STDD 工具调用 |
 | `stdd graph recommend [change]` | （同 6 Graph 引擎中的 recommend，跨分类复用） |
 | `stdd constitution audit` | （同 5 质量与治理中的 constitution audit，跨分类复用） |
 
@@ -292,8 +293,8 @@ Spec-Driven Development 工具链，在编码前锁定接口和数据契约。
 | CLI 命令实现 | **88** |
 | 斜杠命令模板 | **86** |
 | Skill 模板 | **53** |
-| 顶级 CLI 命令 | **83** |
-| 测试套件 | **199** |
+| 顶级 CLI 命令 | **84** |
+| 测试套件 | **200** |
 | 测试用例 | **4151+** |
 | 测试通过率 | **100%** |
 | 代码覆盖率 | **97.7% statements / 93% branches** |

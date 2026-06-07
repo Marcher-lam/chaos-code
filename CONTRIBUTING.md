@@ -20,7 +20,7 @@ npm link
 
 | 命令 | 说明 |
 |------|------|
-| `npm test` | 运行全部测试 (199 套件, 4151+ 测试) |
+| `npm test` | 运行全部测试 (200 套件, 4151+ 测试) |
 | `npm run test:all` | 完整测试套件 (含集成测试) |
 | `npm run test:coverage` | 生成覆盖率报告 (text/lcov/html) |
 | `npm run test:benchmark` | 运行性能基准套件 |
@@ -29,7 +29,7 @@ npm link
 
 ## 测试与质量门禁
 
-- **测试基线**: 199 个测试套件、4151+ 个测试，100% 通过率
+- **测试基线**: 200 个测试套件、4151+ 个测试，100% 通过率
 - **覆盖率**: Stmts 97.7% | Branch 93.2% | Funcs ~97% | Lines ~97%
 - **Lint**: 零警告 ESLint（`npm run lint`），纳入 `premerge` 门禁
 - **安全**: `npm audit` 零漏洞，`security.js` 提供输入清理、密钥检测、路径安全

@@ -34,7 +34,7 @@ stdd ff "添加深色模式" && stdd apply && stdd verify && stdd archive
 |------|------|
 | CLI 命令 | **88** 个实现 / **86** 个斜杠命令模板 |
 | Skill 模板 | **53** 个 |
-| 测试 | **199** 套件 / **4151+** 用例 / 100% 通过 / 97.7% 覆盖 |
+| 测试 | **200** 套件 / **4151+** 用例 / 100% 通过 / 97.7% 覆盖 |
 | AI 引擎 | 4 层兼容 **22** 种（Claude Code、Cursor、Windsurf、Copilot 等） |
 | 语言 | TypeScript / JS / Python / Java / Go / Rust / C# / PHP |
 
@@ -221,7 +221,7 @@ stdd-copilot-ultra/
 │   ├── graph/                      # DAG 配置
 │   ├── memory/                     # 项目记忆
 │   └── reporters/                  # 报告器
-├── __tests__/                      # 199 套件 / 4151+ 测试
+├── __tests__/                      # 200 套件 / 4151+ 测试
 ├── schemas/                        # JSON/YAML Schema
 └── docs/                           # 文档
 ```
@@ -262,7 +262,7 @@ npm install -g @marcher-lam/stdd-copilot-ultra@latest
 ```bash
 git clone https://github.com/Marcher-lam/STDD-COPILOT-ULTRA.git
 cd STDD-COPILOT-ULTRA && npm install && npm link
-npm test                # 199 套件 / 4151+ 测试
+npm test                # 200 套件 / 4151+ 测试
 npm run lint            # ESLint
 npm run premerge        # 全量检查
 ```

@@ -44,6 +44,7 @@ stdd/progress.jsonl
 stdd/runtime/agent-state.json
 stdd/runtime/agent-turns.jsonl
 stdd/runtime/generated/
+stdd/dashboard/
 stdd/reports/
 stdd/memory/*.bin
 

@@ -260,7 +260,7 @@ class McpCommand {
       }
       case 'stdd_check_constitution': {
         return this.runCapture(async () => {
-          const { checkConstitutionAction } = require('../../helpers/mcp-helpers');
+          const { checkConstitutionAction } = require('../helpers/mcp-helpers');
           await checkConstitutionAction(args);
         });
       }

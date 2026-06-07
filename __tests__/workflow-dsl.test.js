@@ -74,6 +74,38 @@ skills:
     expect(() => interpreter.compile(loaded)).toThrow('Cyclic dependency detected');
   });
 
+  it('should throw error when depends_on references an unknown skill', () => {
+    const loaded = {
+      name: 'Broken Workflow',
+      skills: {
+        'node-a': { depends_on: ['missing-node'] }
+      }
+    };
+
+    expect(() => interpreter.compile(loaded)).toThrow("Unknown dependency 'missing-node' referenced by 'node-a'");
+  });
+
+  it('should throw error when next references an unknown skill', () => {
+    const loaded = {
+      name: 'Broken Workflow',
+      skills: {
+        'node-a': { next: ['missing-node'] }
+      }
+    };
+
+    expect(() => interpreter.compile(loaded)).toThrow("Unknown next node 'missing-node' referenced by 'node-a'");
+  });
+
+  it('should throw error when root dependencies reference an unknown target', () => {
+    const loaded = {
+      name: 'Broken Workflow',
+      skills: { 'node-a': {} },
+      dependencies: { 'missing-node': { requires: ['node-a'] } }
+    };
+
+    expect(() => interpreter.compile(loaded)).toThrow("Unknown dependency target 'missing-node'");
+  });
+
   it('should throw error when file not found', () => {
     expect(() => interpreter.load('non-existent.yaml')).toThrow('Workflow file not found');
   });

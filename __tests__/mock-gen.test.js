@@ -3,6 +3,7 @@ const path = require('path');
 const os = require('os');
 const yaml = require('js-yaml');
 const { MockGenCommand } = require('../src/cli/commands/mock-gen');
+const { MockCommand } = require('../src/cli/commands/mock');
 
 describe('MockGenCommand', () => {
   let tempDirs = [];
@@ -97,6 +98,16 @@ describe('MockGenCommand', () => {
     expect(mockContent).toHaveLength(1);
     expect(mockContent[0]).toHaveProperty('id', 0);
     expect(mockContent[0]).toHaveProperty('email', 'user@example.com');
+  });
+
+  it('MockCommand accepts a string target from CLI loader mapping', () => {
+    const projectPath = createTempProject('mock-command-target-project');
+    const cmd = new MockCommand(projectPath);
+
+    const result = cmd.execute('generate', 'User', { force: true, json: true });
+
+    expect(result.target).toBe('User');
+    expect(fs.existsSync(path.join(projectPath, 'src', '__mocks__', 'User.js'))).toBe(true);
   });
 
   it('should generate mock for POST endpoint with 201 response', async () => {

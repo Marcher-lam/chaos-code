@@ -14,7 +14,7 @@
 | CLI Commands | **88** (implementations) / **86** (slash templates) |
 | Slash Command Templates | **86** |
 | Skill Templates | **53** |
-| Test Suites | **199** |
+| Test Suites | **200** |
 | Test Cases | **4,151** (100% passing) |
 | Statement Coverage | **97.7%** |
 | Branch Coverage | **93.2%** |
@@ -117,4 +117,3 @@ Inside AI coding tools (Claude Code, Cursor, Windsurf, etc.):
 [Getting Started](getting-started.md) — First-run workflow and quick CLI reference
 [CLI Guide](cli-guide.md) — Full CLI command reference
 -->
-

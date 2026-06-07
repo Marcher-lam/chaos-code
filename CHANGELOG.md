@@ -16,12 +16,12 @@ All notable changes to STDD Copilot will be documented in this file.
 
 ### Changed
 - **Utils module count**: 28 → 29 (6 new modules added, existing modules unchanged).
-- **Test suite count**: 197 → 199 (net +2 after consolidation and new suites).
+- **Test suite count**: 197 → 200 (net +3 after consolidation and new suites).
 - **brainstorm.js**: Expanded reasoning methods and structured output formats.
 - **roles.js**: Enhanced 12-role agent collaboration with adversarial review support.
 - **supervisor.js**: Major expansion (+900 lines) with improved multi-agent orchestration.
 - **dynamic-router.js**: Enhanced intent routing with profile-aware path selection.
-- **All documentation**: Updated metrics to reflect current state (88 commands, 86 templates, 53 skills, 29 utils, 199 suites).
+- **All documentation**: Updated metrics to reflect current state (88 commands, 86 templates, 53 skills, 29 utils, 200 suites).
 
 ### Fixed
 - Async agent orchestration runtime repairs.
@@ -46,7 +46,7 @@ All notable changes to STDD Copilot will be documented in this file.
 - **.gitignore**: Added `stdd/runtime/generated/` and `stdd/memory/*.bin`.
 
 ### Docs
-- Updated all documentation (README, ARCHITECTURE, CONTRIBUTING, USAGE, agent-protocol, capabilities) with current metrics: 88 command implementations, 86 command templates, 53 skills, 29 utils modules, 199 test suites.
+- Updated all documentation (README, ARCHITECTURE, CONTRIBUTING, USAGE, agent-protocol, capabilities) with current metrics: 88 command implementations, 86 command templates, 53 skills, 29 utils modules, 200 test suites.
 
 ## [1.1.0] - 2026-05-26
 

@@ -13,10 +13,12 @@ const _logger = createLogger('mock');
 class MockCommand extends MockGenCommand {
   constructor(cwd = process.cwd()) {
     super(cwd);
+    this.cwd = cwd;
     this.mocksDir = path.join(cwd, 'src', '__mocks__');
   }
 
   execute(action = 'generate', args = [], options = {}) {
+    if (!Array.isArray(args)) args = args ? [args] : [];
     switch (action) {
       case 'generate':
       case 'create':

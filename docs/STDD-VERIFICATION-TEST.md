@@ -1,7 +1,7 @@
 # STDD Copilot Ultra 验证与测试指南
 
 > **版本**: v2.0.0 | **更新日期**: 2026-06-01
-> **覆盖范围**: 88 个 CLI 命令 + 86 个 Command 模板 + 53 个 Skill 模板
+> **覆盖范围**: 84 个顶级 CLI 命令 / 88 个命令实现文件 + 86 个 Command 模板 + 53 个 Skill 模板
 > **质量基线**: `npm run premerge` (audit + zero-warning lint + docs + coverage)
 
 ---

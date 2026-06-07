@@ -34,11 +34,30 @@ class VisualRegression {
     // Read width & height from PNG IHDR chunk (standard offsets in PNG format)
     let width = 0;
     let height = 0;
+    let currentWidth = 0;
+    let currentHeight = 0;
     try {
       width = baselineBuf.readUInt32BE(16);
       height = baselineBuf.readUInt32BE(20);
+      currentWidth = currentBuf.readUInt32BE(16);
+      currentHeight = currentBuf.readUInt32BE(20);
     } catch (e) {
       log.warn(`Failed to parse PNG dimensions: ${e.message}`);
+    }
+
+    if (width && height && currentWidth && currentHeight && (width !== currentWidth || height !== currentHeight)) {
+      return {
+        status: 'fail',
+        diffRatio: 1,
+        threshold,
+        width,
+        height,
+        currentWidth,
+        currentHeight,
+        diffPath: null,
+        engine: 'dimension-check',
+        message: `Image dimensions differ: baseline ${width}x${height}, current ${currentWidth}x${currentHeight}`
+      };
     }
 
     // Try to require optional dependencies pngjs and pixelmatch
