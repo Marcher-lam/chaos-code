@@ -49,6 +49,7 @@ const {
   MemoryCommand,
   AdaptCommand,
   McpCommand,
+  AgentCommand,
 } = require('./src/cli/commands/index');
 
 const { ProgressCommand } = require('./src/cli/commands/progress');
@@ -144,6 +145,7 @@ const commandFactories = {
   DocsCommand,
   AdaptCommand,
   McpCommand,
+  AgentCommand,
 };
 
 const loader = new CommandLoader(program, {
@@ -402,6 +404,31 @@ agentCmd.command('agent <action> [topic]')
       if (options.json) console.log(JSON.stringify(result, null, 2));
       else console.log(result.output || JSON.stringify(result, null, 2));
     }
+  }));
+
+program.command('agent [goal...]')
+  .description('Preview the native STDD code-agent kernel contract')
+  .option('--mode <mode>', 'Permission mode: suggest, guarded, autonomous', 'guarded')
+  .option('--list-tools', 'List the native agent tool catalog')
+  .option('--read <path>', 'Safely read a workspace text file through fs.read')
+  .option('--search <query>', 'Safely search workspace text files through fs.search')
+  .option('--patch-preview <file>', 'Validate a unified diff file through fs.patch without applying it')
+  .option('--patch-apply <file>', 'Apply a unified diff file through fs.patch with explicit CLI approval')
+  .option('--test-run', 'Run configured tests through test.run')
+  .option('--test-command <cmd>', 'Override test command for --test-run')
+  .option('--workspace <workspace>', 'Workspace scope for --test-run')
+  .option('--timeout <ms>', 'Timeout for --test-run commands')
+  .option('--git-diff', 'Inspect git status and diff through git.diff')
+  .option('--patch', 'Include full git diff patch with --git-diff')
+  .option('--max-bytes <n>', 'Maximum diff bytes for --git-diff --patch')
+  .option('--cycle', 'Run minimal patch cycle: git diff -> patch apply -> test run -> git diff')
+  .option('--patch-file <file>', 'Patch file for --cycle')
+  .option('--path <path>', 'Search root for --search', '.')
+  .option('--limit <n>', 'Maximum search results')
+  .option('--json', 'JSON output')
+  .option('--dry-run', 'Plan only; do not execute tools', true)
+  .action(safeAction(async (goal, options) => {
+    await new AgentCommand(process.cwd()).execute(goal, options);
   }));
 
 agentCmd.command('sudo [file]')

@@ -22,7 +22,7 @@ describe('commands/index.js re-exports', () => {
     'FactoryCommand', 'MockCommand', 'MemoryCommand', 'IterateCommand', 'HelpCommand',
     'ParallelCommand', 'SupervisorCommand', 'ProfileCommand',
     'BuilderCommand', 'UICommand', 'ModulesCommand', 'DashboardCommand', 'DocsCommand',
-    'AdaptCommand', 'McpCommand',
+    'AdaptCommand', 'McpCommand', 'AgentCommand',
     // Skill-based workflow commands
     'ProposeCommand', 'ClarifyCommand', 'ConfirmCommand', 'PlanCommand',
     'ExecuteCommand', 'FinalDocCommand', 'CommitTddCommand',
