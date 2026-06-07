@@ -12,6 +12,7 @@ const { RunReportWriter } = require('./run-report');
 const { AgentHistoryStore } = require('./history');
 const { AgentConfig } = require('./config');
 const { AgentDoctor } = require('./doctor');
+const { StddTools } = require('./stdd-tools');
 
 const STDD_NATIVE_PHASES = [
   'inspect',
@@ -40,6 +41,7 @@ class AgentKernel {
     this.llmDiffProvider = options.llmDiffProvider || new LlmDiffProvider({ cwd: this.cwd, trace: this.trace });
     this.runReportWriter = options.runReportWriter || new RunReportWriter({ cwd: this.cwd, trace: this.trace });
     this.historyStore = options.historyStore || new AgentHistoryStore({ cwd: this.cwd });
+    this.stddTools = options.stddTools || new StddTools(this.cwd);
     this.cycleRunner = options.cycleRunner || new AgentCycleRunner({ kernel: this });
   }
 
@@ -100,6 +102,15 @@ class AgentKernel {
     }
     if (name === 'git.diff') {
       return this.gitTool.diff(args);
+    }
+    if (name === 'stdd.status') {
+      return this.stddTools.status();
+    }
+    if (name === 'stdd.recommend') {
+      return this.stddTools.recommend(args.change);
+    }
+    if (name === 'stdd.verify') {
+      return this.stddTools.verify(args.change);
     }
     throw new Error(`Tool execution not implemented yet: ${name}`);
   }
@@ -168,6 +179,7 @@ module.exports = {
   ReadOnlyToolExecutor,
   RunReportWriter,
   STDD_NATIVE_PHASES,
+  StddTools,
   TestTool,
   ToolRegistry,
 };

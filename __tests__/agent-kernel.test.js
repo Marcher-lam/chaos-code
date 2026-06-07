@@ -994,4 +994,35 @@ describe('native agent kernel scaffolding', () => {
     expect(payload.find(item => item.id === 'git-repo')).toBeDefined();
     expect(payload.find(item => item.id === 'node-version').status).toBe('pass');
   });
+
+  test('agent kernel executes stdd.status tool', () => {
+    const root = tempProject();
+    fs.mkdirSync(path.join(root, 'stdd', 'specs'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'stdd', 'changes', 'test-change'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'stdd', 'changes', 'test-change', 'tasks.md'), '- [x] done\n- [ ] pending\n');
+    const kernel = new AgentKernel({ cwd: root, mode: 'guarded' });
+
+    const result = kernel.executeTool('stdd.status', {});
+
+    expect(result).toEqual(expect.objectContaining({ tool: 'stdd.status', initialized: true }));
+    expect(result.changes[0]).toEqual(expect.objectContaining({ name: 'test-change', tasks: 2, done: 1 }));
+  });
+
+  test('agent CLI shows stdd status and recommend', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-stdd-');
+    fs.mkdirSync(path.join(root, 'stdd', 'specs'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'stdd', 'changes', 'test-change'), { recursive: true });
+
+    const statusResult = spawnSync(process.execPath, [cliPath, 'agent', '--status', '--json'], {
+      cwd: root, encoding: 'utf8', env: { ...process.env, CI: '1' },
+    });
+    const recommendResult = spawnSync(process.execPath, [cliPath, 'agent', '--recommend', '--json'], {
+      cwd: root, encoding: 'utf8', env: { ...process.env, CI: '1' },
+    });
+
+    expect(statusResult.status).toBe(0);
+    expect(JSON.parse(statusResult.stdout).tool).toBe('stdd.status');
+    expect(recommendResult.status).toBe(0);
+  });
 });

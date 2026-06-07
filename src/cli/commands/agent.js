@@ -265,6 +265,28 @@ class AgentCommand {
       return result;
     }
 
+    if (options.status) {
+      const result = kernel.executeTool('stdd.status', {});
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(JSON.stringify(result, null, 2));
+      return result;
+    }
+
+    if (options.recommend) {
+      const change = options.change || options.recommend;
+      const result = kernel.executeTool('stdd.recommend', { change: change !== true ? change : undefined });
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(JSON.stringify(result, null, 2));
+      return result;
+    }
+
+    if (options.verify) {
+      const result = kernel.executeTool('stdd.verify', { change: options.change });
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(result.output);
+      return result;
+    }
+
     const plan = kernel.createPlan(goal || 'No goal provided', { dryRun: options.dryRun !== false });
     if (options.json) {
       console.log(JSON.stringify(plan, null, 2));
