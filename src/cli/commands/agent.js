@@ -23,6 +23,33 @@ class AgentCommand {
       return description.tools;
     }
 
+    if (options.history) {
+      const result = kernel.listHistory();
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else {
+        for (const item of result) console.log(`${item.runId} ${item.status} ${item.mode} ${item.generatedAt}`);
+      }
+      return result;
+    }
+
+    if (options.showRun) {
+      const result = kernel.showRun(options.showRun);
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else console.log(JSON.stringify(result, null, 2));
+      return result;
+    }
+
+    if (options.resume) {
+      const result = kernel.resumeRun(options.resume);
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else {
+        console.log(`Run: ${result.runId}`);
+        console.log(`Status: ${result.status}`);
+        console.log(`Next: ${result.suggestedCommand}`);
+      }
+      return result;
+    }
+
     if (options.read) {
       const result = kernel.executeTool('fs.read', { path: options.read });
       if (options.json) {

@@ -9,6 +9,7 @@ const { AgentCycleRunner } = require('./cycle');
 const { FixPacketBuilder } = require('./fix-packet');
 const { LlmDiffProvider } = require('./llm-diff');
 const { RunReportWriter } = require('./run-report');
+const { AgentHistoryStore } = require('./history');
 
 const STDD_NATIVE_PHASES = [
   'inspect',
@@ -34,6 +35,7 @@ class AgentKernel {
     this.fixPacketBuilder = options.fixPacketBuilder || new FixPacketBuilder({ cwd: this.cwd, trace: this.trace });
     this.llmDiffProvider = options.llmDiffProvider || new LlmDiffProvider({ cwd: this.cwd, trace: this.trace });
     this.runReportWriter = options.runReportWriter || new RunReportWriter({ cwd: this.cwd, trace: this.trace });
+    this.historyStore = options.historyStore || new AgentHistoryStore({ cwd: this.cwd });
     this.cycleRunner = options.cycleRunner || new AgentCycleRunner({ kernel: this });
   }
 
@@ -120,10 +122,23 @@ class AgentKernel {
   writeRunReport(result, options = {}) {
     return this.runReportWriter.write(result, options);
   }
+
+  listHistory() {
+    return this.historyStore.list();
+  }
+
+  showRun(runId) {
+    return this.historyStore.show(runId);
+  }
+
+  resumeRun(runId) {
+    return this.historyStore.resume(runId);
+  }
 }
 
 module.exports = {
   AgentCycleRunner,
+  AgentHistoryStore,
   AgentKernel,
   AgentSessionTrace,
   FixPacketBuilder,

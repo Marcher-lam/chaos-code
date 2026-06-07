@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
+const { AgentHistoryStore, AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
 const { extractUnifiedDiff } = require('../src/runtime/agent-kernel/llm-diff');
 
 function tempProject(prefix = 'stdd-agent-kernel-') {
@@ -430,6 +430,29 @@ describe('native agent kernel scaffolding', () => {
     expect(trace.read()[0]).toEqual(expect.objectContaining({ type: 'run-report.written' }));
   });
 
+  test('agent history store lists, shows, and resumes reports', () => {
+    const root = tempProject();
+    const writer = new RunReportWriter({ cwd: root });
+    writer.write({ tool: 'agent.cycle', mode: 'repair', status: 'pass', summary: { status: 'pass' } }, { runId: 'pass-run' });
+    writer.write({
+      tool: 'agent.cycle',
+      mode: 'repair',
+      status: 'fail',
+      summary: { status: 'fail' },
+      fixPacket: { output: { markdown: 'stdd/agent/fix-packets/fix.md' } },
+    }, { runId: 'fail-run' });
+    const store = new AgentHistoryStore({ cwd: root });
+
+    const list = store.list();
+    const shown = store.show('fail-run');
+    const resume = store.resume('fail-run');
+
+    expect(list.map(item => item.runId)).toEqual(expect.arrayContaining(['pass-run', 'fail-run']));
+    expect(shown.runId).toBe('fail-run');
+    expect(resume).toEqual(expect.objectContaining({ runId: 'fail-run', status: 'fail', prompt: 'stdd/agent/fix-packets/fix.md' }));
+    expect(resume.suggestedCommand).toContain('--llm-repair');
+  });
+
   test('agent kernel repair cycle returns fix packet on failed tests', () => {
     const root = tempProject();
     fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
@@ -727,6 +750,37 @@ describe('native agent kernel scaffolding', () => {
     expect(payload.report).toEqual(expect.objectContaining({ json: expect.any(String), markdown: expect.any(String) }));
     expect(fs.existsSync(path.join(root, payload.report.json))).toBe(true);
     expect(fs.readFileSync(path.join(root, payload.report.markdown), 'utf8')).toContain('Agent Run Report');
+  });
+
+  test('agent CLI lists and resumes run history', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-history-');
+    const writer = new RunReportWriter({ cwd: root });
+    writer.write({
+      tool: 'agent.cycle',
+      mode: 'repair',
+      status: 'fail',
+      summary: { status: 'fail' },
+      fixPacket: { output: { markdown: 'stdd/agent/fix-packets/fix.md' } },
+    }, { runId: 'history-run' });
+
+    const history = spawnSync(process.execPath, [cliPath, 'agent', '--history', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+    const resume = spawnSync(process.execPath, [cliPath, 'agent', '--resume', 'history-run', '--json'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(history.status).toBe(0);
+    expect(JSON.parse(history.stdout)[0]).toEqual(expect.objectContaining({ runId: 'history-run' }));
+    expect(resume.status).toBe(0);
+    const payload = JSON.parse(resume.stdout);
+    expect(payload).toEqual(expect.objectContaining({ runId: 'history-run', prompt: 'stdd/agent/fix-packets/fix.md' }));
+    expect(payload.suggestedCommand).toContain('--llm-repair');
   });
 
   test('agent CLI emits standalone fix packet JSON', () => {

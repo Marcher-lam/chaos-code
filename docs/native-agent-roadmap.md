@@ -168,3 +168,13 @@ stdd agent --cycle --patch-file change.diff --test-command "npm test" --write-re
 stdd agent --repair --patch-file repair.diff --test-command "npm test" --write-report --json
 stdd agent --llm-repair --prompt fix.md --output repair.diff --test-command "npm test" --write-report --json
 ```
+
+## History And Resume
+
+Run reports can be listed, inspected, and resumed without executing new tools.
+
+```bash
+stdd agent --history --json
+stdd agent --show-run <run-id> --json
+stdd agent --resume <run-id> --json
+```
