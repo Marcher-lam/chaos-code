@@ -9,6 +9,7 @@ const { NewCommand } = require('./new');
 const { ApplyCommand } = require('./apply');
 const { VerifyCommand } = require('./verify');
 const { InitCommand } = require('./init');
+const { AgentKernel } = require('../../runtime/agent-kernel');
 
 const TOOLS = [
   {
@@ -101,8 +102,57 @@ const TOOLS = [
         force: { type: "boolean", description: "Overwrite existing files" }
       }
     }
+  },
+  {
+    name: "stdd_agent_plan",
+    description: "Create a dry-run native STDD agent plan for a goal",
+    inputSchema: { type: "object", properties: { goal: { type: "string" }, mode: { type: "string" } } }
+  },
+  {
+    name: "stdd_agent_read",
+    description: "Safely read a workspace text file through the agent kernel",
+    inputSchema: { type: "object", properties: { path: { type: "string" } }, required: ["path"] }
+  },
+  {
+    name: "stdd_agent_search",
+    description: "Safely search workspace text files through the agent kernel",
+    inputSchema: { type: "object", properties: { query: { type: "string" }, path: { type: "string" }, maxResults: { type: "number" } }, required: ["query"] }
+  },
+  {
+    name: "stdd_agent_patch_preview",
+    description: "Validate a unified diff file without applying it",
+    inputSchema: { type: "object", properties: { file: { type: "string" } }, required: ["file"] }
+  },
+  {
+    name: "stdd_agent_test_run",
+    description: "Run configured tests and return normalized agent result",
+    inputSchema: { type: "object", properties: { command: { type: "string" }, workspace: { type: "string" }, timeout: { type: "number" } } }
+  },
+  {
+    name: "stdd_agent_git_diff",
+    description: "Inspect git status and diff through read-only agent git tool",
+    inputSchema: { type: "object", properties: { patch: { type: "boolean" }, maxBytes: { type: "number" } } }
+  },
+  {
+    name: "stdd_agent_history",
+    description: "List agent run reports",
+    inputSchema: { type: "object", properties: {} }
+  },
+  {
+    name: "stdd_agent_show_run",
+    description: "Show an agent run report by run id",
+    inputSchema: { type: "object", properties: { runId: { type: "string" } }, required: ["runId"] }
+  },
+  {
+    name: "stdd_agent_resume",
+    description: "Return resume context and suggested next command for an agent run",
+    inputSchema: { type: "object", properties: { runId: { type: "string" } }, required: ["runId"] }
   }
 ];
+
+function jsonText(value) {
+  return JSON.stringify(value, null, 2);
+}
 
 class McpCommand {
   async execute() {
@@ -272,6 +322,42 @@ class McpCommand {
           yes: true
         };
         return this.runCapture(() => cmd.execute(cwd, options));
+      }
+      case 'stdd_agent_plan': {
+        const kernel = new AgentKernel({ cwd, mode: args.mode });
+        return jsonText(kernel.createPlan(args.goal || 'No goal provided'));
+      }
+      case 'stdd_agent_read': {
+        const kernel = new AgentKernel({ cwd });
+        return jsonText(kernel.executeTool('fs.read', { path: args.path }));
+      }
+      case 'stdd_agent_search': {
+        const kernel = new AgentKernel({ cwd });
+        return jsonText(kernel.executeTool('fs.search', { query: args.query, path: args.path || '.', maxResults: args.maxResults }));
+      }
+      case 'stdd_agent_patch_preview': {
+        const kernel = new AgentKernel({ cwd });
+        return jsonText(kernel.executeTool('fs.patch', { file: args.file, approved: true }));
+      }
+      case 'stdd_agent_test_run': {
+        const kernel = new AgentKernel({ cwd });
+        return jsonText(kernel.executeTool('test.run', { command: args.command, workspace: args.workspace, timeout: args.timeout }));
+      }
+      case 'stdd_agent_git_diff': {
+        const kernel = new AgentKernel({ cwd });
+        return jsonText(kernel.executeTool('git.diff', { patch: !!args.patch, maxBytes: args.maxBytes }));
+      }
+      case 'stdd_agent_history': {
+        const kernel = new AgentKernel({ cwd });
+        return jsonText(kernel.listHistory());
+      }
+      case 'stdd_agent_show_run': {
+        const kernel = new AgentKernel({ cwd });
+        return jsonText(kernel.showRun(args.runId));
+      }
+      case 'stdd_agent_resume': {
+        const kernel = new AgentKernel({ cwd });
+        return jsonText(kernel.resumeRun(args.runId));
       }
       default:
         throw new Error(`Unknown tool: ${name}`);

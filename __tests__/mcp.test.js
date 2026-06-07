@@ -4,6 +4,7 @@ const os = require('os');
 const path = require('path');
 
 const { McpCommand } = require('../src/cli/commands/mcp');
+const { RunReportWriter } = require('../src/runtime/agent-kernel');
 
 describe('McpCommand', () => {
   let mcp;
@@ -98,6 +99,7 @@ describe('McpCommand', () => {
     expect(response.id).toBe(2);
     expect(Array.isArray(response.result.tools)).toBe(true);
     expect(response.result.tools.find(t => t.name === 'stdd_status')).toBeDefined();
+    expect(response.result.tools.find(t => t.name === 'stdd_agent_plan')).toBeDefined();
   });
 
   it('calls stdd_status tool successfully', async () => {
@@ -132,5 +134,47 @@ describe('McpCommand', () => {
 
     expect(output).toContain('Constitution check');
     expect(output).not.toContain('Cannot find module');
+  });
+
+  it('calls stdd_agent_plan and returns JSON text', async () => {
+    const project = createTempProject();
+    process.chdir(project);
+
+    const output = await mcp.callTool('stdd_agent_plan', { goal: 'implement checkout' });
+    const json = JSON.parse(output);
+
+    expect(json.schemaVersion).toBe(1);
+    expect(json.goal).toBe('implement checkout');
+    expect(json.phases.map(phase => phase.id)).toContain('patch');
+  });
+
+  it('calls stdd_agent_read for workspace files', async () => {
+    const project = createTempProject();
+    fs.writeFileSync(path.join(project, 'README.md'), 'hello agent mcp', 'utf8');
+    process.chdir(project);
+
+    const output = await mcp.callTool('stdd_agent_read', { path: 'README.md' });
+    const json = JSON.parse(output);
+
+    expect(json.tool).toBe('fs.read');
+    expect(json.content).toContain('hello agent mcp');
+  });
+
+  it('calls stdd_agent_history and resume', async () => {
+    const project = createTempProject();
+    new RunReportWriter({ cwd: project }).write({
+      tool: 'agent.cycle',
+      mode: 'repair',
+      status: 'fail',
+      summary: { status: 'fail' },
+      fixPacket: { output: { markdown: 'stdd/agent/fix-packets/fix.md' } },
+    }, { runId: 'mcp-run' });
+    process.chdir(project);
+
+    const history = JSON.parse(await mcp.callTool('stdd_agent_history', {}));
+    const resume = JSON.parse(await mcp.callTool('stdd_agent_resume', { runId: 'mcp-run' }));
+
+    expect(history[0]).toEqual(expect.objectContaining({ runId: 'mcp-run' }));
+    expect(resume.suggestedCommand).toContain('--llm-repair');
   });
 });
