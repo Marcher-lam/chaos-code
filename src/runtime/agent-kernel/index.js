@@ -103,6 +103,10 @@ class AgentKernel {
     return this.cycleRunner.runRepairCycle(args);
   }
 
+  runLlmRepair(args = {}) {
+    return this.cycleRunner.runLlmRepair(args);
+  }
+
   buildFixPacket(input = {}) {
     return this.fixPacketBuilder.build(input);
   }

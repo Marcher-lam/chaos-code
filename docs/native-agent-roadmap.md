@@ -146,3 +146,15 @@ The first LLM integration is provider-neutral and patch-first. It reads a fix-pa
 STDD_LLM_API_KEY=... stdd agent --llm-diff --prompt stdd/agent/fix-packets/fix-packet.md --output repair.diff --json
 stdd agent --repair --patch-file repair.diff --test-command "npm test" --json
 ```
+
+`--llm-repair` composes the handoff into one guarded flow:
+
+```bash
+STDD_LLM_API_KEY=... stdd agent --llm-repair --prompt stdd/agent/fix-packets/fix-packet.md --output repair.diff --test-command "npm test" --json
+```
+
+Execution order:
+
+```text
+llm.diff -> fs.patch preview -> repair cycle
+```

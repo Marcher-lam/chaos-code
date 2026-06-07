@@ -69,8 +69,8 @@ function parsePatch(diffText = '') {
       if (currentHunk) currentHunk.lines.push({ type: 'remove', text: line.slice(1) });
       continue;
     }
-    if (currentHunk && (line.startsWith(' ') || line === '')) {
-      currentHunk.lines.push({ type: 'context', text: line.startsWith(' ') ? line.slice(1) : line });
+    if (currentHunk && line.startsWith(' ')) {
+      currentHunk.lines.push({ type: 'context', text: line.slice(1) });
     }
   }
 

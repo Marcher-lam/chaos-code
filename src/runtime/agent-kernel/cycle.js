@@ -87,6 +87,46 @@ class AgentCycleRunner {
     }
     return result;
   }
+
+  async runLlmRepair(args = {}) {
+    if (!args.prompt) {
+      throw new Error('LLM repair requires --prompt.');
+    }
+    const llm = await this.kernel.generateLlmDiff({
+      prompt: args.prompt,
+      output: args.output || 'repair.diff',
+      model: args.model,
+      timeout: args.timeout,
+      mockResponse: args.mockResponse,
+    });
+    const preview = this.kernel.executeTool('fs.patch', {
+      file: llm.output,
+      approved: true,
+    });
+    const repair = this.runRepairCycle({
+      patchFile: llm.output,
+      testCommand: args.testCommand,
+      workspace: args.workspace,
+      timeout: args.timeout,
+      includePatch: args.includePatch,
+      maxBytes: args.maxBytes,
+    });
+    const result = {
+      tool: 'agent.llm-repair',
+      status: repair.status,
+      llm,
+      preview,
+      repair,
+      summary: repair.summary,
+    };
+    this.kernel.trace.append('cycle.llm-repair.completed', {
+      status: result.status,
+      output: llm.output,
+      filesChanged: repair.summary.filesChanged,
+      testsStatus: repair.summary.testsStatus,
+    });
+    return result;
+  }
 }
 
 function summarizeCycle({ before, patch, tests, after }) {

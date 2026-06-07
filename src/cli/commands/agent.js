@@ -185,6 +185,28 @@ class AgentCommand {
       return result;
     }
 
+    if (options.llmRepair) {
+      const result = await kernel.runLlmRepair({
+        prompt: options.prompt,
+        output: options.output,
+        model: options.model,
+        timeout: options.timeout,
+        mockResponse: options.mockResponse,
+        testCommand: options.testCommand,
+        workspace: options.workspace,
+        includePatch: options.patch,
+        maxBytes: options.maxBytes,
+      });
+      if (options.json) console.log(JSON.stringify(result, null, 2));
+      else {
+        const marker = result.status === 'pass' ? chalk.green('PASS') : chalk.red('FAIL');
+        console.log(chalk.bold(`LLM repair: ${marker}`));
+        console.log(`  Diff: ${result.llm.output}`);
+        console.log(`  Tests: ${result.summary.testsStatus}`);
+      }
+      return result;
+    }
+
     const plan = kernel.createPlan(goal || 'No goal provided', { dryRun: options.dryRun !== false });
     if (options.json) {
       console.log(JSON.stringify(plan, null, 2));

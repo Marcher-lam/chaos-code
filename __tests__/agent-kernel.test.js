@@ -381,6 +381,33 @@ describe('native agent kernel scaffolding', () => {
     expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
   });
 
+  test('agent kernel runs llm repair flow with mock response', async () => {
+    const root = tempProject();
+    fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
+    fs.writeFileSync(path.join(root, 'prompt.md'), '# Fix README\n', 'utf8');
+    const kernel = new AgentKernel({ cwd: root, mode: 'guarded' });
+
+    const result = await kernel.runLlmRepair({
+      prompt: 'prompt.md',
+      output: 'repair.diff',
+      mockResponse: [
+        'diff --git a/README.md b/README.md',
+        '--- a/README.md',
+        '+++ b/README.md',
+        '@@ -1 +1 @@',
+        '-old',
+        '+new',
+      ].join('\n'),
+      testCommand: `${process.execPath} -e "console.log('llm-repair-ok')"`,
+    });
+
+    expect(result).toEqual(expect.objectContaining({ tool: 'agent.llm-repair', status: 'pass' }));
+    expect(result.llm.output).toBe('repair.diff');
+    expect(result.preview.mode).toBe('preview');
+    expect(result.repair.mode).toBe('repair');
+    expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
+  });
+
   test('agent kernel repair cycle returns fix packet on failed tests', () => {
     const root = tempProject();
     fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
@@ -739,5 +766,37 @@ describe('native agent kernel scaffolding', () => {
     const payload = JSON.parse(result.stdout);
     expect(payload).toEqual(expect.objectContaining({ tool: 'llm.diff', status: 'generated', output: 'repair.diff' }));
     expect(fs.readFileSync(path.join(root, 'repair.diff'), 'utf8')).toContain('diff --git a/a.md b/a.md');
+  });
+
+  test('agent CLI runs llm repair with mock response', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-llm-repair-');
+    fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
+    fs.writeFileSync(path.join(root, 'prompt.md'), '# Fix README\n', 'utf8');
+
+    const result = spawnSync(process.execPath, [
+      cliPath,
+      'agent',
+      '--llm-repair',
+      '--prompt',
+      'prompt.md',
+      '--output',
+      'repair.diff',
+      '--mock-response',
+      'diff --git a/README.md b/README.md\n--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-old\n+new',
+      '--test-command',
+      `${process.execPath} -e "console.log('cli-llm-repair-ok')"`,
+      '--json',
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload).toEqual(expect.objectContaining({ tool: 'agent.llm-repair', status: 'pass' }));
+    expect(payload.llm.output).toBe('repair.diff');
+    expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
   });
 });
