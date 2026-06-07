@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
+const { AgentKernel, AgentSessionTrace, FixPacketBuilder, GitTool, LlmDiffProvider, PatchTool, PermissionPolicy, ReadOnlyToolExecutor, RunReportWriter, TestTool, ToolRegistry } = require('../src/runtime/agent-kernel');
 const { extractUnifiedDiff } = require('../src/runtime/agent-kernel/llm-diff');
 
 function tempProject(prefix = 'stdd-agent-kernel-') {
@@ -408,6 +408,28 @@ describe('native agent kernel scaffolding', () => {
     expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
   });
 
+  test('run report writer writes JSON and Markdown reports', () => {
+    const root = tempProject();
+    const trace = new AgentSessionTrace(root, { sessionId: 'run-report-session' });
+    const writer = new RunReportWriter({ cwd: root, trace });
+    const result = {
+      tool: 'agent.cycle',
+      mode: 'repair',
+      status: 'pass',
+      summary: { status: 'pass', filesChanged: ['README.md'], testsStatus: 'pass' },
+    };
+
+    const output = writer.write(result, { runId: 'demo-run' });
+
+    expect(output).toEqual({ runId: 'demo-run', json: 'stdd/agent/runs/demo-run.json', markdown: 'stdd/agent/runs/demo-run.md' });
+    const json = JSON.parse(fs.readFileSync(path.join(root, output.json), 'utf8'));
+    const md = fs.readFileSync(path.join(root, output.markdown), 'utf8');
+    expect(json).toEqual(expect.objectContaining({ type: 'agent-run-report', status: 'pass', mode: 'repair' }));
+    expect(md).toContain('Agent Run Report');
+    expect(md).toContain('Review git diff and commit when ready.');
+    expect(trace.read()[0]).toEqual(expect.objectContaining({ type: 'run-report.written' }));
+  });
+
   test('agent kernel repair cycle returns fix packet on failed tests', () => {
     const root = tempProject();
     fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
@@ -676,6 +698,35 @@ describe('native agent kernel scaffolding', () => {
     expect(payload).toEqual(expect.objectContaining({ tool: 'agent.cycle', mode: 'patch', status: 'pass' }));
     expect(payload.summary.filesChanged).toContain('README.md');
     expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
+  });
+
+  test('agent CLI writes run report for cycle', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-report-');
+    fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
+    writeSimplePatch(root);
+
+    const result = spawnSync(process.execPath, [
+      cliPath,
+      'agent',
+      '--cycle',
+      '--patch-file',
+      'change.diff',
+      '--test-command',
+      `${process.execPath} -e "console.log('report-ok')"`,
+      '--write-report',
+      '--json',
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.report).toEqual(expect.objectContaining({ json: expect.any(String), markdown: expect.any(String) }));
+    expect(fs.existsSync(path.join(root, payload.report.json))).toBe(true);
+    expect(fs.readFileSync(path.join(root, payload.report.markdown), 'utf8')).toContain('Agent Run Report');
   });
 
   test('agent CLI emits standalone fix packet JSON', () => {

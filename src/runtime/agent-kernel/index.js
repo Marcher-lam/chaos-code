@@ -8,6 +8,7 @@ const { GitTool } = require('./git-tool');
 const { AgentCycleRunner } = require('./cycle');
 const { FixPacketBuilder } = require('./fix-packet');
 const { LlmDiffProvider } = require('./llm-diff');
+const { RunReportWriter } = require('./run-report');
 
 const STDD_NATIVE_PHASES = [
   'inspect',
@@ -32,6 +33,7 @@ class AgentKernel {
     this.gitTool = options.gitTool || new GitTool({ cwd: this.cwd, trace: this.trace });
     this.fixPacketBuilder = options.fixPacketBuilder || new FixPacketBuilder({ cwd: this.cwd, trace: this.trace });
     this.llmDiffProvider = options.llmDiffProvider || new LlmDiffProvider({ cwd: this.cwd, trace: this.trace });
+    this.runReportWriter = options.runReportWriter || new RunReportWriter({ cwd: this.cwd, trace: this.trace });
     this.cycleRunner = options.cycleRunner || new AgentCycleRunner({ kernel: this });
   }
 
@@ -114,6 +116,10 @@ class AgentKernel {
   generateLlmDiff(args = {}) {
     return this.llmDiffProvider.generateDiff(args);
   }
+
+  writeRunReport(result, options = {}) {
+    return this.runReportWriter.write(result, options);
+  }
 }
 
 module.exports = {
@@ -126,6 +132,7 @@ module.exports = {
   PatchTool,
   PermissionPolicy,
   ReadOnlyToolExecutor,
+  RunReportWriter,
   STDD_NATIVE_PHASES,
   TestTool,
   ToolRegistry,

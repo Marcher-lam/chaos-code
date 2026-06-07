@@ -158,3 +158,13 @@ Execution order:
 ```text
 llm.diff -> fs.patch preview -> repair cycle
 ```
+
+## Run Reports
+
+Cycle commands can persist auditable reports under `stdd/agent/runs/`.
+
+```bash
+stdd agent --cycle --patch-file change.diff --test-command "npm test" --write-report --json
+stdd agent --repair --patch-file repair.diff --test-command "npm test" --write-report --json
+stdd agent --llm-repair --prompt fix.md --output repair.diff --test-command "npm test" --write-report --json
+```

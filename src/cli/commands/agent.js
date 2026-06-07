@@ -139,6 +139,7 @@ class AgentCommand {
         includePatch: options.patch,
         maxBytes: options.maxBytes,
       });
+      if (options.writeReport) result.report = kernel.writeRunReport(result);
       if (options.json) {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -160,6 +161,7 @@ class AgentCommand {
         includePatch: options.patch,
         maxBytes: options.maxBytes,
       });
+      if (options.writeReport) result.report = kernel.writeRunReport(result);
       if (options.json) {
         console.log(JSON.stringify(result, null, 2));
       } else {
@@ -197,6 +199,7 @@ class AgentCommand {
         includePatch: options.patch,
         maxBytes: options.maxBytes,
       });
+      if (options.writeReport) result.report = kernel.writeRunReport(result);
       if (options.json) console.log(JSON.stringify(result, null, 2));
       else {
         const marker = result.status === 'pass' ? chalk.green('PASS') : chalk.red('FAIL');
