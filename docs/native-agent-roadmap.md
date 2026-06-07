@@ -120,3 +120,17 @@ If the cycle fails, the result includes an `agent-fix-packet` with failed test o
 ```bash
 stdd agent --fix-packet --patch --json
 ```
+
+## Repair Cycle
+
+Repair cycle consumes a fix patch generated from an earlier fix packet and verifies it with the same safe tools.
+
+```bash
+stdd agent --repair --patch-file repair.diff --test-command "npm test" --json
+```
+
+Execution order:
+
+```text
+git.diff before -> fs.patch preview -> fs.patch apply -> test.run -> git.diff after -> summary
+```

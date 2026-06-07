@@ -363,6 +363,39 @@ describe('native agent kernel scaffolding', () => {
     expect(result.fixPacket.tests.results[0].stderr).toContain('cycle-fail');
   });
 
+  test('agent kernel runs repair cycle successfully', () => {
+    const root = tempProject();
+    fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
+    const patchFile = writeSimplePatch(root, 'repair.diff');
+    const kernel = new AgentKernel({ cwd: root, mode: 'guarded' });
+
+    const result = kernel.runRepairCycle({
+      patchFile,
+      testCommand: `${process.execPath} -e "console.log('repair-ok')"`,
+    });
+
+    expect(result).toEqual(expect.objectContaining({ tool: 'agent.cycle', mode: 'repair', status: 'pass' }));
+    expect(result.preview.mode).toBe('preview');
+    expect(result.summary).toEqual(expect.objectContaining({ repairApplied: true, testsStatus: 'pass' }));
+    expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
+  });
+
+  test('agent kernel repair cycle returns fix packet on failed tests', () => {
+    const root = tempProject();
+    fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
+    const patchFile = writeSimplePatch(root, 'repair.diff');
+    const kernel = new AgentKernel({ cwd: root, mode: 'guarded' });
+
+    const result = kernel.runRepairCycle({
+      patchFile,
+      testCommand: `${process.execPath} -e "throw new Error('repair-fail')"`,
+    });
+
+    expect(result.status).toBe('fail');
+    expect(result.fixPacket).toEqual(expect.objectContaining({ type: 'agent-fix-packet', status: 'needs-fix' }));
+    expect(result.fixPacket.tests.results[0].stderr).toContain('repair-fail');
+  });
+
   test('fix packet builder compacts patch, tests, and git context', () => {
     const root = tempProject();
     const trace = new AgentSessionTrace(root, { sessionId: 'fix-packet-session' });
@@ -580,5 +613,33 @@ describe('native agent kernel scaffolding', () => {
     const payload = JSON.parse(result.stdout);
     expect(payload).toEqual(expect.objectContaining({ type: 'agent-fix-packet', status: 'needs-fix', goal: 'repair' }));
     expect(payload.git.status).toBe('unavailable');
+  });
+
+  test('agent CLI runs repair cycle', () => {
+    const cliPath = path.join(__dirname, '..', 'cli.js');
+    const root = tempProject('stdd-agent-cli-repair-');
+    fs.writeFileSync(path.join(root, 'README.md'), 'old\n', 'utf8');
+    writeSimplePatch(root, 'repair.diff');
+
+    const result = spawnSync(process.execPath, [
+      cliPath,
+      'agent',
+      '--repair',
+      '--patch-file',
+      'repair.diff',
+      '--test-command',
+      `${process.execPath} -e "console.log('cli-repair-ok')"`,
+      '--json',
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1' },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload).toEqual(expect.objectContaining({ tool: 'agent.cycle', mode: 'repair', status: 'pass' }));
+    expect(payload.summary.repairApplied).toBe(true);
+    expect(fs.readFileSync(path.join(root, 'README.md'), 'utf8')).toBe('new\n');
   });
 });

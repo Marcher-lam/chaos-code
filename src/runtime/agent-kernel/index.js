@@ -97,6 +97,10 @@ class AgentKernel {
     return this.cycleRunner.runPatchCycle(args);
   }
 
+  runRepairCycle(args = {}) {
+    return this.cycleRunner.runRepairCycle(args);
+  }
+
   buildFixPacket(input = {}) {
     return this.fixPacketBuilder.build(input);
   }

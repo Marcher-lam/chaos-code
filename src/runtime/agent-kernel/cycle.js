@@ -42,6 +42,51 @@ class AgentCycleRunner {
     }
     return result;
   }
+
+  runRepairCycle(args = {}) {
+    if (!args.patchFile) {
+      throw new Error('Repair cycle requires --patch-file.');
+    }
+
+    const before = this.kernel.executeTool('git.diff', { patch: false });
+    const preview = this.kernel.executeTool('fs.patch', {
+      file: args.patchFile,
+      approved: true,
+    });
+    const patch = this.kernel.executeTool('fs.patch', {
+      file: args.patchFile,
+      approved: true,
+      apply: true,
+    });
+    const tests = this.kernel.executeTool('test.run', {
+      command: args.testCommand,
+      workspace: args.workspace,
+      timeout: args.timeout,
+    });
+    const after = this.kernel.executeTool('git.diff', {
+      patch: Boolean(args.includePatch),
+      maxBytes: args.maxBytes,
+    });
+
+    const summary = summarizeCycle({ before, patch, tests, after });
+    summary.repairApplied = summary.patchApplied;
+    this.kernel.trace.append('cycle.repair.completed', summary);
+    const result = {
+      tool: 'agent.cycle',
+      mode: 'repair',
+      status: summary.status,
+      summary,
+      before,
+      preview,
+      patch,
+      tests,
+      after,
+    };
+    if (summary.status === 'fail') {
+      result.fixPacket = this.kernel.buildFixPacket({ before, patch, tests, after, summary, source: 'agent.repair' });
+    }
+    return result;
+  }
 }
 
 function summarizeCycle({ before, patch, tests, after }) {
