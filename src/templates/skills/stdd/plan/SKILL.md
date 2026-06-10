@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:plan
 
 ## Purpose
-**从规格生成技术设计和原子 TDD tasks**。这是 STDD Copilot 的计划 skill，将规格转化为可执行的任务。
+**从规格生成技术设计和原子 TDD tasks**。这是 Chaos Code 的计划 skill，将规格转化为可执行的任务。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -102,22 +102,22 @@ graph:
 
 ```bash
 # 生成计划和任务
-stdd plan <change-id>
+chaos plan <change-id>
 
 # 从规格生成
-stdd plan <change-id> --from-specs
+chaos plan <change-id> --from-specs
 
 # 包含 ADR
-stdd plan <change-id> --adr
+chaos plan <change-id> --adr
 
 # 指定任务数量
-stdd plan <change-id> --tasks 8
+chaos plan <change-id> --tasks 8
 
 # 恢复计划
-stdd plan --resume <change-id>
+chaos plan --resume <change-id>
 
 # Workspace 支持
-stdd plan <change-id> --workspace packages/api
+chaos plan <change-id> --workspace packages/api
 ```
 
 ## 任务模板

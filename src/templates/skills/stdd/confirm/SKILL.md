@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:confirm
 
 ## Purpose
-**人类确认门 (HITL)**，冻结需求范围后进入规格阶段。这是 STDD Copilot 的关键 gate skill，确保需求明确、完整、可验证后再进入实施。
+**人类确认门 (HITL)**，冻结需求范围后进入规格阶段。这是 Chaos Code 的关键 gate skill，确保需求明确、完整、可验证后再进入实施。
 
 **核心设计原则：**
 - **语言无关**：适用于任何技术栈和项目类型
@@ -88,16 +88,16 @@ graph:
 
 ```bash
 # 确认当前活跃变更
-stdd confirm
+chaos confirm
 
 # 确认指定变更
-stdd confirm <change-id>
+chaos confirm <change-id>
 
 # Dry run - 只显示验证结果
-stdd confirm --dry-run
+chaos confirm --dry-run
 
 # 非交互模式（自动确认）
-stdd confirm --yes
+chaos confirm --yes
 ```
 
 ## 确认流程
@@ -142,7 +142,7 @@ Success Criteria:
 ```
 ✓ Proposal confirmed!
 
-Next step: stdd spec add-user-login
+Next step: chaos spec add-user-login
 ```
 
 ### 4b. 确认失败

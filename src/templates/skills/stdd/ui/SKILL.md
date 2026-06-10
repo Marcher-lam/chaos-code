@@ -46,7 +46,7 @@ Generate frontend pages and components using design tokens extracted from DESIGN
 - Create reusable UI components (buttons, cards, forms, inputs, modals, nav, tables, lists)
 - Scaffold a full UI application structure
 - Preview design tokens and generated components
-- After running `stdd design create` to establish a design system
+- After running `chaos design create` to establish a design system
 
 ## Actions
 
@@ -120,29 +120,29 @@ All generated components reference these CSS variables, enabling global theme ch
 
 ```bash
 # Generate a page
-stdd ui page dashboard
-stdd ui page settings --layout sidebar
-stdd ui page landing --sections hero,features,testimonials,cta
+chaos ui page dashboard
+chaos ui page settings --layout sidebar
+chaos ui page landing --sections hero,features,testimonials,cta
 
 # Generate components
-stdd ui component PrimaryButton --type button
-stdd ui component UserCard --type card
-stdd ui component SearchInput --type input
-stdd ui component DataTable --type table
+chaos ui component PrimaryButton --type button
+chaos ui component UserCard --type card
+chaos ui component SearchInput --type input
+chaos ui component DataTable --type table
 
 # Scaffold full app
-stdd ui scaffold
-stdd ui scaffold react
+chaos ui scaffold
+chaos ui scaffold react
 
 # Preview tokens
-stdd ui preview
+chaos ui preview
 
 # List artifacts
-stdd ui list
+chaos ui list
 
 # JSON output for scripting
-stdd ui page dashboard --json
-stdd ui list --json
+chaos ui page dashboard --json
+chaos ui list --json
 ```
 
 ## Graph Semantics

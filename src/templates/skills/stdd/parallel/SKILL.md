@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:parallel
 
 ## Purpose
-**基于 DAG waves 并行执行独立任务或 skill 节点**。这是 STDD Copilot 的并行执行 skill，提高执行效率。
+**基于 DAG waves 并行执行独立任务或 skill 节点**。这是 Chaos Code 的并行执行 skill，提高执行效率。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -75,16 +75,16 @@ Wave 3: [F]        (依赖 D/E，执行)
 
 ```bash
 # 并行执行（自动 worker 数）
-stdd graph run feature --parallel
+chaos graph run feature --parallel
 
 # 指定 worker 数
-stdd graph run feature --max-workers 4
+chaos graph run feature --max-workers 4
 
 # 查看执行计划
-stdd graph plan --show-waves
+chaos graph plan --show-waves
 
 # Workspace 并行
-stdd graph run feature --workspace packages/api --parallel
+chaos graph run feature --workspace packages/api --parallel
 ```
 
 ## Worker 隔离

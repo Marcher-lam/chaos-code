@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:guard
 
 ## Purpose
-**执行 TDD 守护、coverage-aware 质量门禁与 Anti-Bypass**。这是 STDD Copilot 的质量守卫 skill，确保代码符合 TDD 原则和质量标准。
+**执行 TDD 守护、coverage-aware 质量门禁与 Anti-Bypass**。这是 Chaos Code 的质量守卫 skill，确保代码符合 TDD 原则和质量标准。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -112,43 +112,43 @@ graph:
 
 ```bash
 # 运行 guard 检查
-stdd guard
+chaos guard
 
 # 安装 Git hooks（类似 pre-commit install）
-stdd guard install
-stdd guard install --hook-type pre-commit
-stdd guard install --hook-type pre-push
-stdd guard install --hook-types pre-commit,pre-push,commit-msg
+chaos guard install
+chaos guard install --hook-type pre-commit
+chaos guard install --hook-type pre-push
+chaos guard install --hook-types pre-commit,pre-push,commit-msg
 
 # 卸载 Git hooks
-stdd guard uninstall
+chaos guard uninstall
 
 # 运行所有 hooks
-stdd guard run --all-files
-stdd guard run <hook-id>
+chaos guard run --all-files
+chaos guard run <hook-id>
 
 # 更新 hooks 到最新版本
-stdd guard autoupdate
-stdd guard autoupdate --bleeding-edge
-stdd guard autoupdate --freeze
+chaos guard autoupdate
+chaos guard autoupdate --bleeding-edge
+chaos guard autoupdate --freeze
 
 # 严格模式（warning 升级为 blocking）
-stdd guard --strict
+chaos guard --strict
 
 # 指定 workspace
-stdd guard --workspace packages/api
+chaos guard --workspace packages/api
 
 # 跳过 Constitution 检查
-stdd guard --no-constitution
+chaos guard --no-constitution
 
 # 自定义覆盖率阈值
-stdd guard --coverage-threshold 85
+chaos guard --coverage-threshold 85
 
 # 输出 JSON
-stdd guard --json
+chaos guard --json
 
 # CI 模式（零容忍）
-stdd guard --ci
+chaos guard --ci
 ```
 
 ## Guard 配置文件
@@ -355,7 +355,7 @@ repos:
 
   Overall: FAIL ✗
 
-  Run: stdd fix-packet <change-id>
+  Run: chaos fix-packet <change-id>
 ```
 
 ## Graph Semantics
@@ -454,9 +454,9 @@ stages: [manual]
 ### 5. CI 中运行所有文件
 ```bash
 # 本地：只检查暂存文件
-stdd guard run
+chaos guard run
 
 # CI：检查所有文件
-stdd guard run --all-files
+chaos guard run --all-files
 ```
 

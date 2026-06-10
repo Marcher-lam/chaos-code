@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:clarify
 
 ## Purpose
-**结构化需求澄清与歧义消除**。这是 STDD Copilot 的需求精化 skill，通过多维度追问发现需求缺口和隐含假设。
+**结构化需求澄清与歧义消除**。这是 Chaos Code 的需求精化 skill，通过多维度追问发现需求缺口和隐含假设。
 
 **核心设计原则：**
 - **语言无关**：适用于任何技术栈和项目类型
@@ -119,13 +119,13 @@ graph:
 
 ```bash
 # 澄清当前活跃变更的需求
-stdd clarify
+chaos clarify
 
 # 澄清指定变更
-stdd clarify <change-id>
+chaos clarify <change-id>
 
 # Dry run - 不修改文件
-stdd clarify --dry-run
+chaos clarify --dry-run
 ```
 
 ## 输出格式
@@ -171,7 +171,7 @@ Generated: 2026-05-19T14:30:22.000Z
 
 ### 1. 生成问题
 ```bash
-stdd clarify
+chaos clarify
 ```
 系统自动生成 5 大维度的澄清问题
 
@@ -180,12 +180,12 @@ stdd clarify
 
 ### 3. 迭代澄清
 ```bash
-stdd clarify  # 再次运行，补充未覆盖的问题
+chaos clarify  # 再次运行，补充未覆盖的问题
 ```
 
 ### 4. 进入确认
 ```bash
-stdd confirm  # 所有关键问题已回答后
+chaos confirm  # 所有关键问题已回答后
 ```
 
 ## Brownfield 增强

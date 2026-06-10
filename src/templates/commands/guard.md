@@ -6,11 +6,11 @@ description: TDD guard with anti-bypass protection
 
 ## Usage
 ```
-stdd guard                       # Check TDD compliance
-stdd guard --strict              # Strict mode
-stdd guard on                    # Enable guard
-stdd guard off                   # Disable guard
-stdd guard status                # Check status
+chaos guard                       # Check TDD compliance
+chaos guard --strict              # Strict mode
+chaos guard on                    # Enable guard
+chaos guard off                   # Disable guard
+chaos guard status                # Check status
 ```
 
 ## Description

@@ -367,9 +367,9 @@ describe('cli.js entry point', () => {
 
     it('should call program.name, description, version, and option', () => {
       const program = commanderMock._program;
-      expect(program.name).toHaveBeenCalledWith('stdd');
+      expect(program.name).toHaveBeenCalledWith('chaos');
       expect(program.description).toHaveBeenCalledWith(
-        'STDD Copilot - Spec + Test Driven Development Framework'
+        'Chaos Code - Spec + Test Driven AI Copilot'
       );
       expect(program.version).toHaveBeenCalled();
       expect(program.option).toHaveBeenCalledWith('--no-color', 'Disable color output');
@@ -377,7 +377,7 @@ describe('cli.js entry point', () => {
 
     it('should add help text with common examples', () => {
       const program = commanderMock._program;
-      expect(program.addHelpText).toHaveBeenCalledWith('after', expect.stringContaining('stdd init'));
+      expect(program.addHelpText).toHaveBeenCalledWith('after', expect.stringContaining('chaos init'));
     });
 
     it('should register commands via CommandLoader', () => {

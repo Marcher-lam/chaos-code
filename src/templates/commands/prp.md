@@ -6,11 +6,11 @@ description: What/Why/How/Success structured planning
 
 ## Usage
 ```
-stdd prp create "<title>"                    # Create PRP document
-stdd prp list                                # List all PRPs
-stdd prp show <title>                        # Show specific PRP
-stdd prp validate <title>                    # Validate PRP completeness
-stdd prp template                            # Show PRP template
+chaos prp create "<title>"                    # Create PRP document
+chaos prp list                                # List all PRPs
+chaos prp show <title>                        # Show specific PRP
+chaos prp validate <title>                    # Validate PRP completeness
+chaos prp template                            # Show PRP template
 ```
 
 ## Description

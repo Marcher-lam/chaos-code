@@ -62,7 +62,7 @@ class StartersCommand {
   async printList() {
     const types = await this.list();
 
-    console.log(chalk.bold('\n📦 Available STDD Starters\n'));
+    console.log(chalk.bold('\n📦 Available Chaos Code Starters\n'));
 
     for (const t of types) {
       const marker = t.hasStarterMd ? chalk.green('✓') : chalk.dim(' ');
@@ -70,7 +70,7 @@ class StartersCommand {
     }
 
     console.log(chalk.dim(`\nTotal: ${types.length} template(s)\n`));
-    console.log(chalk.dim('Usage: stdd starters create <name> --type <type>'));
+    console.log(chalk.dim('Usage: chaos starters create <name> --type <type>'));
   }
 
   async create(name, type, options = {}) {
@@ -97,7 +97,7 @@ class StartersCommand {
     await this._copyTemplate(templatePath, targetPath, path.basename(name));
 
     if (options.stdd !== false) {
-      this.spinner.text = 'Initializing STDD Copilot...';
+      this.spinner.text = 'Initializing Chaos Code...';
       const initCmd = new InitCommand(this.spinner);
       await initCmd.execute(targetPath, { nonInteractive: true, skipSkills: true, force: true });
     }
@@ -110,7 +110,7 @@ class StartersCommand {
     console.log(`  npm install`);
     console.log(`  npm test\n`);
     console.log(chalk.dim('Then start with: /stdd:new your-first-feature'));
-    console.log(chalk.dim('Documentation: https://github.com/Marcher-lam/STDD-COPILOT-ULTRA'));
+    console.log(chalk.dim('Documentation: https://github.com/Marcher-lam/chaos-code'));
   }
 
   async _copyTemplate(templatePath, targetPath, projectName) {

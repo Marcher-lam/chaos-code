@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:turbo
 
 ## Purpose
-**一键编排从需求到 TDD scaffold 与验证准备**。这是 STDD Copilot 的 Turbo skill，提供端到端的自动化工作流。
+**一键编排从需求到 TDD scaffold 与验证准备**。这是 Chaos Code 的 Turbo skill，提供端到端的自动化工作流。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -58,21 +58,21 @@ graph:
 
 ```bash
 # 完整 turbo 流程
-stdd turbo "添加用户登录功能"
+chaos turbo "添加用户登录功能"
 
 # 指定 workspace
-stdd turbo "添加用户登录功能" --workspace packages/api
+chaos turbo "添加用户登录功能" --workspace packages/api
 
 # 跳过 spec 阶段
-stdd turbo "修复登录bug" --no-spec
+chaos turbo "修复登录bug" --no-spec
 
 # 指定自动化策略
-stdd turbo "添加用户登录功能" --strategy full-auto
-stdd turbo "添加用户登录功能" --strategy hitl-confirm
-stdd turbo "添加用户登录功能" --strategy hitl-apply
+chaos turbo "添加用户登录功能" --strategy full-auto
+chaos turbo "添加用户登录功能" --strategy hitl-confirm
+chaos turbo "添加用户登录功能" --strategy hitl-apply
 
 # 继续中断的 turbo
-stdd turbo resume <change-id>
+chaos turbo resume <change-id>
 ```
 
 ## Turbo 流程
@@ -139,7 +139,7 @@ stdd turbo resume <change-id>
 
 ### JavaScript/TypeScript
 ```bash
-stdd turbo "添加用户登录" --lang typescript
+chaos turbo "添加用户登录" --lang typescript
 ```
 - 生成 Jest/Vitest 测试
 - 生成 TypeScript 类型
@@ -147,7 +147,7 @@ stdd turbo "添加用户登录" --lang typescript
 
 ### Python
 ```bash
-stdd turbo "添加用户登录" --lang python
+chaos turbo "添加用户登录" --lang python
 ```
 - 生成 pytest 测试
 - 生成类型注解
@@ -155,7 +155,7 @@ stdd turbo "添加用户登录" --lang python
 
 ### Java
 ```bash
-stdd turbo "添加用户登录" --lang java
+chaos turbo "添加用户登录" --lang java
 ```
 - 生成 JUnit 测试
 - 生成 Java 类型
@@ -163,7 +163,7 @@ stdd turbo "添加用户登录" --lang java
 
 ### Go
 ```bash
-stdd turbo "添加用户登录" --lang go
+chaos turbo "添加用户登录" --lang go
 ```
 - 生成 testing 测试
 - 生成 Go 类型
@@ -171,7 +171,7 @@ stdd turbo "添加用户登录" --lang go
 
 ### Rust
 ```bash
-stdd turbo "添加用户登录" --lang rust
+chaos turbo "添加用户登录" --lang rust
 ```
 - 生成内置测试
 - 生成 Rust 类型

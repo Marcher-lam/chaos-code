@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:vision
 
 ## Purpose
-**维护项目愿景、北极星原则和成功指标**。这是 STDD Copilot 的愿景 skill，定义项目方向和成功标准。
+**维护项目愿景、北极星原则和成功指标**。这是 Chaos Code 的愿景 skill，定义项目方向和成功标准。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -57,19 +57,19 @@ graph:
 
 ```bash
 # 创建/更新愿景
-stdd vision
+chaos vision
 
 # 从 README 生成
-stdd vision --from-readme
+chaos vision --from-readme
 
 # 导出愿景
-stdd vision --export
+chaos vision --export
 
 # 检查对齐
-stdd vision --check-alignment
+chaos vision --check-alignment
 
 # Workspace 支持
-stdd vision --workspace packages/api
+chaos vision --workspace packages/api
 ```
 
 ## 愿景模板
@@ -242,19 +242,19 @@ stdd vision --workspace packages/api
 
 ### 与 Specs 对齐
 ```bash
-stdd vision --check-alignment --specs
+chaos vision --check-alignment --specs
 ```
 检查所有 specs 是否与愿景一致。
 
 ### 与 Roadmap 对齐
 ```bash
-stdd vision --check-alignment --roadmap
+chaos vision --check-alignment --roadmap
 ```
 检查 roadmap 是否与愿景一致。
 
 ### 与 Constitution 对齐
 ```bash
-stdd vision --check-alignment --constitution
+chaos vision --check-alignment --constitution
 ```
 检查 Constitution 是否与愿景一致。
 

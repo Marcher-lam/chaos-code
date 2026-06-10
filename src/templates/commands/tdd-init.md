@@ -7,7 +7,7 @@ description: Initialize test scaffolding for existing code
 ## Usage
 ```
 stdd tdd init [path]             # Initialize tests
-stdd tdd-init --dry-run          # Preview only
+chaos tdd-init --dry-run          # Preview only
 ```
 
 ## Description

@@ -4,7 +4,7 @@ description: Generate a comprehensive product proposal from STDD artifacts
 
 # Product Proposal
 
-You are running the STDD Copilot Product Proposal command to generate a comprehensive product proposal document from all STDD artifacts.
+You are running the Chaos Code Product Proposal command to generate a comprehensive product proposal document from all STDD artifacts.
 
 ## Context
 
@@ -34,7 +34,7 @@ Generate a comprehensive product proposal that aggregates:
 ## CLI Command
 
 ```bash
-stdd product-proposal [options]
+chaos product-proposal [options]
 ```
 
 Options:

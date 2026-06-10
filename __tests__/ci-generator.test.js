@@ -21,18 +21,18 @@ describe('CiGeneratorCommand', () => {
   });
 
   describe('execute', () => {
-    it('creates .github/workflows/stdd-ci.yml for GitHub platform', async () => {
+    it('creates .github/workflows/chaos-ci.yml for GitHub platform', async () => {
       setup();
 
       const cmd = new CiGeneratorCommand(tempDir);
       const result = await cmd.execute('github');
 
       expect(result.platform).toBe('github');
-      expect(result.path).toContain('.github/workflows/stdd-ci.yml');
+      expect(result.path).toContain('.github/workflows/chaos-ci.yml');
       expect(fs.existsSync(result.path)).toBe(true);
 
       const content = fs.readFileSync(result.path, 'utf-8');
-      expect(content).toContain('name: STDD CI/CD');
+      expect(content).toContain('name: Chaos Code CI/CD');
 
       teardown();
     });
@@ -84,7 +84,7 @@ describe('CiGeneratorCommand', () => {
 
       expect(fs.existsSync(result.path)).toBe(true);
       const content = fs.readFileSync(result.path, 'utf-8');
-      expect(content).toContain('name: STDD CI/CD');
+      expect(content).toContain('name: Chaos Code CI/CD');
       expect(content).not.toContain('existing: content');
 
       teardown();
@@ -144,15 +144,15 @@ describe('CiGeneratorCommand', () => {
       teardown();
     });
 
-    it('contains STDD Guard step', async () => {
+    it('contains Chaos Code Guard step', async () => {
       setup();
 
       const cmd = new CiGeneratorCommand(tempDir);
       await cmd.execute('github');
 
       const content = fs.readFileSync(path.join(tempDir, '.github', 'workflows', CI_FILE_NAME), 'utf-8');
-      expect(content).toContain('STDD Guard');
-      expect(content).toContain('stdd guard');
+      expect(content).toContain('Chaos Code Guard');
+      expect(content).toContain('chaos guard');
 
       teardown();
     });
@@ -187,7 +187,7 @@ describe('CiGeneratorCommand', () => {
 
       expect(content).toContain('Setup Node.js');
       expect(content).toContain('npm ci');
-      expect(content).toContain('npx stdd guard --no-lint');
+      expect(content).toContain('npx chaos guard --no-lint');
       expect(content).toContain('npm test');
 
       teardown();
@@ -215,7 +215,7 @@ describe('CiGeneratorCommand', () => {
       expect(content).toContain('pnpm/action-setup@v4');
       expect(content).toContain("cache: 'pnpm'");
       expect(content).toContain('pnpm install --frozen-lockfile');
-      expect(content).toContain('npx stdd guard --no-lint');
+      expect(content).toContain('npx chaos guard --no-lint');
       expect(content).toContain('Run Tests - @test/api (packages/api)');
       expect(content).toContain('cd "packages/api" && pnpm test');
 

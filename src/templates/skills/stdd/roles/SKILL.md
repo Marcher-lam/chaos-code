@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:roles
 
 ## Purpose
-**启用 12 Agent 角色、Party Mode 和对抗式审查**。这是 STDD Copilot 的协作 skill，提供多角色视角进行代码审查和讨论。
+**启用 12 Agent 角色、Party Mode 和对抗式审查**。这是 Chaos Code 的协作 skill，提供多角色视角进行代码审查和讨论。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -78,21 +78,21 @@ graph:
 
 ```bash
 # 列出角色
-stdd roles list
+chaos roles list
 
 # Party Mode（多角色辩论）
-stdd roles party "添加用户登录功能" --roles po,architect,security,tester
+chaos roles party "添加用户登录功能" --roles po,architect,security,tester
 
 # 单角色视角
-stdd roles architect <topic>
-stdd roles security <path>
+chaos roles architect <topic>
+chaos roles security <path>
 
 # 对抗式审查
-stdd roles adversarial src/auth
-stdd roles adversarial <change-id>
+chaos roles adversarial src/auth
+chaos roles adversarial <change-id>
 
 # JSON 输出
-stdd roles party <topic> --json
+chaos roles party <topic> --json
 ```
 
 ## Party Mode
@@ -146,7 +146,7 @@ stdd roles party <topic> --json
 
 ### 风险优先扫描
 ```bash
-stdd roles adversarial <path>
+chaos roles adversarial <path>
 ```
 
 ### 扫描维度

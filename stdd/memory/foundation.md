@@ -1,6 +1,6 @@
 # Foundation Memory - 项目基础约束
 
-> 此文件由 STDD Copilot 自动生成，记录项目的基础约束和配置。
+> 此文件由 Chaos Code 自动生成，记录项目的基础约束和配置。
 
 ## 项目识别
 

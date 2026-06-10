@@ -50,7 +50,7 @@ STDD Copilot (Spec + Test Driven Development) 是一个融合了 SDD 和 TDD 最
 /stdd:new → /stdd:apply → /stdd:archive
 \`\`\`
 
-详见: https://github.com/Marcher-lam/STDD-COPILOT-ULTRA
+详见: https://github.com/Marcher-lam/chaos-code
 `;
 
 function formatWorkspaceRegistry(workspaces, targetPath) {
@@ -525,7 +525,7 @@ ${workspaceSection}
   }
 
   printNextSteps(selectedAgents = [], techStack = {}) {
-    console.log(chalk.green('\n✅ STDD Copilot initialized!\n'));
+    console.log(chalk.green('\n✅ Chaos Code initialized!\n'));
     console.log(chalk.bold('Next steps:\n'));
 
     if (techStack.language !== 'unknown') {
@@ -541,8 +541,8 @@ ${workspaceSection}
     console.log('  2. Or explore an existing codebase:');
     console.log(chalk.cyan('     /stdd:explore understand the codebase\n'));
     console.log('  3. View all commands:');
-    console.log(chalk.cyan('     stdd commands\n'));
-    console.log(chalk.dim('Documentation: https://github.com/Marcher-lam/STDD-COPILOT-ULTRA'));
+    console.log(chalk.cyan('     chaos commands\n'));
+    console.log(chalk.dim('Documentation: https://github.com/Marcher-lam/chaos-code'));
   }
 }
 

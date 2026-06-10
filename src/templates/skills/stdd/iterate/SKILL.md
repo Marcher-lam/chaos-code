@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:iterate
 
 ## Purpose
-**执行 Plan-Execute-Reflect 自主迭代循环**。这是 STDD Copilot 的迭代 skill，实现自主学习和改进循环。
+**执行 Plan-Execute-Reflect 自主迭代循环**。这是 Chaos Code 的迭代 skill，实现自主学习和改进循环。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -115,19 +115,19 @@ graph:
 
 ```bash
 # 启动迭代
-stdd iterate <change-id>
+chaos iterate <change-id>
 
 # 指定目标
-stdd iterate <change-id> --goal "提高覆盖率到 90%"
+chaos iterate <change-id> --goal "提高覆盖率到 90%"
 
 # 指定成功标准
-stdd iterate <change-id> --success "coverage >= 90"
+chaos iterate <change-id> --success "coverage >= 90"
 
 # 最大迭代次数
-stdd iterate <change-id> --max-iterations 10
+chaos iterate <change-id> --max-iterations 10
 
 # 指定 workspace
-stdd iterate <change-id> --workspace packages/api
+chaos iterate <change-id> --workspace packages/api
 ```
 
 ## 停止条件

@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:ff
 
 ## Purpose
-**Fast-Forward 为明确需求一次性生成核心产物**。这是 STDD Copilot 的快速通道 skill，跳过人工交互步骤，直接生成核心产物。
+**Fast-Forward 为明确需求一次性生成核心产物**。这是 Chaos Code 的快速通道 skill，跳过人工交互步骤，直接生成核心产物。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -110,22 +110,22 @@ graph:
 
 ```bash
 # Fast-Forward 模式
-stdd ff "添加用户登录功能" --change-name add-user-login
+chaos ff "添加用户登录功能" --change-name add-user-login
 
 # 使用默认 change-name
-stdd ff "修复登录页面样式问题"
+chaos ff "修复登录页面样式问题"
 
 # 指定 workspace
-stdd ff "添加 API 限流" --workspace packages/api
+chaos ff "添加 API 限流" --workspace packages/api
 
 # 包含设计文档
-stdd ff "添加用户注册" --include-design
+chaos ff "添加用户注册" --include-design
 
 # 跳过设计文档
-stdd ff "修改错误提示" --skip-design
+chaos ff "修改错误提示" --skip-design
 
 # 输出到指定目录
-stdd ff "功能描述" --output custom/path
+chaos ff "功能描述" --output custom/path
 ```
 
 ## 生成的产物

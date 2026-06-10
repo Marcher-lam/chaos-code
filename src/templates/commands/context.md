@@ -6,10 +6,10 @@ description: Three-layer documentation context management
 
 ## Usage
 ```
-stdd context                     # Show all layers
-stdd context foundation          # Show foundation layer
-stdd context --export            # Export context
-stdd context --json              # JSON format
+chaos context                     # Show all layers
+chaos context foundation          # Show foundation layer
+chaos context --export            # Export context
+chaos context --json              # JSON format
 ```
 
 ## Description

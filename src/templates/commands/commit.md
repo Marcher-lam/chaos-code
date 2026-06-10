@@ -6,11 +6,11 @@ description: Create or check atomic TDD commits
 
 ## Usage
 ```
-stdd commit [change]                  # Create an atomic TDD commit
-stdd commit [change] --dry-run         # Preview the commit message
-stdd commit [change] --phase=red       # Force TDD phase prefix
-stdd commit check [change]             # Check commit readiness
-stdd commit status                     # Show Git commit status summary
+chaos commit [change]                  # Create an atomic TDD commit
+chaos commit [change] --dry-run         # Preview the commit message
+chaos commit [change] --phase=red       # Force TDD phase prefix
+chaos commit check [change]             # Check commit readiness
+chaos commit status                     # Show Git commit status summary
 ```
 
 ## Description

@@ -6,14 +6,14 @@ description: Vector database memory system
 
 ## Usage
 ```
-stdd memory scan                             # Scan and index memory
-stdd memory search "<query>"                 # Semantic search
-stdd memory add "<content>"                  # Add to memory
-stdd memory list                             # List memory entries
-stdd memory status                           # Show memory statistics
-stdd memory clear                            # Clear memory
-stdd memory export                           # Export memory
-stdd memory import                           # Import memory
+chaos memory scan                             # Scan and index memory
+chaos memory search "<query>"                 # Semantic search
+chaos memory add "<content>"                  # Add to memory
+chaos memory list                             # List memory entries
+chaos memory status                           # Show memory statistics
+chaos memory clear                            # Clear memory
+chaos memory export                           # Export memory
+chaos memory import                           # Import memory
 ```
 
 ## Description

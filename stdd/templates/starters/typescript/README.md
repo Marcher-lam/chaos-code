@@ -1,6 +1,6 @@
 # {{name}}
 
-A TypeScript project bootstrapped with STDD Copilot.
+A TypeScript project bootstrapped with Chaos Code.
 
 ## Get Started
 

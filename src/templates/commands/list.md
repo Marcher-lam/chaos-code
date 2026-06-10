@@ -6,10 +6,10 @@ description: List changes and specifications
 
 ## Usage
 ```
-stdd list                        # List active changes
-stdd list --specs                # List specifications
-stdd list --archived             # Include archived
-stdd list --json                 # JSON format
+chaos list                        # List active changes
+chaos list --specs                # List specifications
+chaos list --archived             # Include archived
+chaos list --json                 # JSON format
 ```
 
 ## Description

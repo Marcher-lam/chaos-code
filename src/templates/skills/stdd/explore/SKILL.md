@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:explore
 
 ## Purpose
-**只读探索现有系统、约束和可行路径**。这是 STDD Copilot 的探索 skill，对现有项目进行只读分析，生成架构摘要、质量热点和可操作建议。
+**只读探索现有系统、约束和可行路径**。这是 Chaos Code 的探索 skill，对现有项目进行只读分析，生成架构摘要、质量热点和可操作建议。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言和项目类型
@@ -151,24 +151,24 @@ graph:
 
 ```bash
 # 探索整个项目
-stdd explore
+chaos explore
 
 # 探索特定范围
-stdd explore src
-stdd explore auth
-stdd explore "src/**/*.ts"
+chaos explore src
+chaos explore auth
+chaos explore "src/**/*.ts"
 
 # 输出到文件
-stdd explore --output stdd/explorations/architecture.md
+chaos explore --output stdd/explorations/architecture.md
 
 # JSON 格式输出
-stdd explore --json
+chaos explore --json
 
 # 深度分析
-stdd explore --deep
+chaos explore --deep
 
 # Workspace 支持
-stdd explore --workspace packages/api
+chaos explore --workspace packages/api
 ```
 
 ## 探索报告格式

@@ -6,12 +6,12 @@ description: Aggregate change artifacts into final delivery document (language-a
 
 ## Usage
 ```bash
-stdd final-doc <change-id>                      # Generate final doc
-stdd final-doc <change-id> --output docs/       # Custom output
-stdd final-doc <change-id> --include-diff       # Include code diff
-stdd final-doc <change-id> --include-test-report  # Include test report
-stdd final-doc <change-id> --json               # JSON format
-stdd final-doc <change-id> --workspace packages/api  # Workspace scope
+chaos final-doc <change-id>                      # Generate final doc
+chaos final-doc <change-id> --output docs/       # Custom output
+chaos final-doc <change-id> --include-diff       # Include code diff
+chaos final-doc <change-id> --include-test-report  # Include test report
+chaos final-doc <change-id> --json               # JSON format
+chaos final-doc <change-id> --workspace packages/api  # Workspace scope
 ```
 
 ## Description
@@ -44,7 +44,7 @@ Aggregates all artifacts from the entire development cycle (proposal, specs, des
 
 ### Missing Evidence
 - Mutation testing report not generated
-- Suggested: `stdd mutation <change-id>`
+- Suggested: `chaos mutation <change-id>`
 ```
 
 ## Referenced Skill

@@ -6,9 +6,9 @@ description: JSON Schema and Zod validation
 
 ## Usage
 ```
-stdd schema validate <file>      # Validate schema
-stdd schema create <name>        # Create schema
-stdd schema fork <src> <name>    # Fork existing schema
+chaos schema validate <file>      # Validate schema
+chaos schema create <name>        # Create schema
+chaos schema fork <src> <name>    # Fork existing schema
 ```
 
 ## Description

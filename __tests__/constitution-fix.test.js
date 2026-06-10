@@ -510,12 +510,12 @@ describe('ConstitutionFixCommand', () => {
 
       const a9 = results.find(r => r.article === 9);
       expect(a9).toBeDefined();
-      expect(a9.created).toEqual(['.github/workflows/stdd-ci.yml']);
+      expect(a9.created).toEqual(['.github/workflows/chaos-ci.yml']);
       expect(a9.skipped).toBe(false);
-      expect(fs.existsSync(path.join(tempDir, '.github', 'workflows', 'stdd-ci.yml'))).toBe(true);
+      expect(fs.existsSync(path.join(tempDir, '.github', 'workflows', 'chaos-ci.yml'))).toBe(true);
 
-      const content = fs.readFileSync(path.join(tempDir, '.github', 'workflows', 'stdd-ci.yml'), 'utf8');
-      expect(content).toContain('name: STDD CI/CD');
+      const content = fs.readFileSync(path.join(tempDir, '.github', 'workflows', 'chaos-ci.yml'), 'utf8');
+      expect(content).toContain('name: Chaos Code CI/CD');
       expect(content).toContain('npm test');
 
       teardown();
@@ -532,10 +532,10 @@ describe('ConstitutionFixCommand', () => {
       const results = await cmd.execute(tempDir, { article: 9, dryRun: true });
 
       const a9 = results.find(r => r.article === 9);
-      expect(a9.created).toEqual(['.github/workflows/stdd-ci.yml']);
+      expect(a9.created).toEqual(['.github/workflows/chaos-ci.yml']);
       expect(a9.skipped).toBe(false);
       expect(a9.dryRun).toBe(true);
-      expect(fs.existsSync(path.join(tempDir, '.github', 'workflows', 'stdd-ci.yml'))).toBe(false);
+      expect(fs.existsSync(path.join(tempDir, '.github', 'workflows', 'chaos-ci.yml'))).toBe(false);
 
       teardown();
     });
@@ -552,7 +552,7 @@ describe('ConstitutionFixCommand', () => {
       expect(a9.created).toEqual([]);
       expect(a9.skipped).toBe(true);
       expect(a9.reason).toBe('CI configuration already exists');
-      expect(fs.existsSync(path.join(tempDir, '.github', 'workflows', 'stdd-ci.yml'))).toBe(false);
+      expect(fs.existsSync(path.join(tempDir, '.github', 'workflows', 'chaos-ci.yml'))).toBe(false);
 
       teardown();
     });

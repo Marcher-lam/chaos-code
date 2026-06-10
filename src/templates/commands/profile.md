@@ -6,11 +6,11 @@ description: Detect and manage planning depth profiles for adaptive workflows
 
 ## Usage
 ```
-stdd profile detect                           # Auto-detect profile from project data
-stdd profile set <quick|standard|thorough|enterprise>  # Set profile explicitly
-stdd profile list                             # List all profiles with descriptions
-stdd profile recommend                        # Detect + show recommended phases and settings
-stdd profile recommend --change feature       # Recommend for a specific change type
+chaos profile detect                           # Auto-detect profile from project data
+chaos profile set <quick|standard|thorough|enterprise>  # Set profile explicitly
+chaos profile list                             # List all profiles with descriptions
+chaos profile recommend                        # Detect + show recommended phases and settings
+chaos profile recommend --change feature       # Recommend for a specific change type
 ```
 
 ## Description

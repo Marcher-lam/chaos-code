@@ -6,9 +6,9 @@ description: STDD extension management
 
 ## Usage
 ```
-stdd extensions list             # List extensions
-stdd extensions install <name>   # Install extension
-stdd extensions validate         # Validate extensions
+chaos extensions list             # List extensions
+chaos extensions install <name>   # Install extension
+chaos extensions validate         # Validate extensions
 ```
 
 ## Description

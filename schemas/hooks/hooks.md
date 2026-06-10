@@ -382,13 +382,13 @@ function formatSuggestions(suggestions) {
 
 ```bash
 # 安装 hooks 到当前项目
-stdd hooks install
+chaos hooks install
 
 # 安装到全局
-stdd hooks install --global
+chaos hooks install --global
 
 # 验证 hooks 配置
-stdd hooks verify
+chaos hooks verify
 ```
 
 ### 手动安装
@@ -457,10 +457,10 @@ hooks:
 STDD_HOOKS_DISABLED=1
 
 # 永久禁用 (修改配置)
-stdd hooks disable
+chaos hooks disable
 
 # 禁用特定条例
-stdd hooks disable --article=4
+chaos hooks disable --article=4
 ```
 
 ## 调试 Hooks

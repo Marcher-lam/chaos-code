@@ -75,19 +75,19 @@ const { createSpinner, safeAction } = require('./src/cli/helpers/cli-utils');
 
 
 program
-  .name('stdd')
-  .description('STDD Copilot - Spec + Test Driven Development Framework')
+  .name('chaos')
+  .description('Chaos Code - Spec + Test Driven AI Copilot')
   .version(packageJson.version)
   .option('--no-color', 'Disable color output');
 
 program.addHelpText('after', `
 Common examples:
-  stdd init
-  stdd new change add-dark-mode
-  stdd list --archived
-  stdd status --json
+  chaos init
+  chaos new change add-dark-mode
+  chaos list --archived
+  chaos status --json
 
-For Claude Code slash commands: stdd commands
+For Claude Code slash commands: chaos commands
 `);
 
 // ─── Command factories for dynamic loader ───
@@ -157,7 +157,7 @@ loader.registerAll();
 
 // ─── Inline: Start, Doctor, Progress, Recommend, Memory, BabySteps, Sudo, List, Status ───
 program.command('start')
-  .description('Interactive quick-start wizard for STDD')
+  .description('Interactive quick-start wizard for Chaos Code')
   .option('--json')
   .action(safeAction(async (options) => {
     await new StartCommand().execute(options);
@@ -257,7 +257,7 @@ program.command('list')
   .option('--specs')
   .option('--archived')
   .option('--json')
-  .addHelpText('after', 'Examples:\n  stdd list\n  stdd list --specs\n  stdd list --archived\n  stdd list --json\n\n`--archived` applies to change listings, not spec listings.')
+  .addHelpText('after', 'Examples:\n  chaos list\n  chaos list --specs\n  chaos list --archived\n  chaos list --json\n\n`--archived` applies to change listings, not spec listings.')
   .action(safeAction(async (options = {}) => {
     await new ListCommand().execute('.', options);
   }));
@@ -265,7 +265,7 @@ program.command('list')
 program.command('status [change]')
   .description('Show status of a change')
   .option('--json')
-  .addHelpText('after', 'Examples:\n  stdd status\n  stdd status add-dark-mode\n  stdd status --json\n  stdd status add-dark-mode --json')
+  .addHelpText('after', 'Examples:\n  chaos status\n  chaos status add-dark-mode\n  chaos status --json\n  chaos status add-dark-mode --json')
   .action(safeAction(async (change, options = {}) => {
     await new StatusCommand().execute(change, options);
   }));
@@ -282,7 +282,7 @@ program.command('constitution [action] [target]')
   .option('--no-constitution')
   .option('--lint')
   .option('--dry-run')
-  .addHelpText('after', 'Examples:\n  stdd constitution\n  stdd constitution show 2\n  stdd constitution check\n\nSupported: show, check, fix, status, audit, waive')
+  .addHelpText('after', 'Examples:\n  chaos constitution\n  chaos constitution show 2\n  chaos constitution check\n\nSupported: show, check, fix, status, audit, waive')
   .action(safeAction(async (action, target, options) => {
     action = action || 'show';
     if (action === 'show') {
@@ -363,7 +363,7 @@ hooksCommand(program);
 graphCommand(program);
 
 // ─── Runtime Agent (inline – complex routing) ───
-const agentCmd = program.command('runtime').description('Interact with STDD Runtime Engines');
+const agentCmd = program.command('runtime').description('Interact with Chaos Code Runtime Engines');
 agentCmd.command('agent <action> [topic]')
   .description('Start/Manage multi-agent simulation (Party Mode)')
   .option('--rounds <n>')
@@ -407,13 +407,13 @@ agentCmd.command('agent <action> [topic]')
   }));
 
 program.command('agent [goal...]')
-  .description('Preview the native STDD code-agent kernel contract')
+  .description('Preview the native Chaos Code code-agent kernel contract')
   .option('--mode <mode>', 'Permission mode: suggest, guarded, autonomous')
   .option('--doctor', 'Run agent readiness checks')
-  .option('--status', 'Show STDD project status through agent kernel')
-  .option('--recommend [change]', 'Recommend next STDD step')
-  .option('--verify', 'Run STDD verify through agent kernel')
-  .option('--change <name>', 'Change name for STDD agent tools')
+  .option('--status', 'Show Chaos Code project status through agent kernel')
+  .option('--recommend [change]', 'Recommend next Chaos Code step')
+  .option('--verify', 'Run Chaos Code verify through agent kernel')
+  .option('--change <name>', 'Change name for Chaos Code agent tools')
   .option('--config', 'Show resolved agent config')
   .option('--init-config', 'Write default stdd/agent/config.yaml')
   .option('--list-tools', 'List the native agent tool catalog')
@@ -589,20 +589,20 @@ program.command('profile [action]')
   }));
 
 program.command('modules [action] [args...]')
-  .description('Browse, search, install, and manage STDD modules from the marketplace')
+  .description('Browse, search, install, and manage Chaos Code modules from the marketplace')
   .option('--json', 'JSON output')
   .option('--category <cat>', 'Filter by category (for search)')
   .addHelpText('after', `Actions: featured, search, install, list, info, publish, categories
 
 Examples:
-  stdd modules                     # Show featured/official modules
-  stdd modules search tdd          # Search for modules matching "tdd"
-  stdd modules search workflow --category workflow
-  stdd modules install stdd-tdd-core
-  stdd modules info stdd-tdd-core
-  stdd modules list
-  stdd modules categories
-  stdd modules publish ./my-module`)
+  chaos modules                     # Show featured/official modules
+  chaos modules search tdd          # Search for modules matching "tdd"
+  chaos modules search workflow --category workflow
+  chaos modules install stdd-tdd-core
+  chaos modules info stdd-tdd-core
+  chaos modules list
+  chaos modules categories
+  chaos modules publish ./my-module`)
   .action(safeAction(async (action, args, options) => {
     const cmd = new ModulesCommand(process.cwd());
     await cmd.execute(action || 'featured', args || [], options);
@@ -611,6 +611,7 @@ Examples:
 
 // ─── Parse with progress tracking ───
 const { progress: getProgress, installSignals, active, setActive, clearActive } = require('./src/utils/session-progress');
+const { launchChaosTerminal, runChaosAgentPrompt } = require('./src/cli/commands/chaos-terminal');
 
 installSignals();
 
@@ -638,4 +639,42 @@ process.on('exit', () => {
   }
 });
 
-program.parse();
+// Claw Code-like routing: default to interactive agent REPL, or run prompt directly
+const args = process.argv.slice(2);
+const positionalArgs = args.filter(arg => !arg.startsWith('-'));
+const firstPositional = positionalArgs[0];
+
+const isHelpOrVersion = args.some(arg => ['-h', '--help', 'help', '-V', '--version', 'version'].includes(arg));
+const isKnownCommand = program.commands ? program.commands.some(cmd => {
+  return cmd.name() === firstPositional || cmd.aliases().includes(firstPositional);
+}) : false;
+
+if (args.includes('--no-color')) {
+  chalk.level = 0;
+}
+
+const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined;
+
+if (isTestEnv || isHelpOrVersion) {
+  program.parse();
+} else if (!firstPositional) {
+  // No positional args -> start interactive terminal REPL
+  const entry = getProgress().start('terminal');
+  setActive(entry);
+  launchChaosTerminal().catch(err => {
+    console.error(chalk.red(err.stack || err));
+    process.exit(1);
+  });
+} else if (!isKnownCommand) {
+  // Positional args but not a known subcommand -> treat as a one-off prompt!
+  const entry = getProgress().start('agent-prompt');
+  setActive(entry);
+  const prompt = args.join(' ');
+  runChaosAgentPrompt(prompt).catch(err => {
+    console.error(chalk.red(err.stack || err));
+    process.exit(1);
+  });
+} else {
+  // Known subcommand -> parse normally
+  program.parse();
+}

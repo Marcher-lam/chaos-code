@@ -196,7 +196,7 @@ function installHooks(options) {
     } else {
       console.log(`\n配置位置: ${settingsPaths.length} 个配置文件`);
     }
-    console.log('\n验证安装: stdd hooks verify');
+    console.log('\n验证安装: chaos hooks verify');
   } else if (skippedCount > 0) {
     console.log(chalk.yellow('\n⚠️ 目标配置已存在 hooks 配置，未做更改。'));
   }
@@ -342,11 +342,11 @@ function formatVerificationResult(results) {
   if (allActive) {
     lines.push(chalk.green('✅ 该环境下所有引擎 Hooks 验证通过!'));
   } else if (anyBroken) {
-    lines.push(chalk.yellow('⚠️ 部分 Hook 脚本路径无效 (Broken)，请运行: stdd hooks install --force'));
+    lines.push(chalk.yellow('⚠️ 部分 Hook 脚本路径无效 (Broken)，请运行: chaos hooks install --force'));
   } else if (allMissing) {
-    lines.push(chalk.red('❌ Hooks 未安装，请运行: stdd hooks install'));
+    lines.push(chalk.red('❌ Hooks 未安装，请运行: chaos hooks install'));
   } else {
-    lines.push(chalk.red('❌ 部分验证失败，请运行: stdd hooks install --force'));
+    lines.push(chalk.red('❌ 部分验证失败，请运行: chaos hooks install --force'));
   }
 
   return lines.join('\n');
@@ -550,7 +550,7 @@ function verifyGitHooks(options) {
 
   if (!fs.existsSync(hookPath)) {
     console.log(chalk.red(`❌ Git Hook 不存在: ${hookPath}`));
-    console.log(chalk.yellow('请运行: stdd hooks install --git'));
+    console.log(chalk.yellow('请运行: chaos hooks install --git'));
     return false;
   }
 
@@ -573,11 +573,11 @@ module.exports = function(program) {
     .description('管理 STDD Hook 系统 (多引擎适配版)')
     .addHelpText('after', `
 Examples:
-  stdd hooks install
-  stdd hooks verify
-  stdd hooks status
-  stdd hooks disable --article 2
-  stdd hooks enable
+  chaos hooks install
+  chaos hooks verify
+  chaos hooks status
+  chaos hooks disable --article 2
+  chaos hooks enable
 `);
 
   hooks.command('install')
@@ -587,10 +587,10 @@ Examples:
     .option('--git', '同时安装 Git pre-commit hook')
     .addHelpText('after', `
 Examples:
-  stdd hooks install
-  stdd hooks install --global
-  stdd hooks install --force
-  stdd hooks install --git
+  chaos hooks install
+  chaos hooks install --global
+  chaos hooks install --force
+  chaos hooks install --git
 `)
     .action((options) => {
       installHooks(options);
@@ -605,9 +605,9 @@ Examples:
     .option('--git', '同时验证 Git pre-commit hook')
     .addHelpText('after', `
 Examples:
-  stdd hooks verify
-  stdd hooks verify --global
-  stdd hooks verify --git
+  chaos hooks verify
+  chaos hooks verify --global
+  chaos hooks verify --git
 `)
     .action((options) => {
       const aiOk = verifyHooks(options);
@@ -625,9 +625,9 @@ Examples:
     .option('--article <n>', '禁用特定条例')
     .addHelpText('after', `
 Examples:
-  stdd hooks disable
-  stdd hooks disable --global
-  stdd hooks disable --article 4
+  chaos hooks disable
+  chaos hooks disable --global
+  chaos hooks disable --article 4
 
 \`--article\` currently keeps compatibility semantics and disables the configured hooks set.
 `)
@@ -638,8 +638,8 @@ Examples:
     .option('-g, --global', '启用全局配置')
     .addHelpText('after', `
 Examples:
-  stdd hooks enable
-  stdd hooks enable --global
+  chaos hooks enable
+  chaos hooks enable --global
 `)
     .action((options) => enableHooks(options));
 
@@ -648,8 +648,8 @@ Examples:
     .option('-g, --global', '显示全局状态')
     .addHelpText('after', `
 Examples:
-  stdd hooks status
-  stdd hooks status --global
+  chaos hooks status
+  chaos hooks status --global
 `)
     .action((options) => statusHooks(options));
 };

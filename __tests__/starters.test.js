@@ -74,7 +74,7 @@ describe('StartersCommand', () => {
       const cmd = new StartersCommand(silentSpinner);
       await cmd.execute('list');
       expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Available STDD Starters')
+        expect.stringContaining('Available Chaos Code Starters')
       );
     });
 
@@ -82,7 +82,7 @@ describe('StartersCommand', () => {
       const cmd = new StartersCommand(silentSpinner);
       await cmd.execute(undefined);
       expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Available STDD Starters')
+        expect.stringContaining('Available Chaos Code Starters')
       );
     });
 
@@ -90,7 +90,7 @@ describe('StartersCommand', () => {
       const cmd = new StartersCommand(silentSpinner);
       await cmd.execute('unknown');
       expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Available STDD Starters')
+        expect.stringContaining('Available Chaos Code Starters')
       );
     });
 
@@ -129,7 +129,7 @@ describe('StartersCommand', () => {
       await cmd.printList();
 
       expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Available STDD Starters')
+        expect.stringContaining('Available Chaos Code Starters')
       );
     });
   });

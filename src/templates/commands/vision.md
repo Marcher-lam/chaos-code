@@ -6,11 +6,11 @@ description: Project vision document management
 
 ## Usage
 ```
-stdd vision create              # Create VISION.md
-stdd vision show                # Show vision document
-stdd vision edit                # Edit vision document
-stdd vision check               # Check alignment
-stdd vision align               # Align with current work
+chaos vision create              # Create VISION.md
+chaos vision show                # Show vision document
+chaos vision edit                # Edit vision document
+chaos vision check               # Check alignment
+chaos vision align               # Align with current work
 ```
 
 ## Description

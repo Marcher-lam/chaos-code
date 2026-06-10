@@ -6,9 +6,9 @@ description: Dynamic DAG execution engine
 
 ## Usage
 ```
-stdd graph run <intent>          # Execute by intent
-stdd graph run --change-name=<name>
-stdd parallel execute <intent>   # Use the dedicated parallel execution command
+chaos graph run <intent>          # Execute by intent
+chaos graph run --change-name=<name>
+chaos parallel execute <intent>   # Use the dedicated parallel execution command
 ```
 
 ## Description

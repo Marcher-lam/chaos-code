@@ -6,13 +6,13 @@ description: Plan-Execute-Reflect iteration loop
 
 ## Usage
 ```
-stdd iterate start "<title>"                 # Start iteration cycle
-stdd iterate complete <cycle>                # Complete current cycle
-stdd iterate reflect <cycle>                 # Add reflection
-stdd iterate status                          # Show cycle status
-stdd iterate history                         # Show iteration history
-stdd iterate continue                        # Continue next cycle
-stdd iterate retrospective                   # Generate retrospective
+chaos iterate start "<title>"                 # Start iteration cycle
+chaos iterate complete <cycle>                # Complete current cycle
+chaos iterate reflect <cycle>                 # Add reflection
+chaos iterate status                          # Show cycle status
+chaos iterate history                         # Show iteration history
+chaos iterate continue                        # Continue next cycle
+chaos iterate retrospective                   # Generate retrospective
 ```
 
 ## Description

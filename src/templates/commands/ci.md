@@ -6,9 +6,9 @@ description: Generate CI configuration files for GitHub, GitLab, or Jenkins
 
 ## Usage
 ```
-stdd ci github                   # Generate GitHub Actions
-stdd ci gitlab                   # Generate GitLab CI
-stdd ci jenkins                  # Generate Jenkinsfile
+chaos ci github                   # Generate GitHub Actions
+chaos ci gitlab                   # Generate GitLab CI
+chaos ci jenkins                  # Generate Jenkinsfile
 ```
 
 ## Description

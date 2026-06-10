@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:graph
 
 ## Purpose
-**Skill Graph 的 DAG 分析、推荐、运行、历史和 replay**。这是 STDD Copilot 的编排 skill，管理技能依赖图并智能执行工作流。
+**Skill Graph 的 DAG 分析、推荐、运行、历史和 replay**。这是 Chaos Code 的编排 skill，管理技能依赖图并智能执行工作流。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -127,25 +127,25 @@ issue → apply → verify
 
 ```bash
 # 运行完整流程
-stdd graph run feature --change-name <change-id>
+chaos graph run feature --change-name <change-id>
 
 # 修复模式
-stdd graph run --intent repair --change-name <change-id>
+chaos graph run --intent repair --change-name <change-id>
 
 # 热修复模式
-stdd graph run --intent hotfix --change-name <change-id>
+chaos graph run --intent hotfix --change-name <change-id>
 
 # 分析依赖
-stdd graph analyze
+chaos graph analyze
 
 # 推荐下一步
-stdd graph recommend
+chaos graph recommend
 
 # 查看历史
-stdd graph history
+chaos graph history
 
 # 回放执行
-stdd graph replay <session-id>
+chaos graph replay <session-id>
 ```
 
 ## Graph 语义
@@ -171,21 +171,21 @@ stdd graph replay <session-id>
 ### 基于状态的推荐
 ```javascript
 if (noChange) {
-  recommend("stdd new 或 stdd ff");
+  recommend("chaos new 或 chaos ff");
 } else if (noProposal) {
-  recommend("stdd propose");
+  recommend("chaos propose");
 } else if (notConfirmed) {
-  recommend("stdd confirm");
+  recommend("chaos confirm");
 } else if (noSpecs) {
-  recommend("stdd spec");
+  recommend("chaos spec");
 } else if (noTasks) {
-  recommend("stdd plan");
+  recommend("chaos plan");
 } else if (hasPendingTasks) {
-  recommend("stdd apply");
+  recommend("chaos apply");
 } else if (notVerified) {
-  recommend("stdd verify");
+  recommend("chaos verify");
 } else {
-  recommend("stdd archive");
+  recommend("chaos archive");
 }
 ```
 

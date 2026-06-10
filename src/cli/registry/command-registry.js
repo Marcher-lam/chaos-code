@@ -4,27 +4,27 @@
 const commandRegistry = [
   {
     name: 'init [path]',
-    description: 'Initialize STDD Copilot in your project',
+    description: 'Initialize Chaos Code in your project',
     options: [
       { flags: '--force', description: 'Overwrite existing files' },
       { flags: '--skip-skills', description: 'Skip copying skills' },
       { flags: '-y, --yes', description: 'Run non-interactively' },
     ],
-    helpText: `\nExamples:\n  stdd init\n  stdd init /path/to/project\n  stdd init --force\n  stdd init --skip-skills --yes`,
+    helpText: `\nExamples:\n  chaos init\n  chaos init /path/to/project\n  chaos init --force\n  chaos init --skip-skills --yes`,
     action: 'InitCommand',
-    spinner: 'Initializing STDD Copilot',
-    success: 'STDD initialized successfully!',
+    spinner: 'Initializing Chaos Code',
+    success: 'Chaos Code initialized successfully!',
     mapper: (targetPath, options) => [require('path').resolve(targetPath || '.'), options],
   },
   {
     name: 'update [path]',
-    description: 'Update STDD Copilot files',
+    description: 'Update Chaos Code files',
     options: [
       { flags: '--force', description: 'Force update' },
       { flags: '--dry-run', description: 'Show changes without writing' },
     ],
     action: 'UpdateCommand',
-    spinner: 'Updating STDD Copilot',
+    spinner: 'Updating Chaos Code',
     success: 'Update complete!',
   },
   {
@@ -37,7 +37,7 @@ const commandRegistry = [
       { flags: '--archived', description: 'Include archived' },
       { flags: '--json', description: 'JSON output' },
     ],
-    helpText: `Examples:\n  stdd list\n  stdd list --specs\n  stdd list --archived\n  stdd list --json\n\n\`--archived\` applies to change listings, not spec listings.`,
+    helpText: `Examples:\n  chaos list\n  chaos list --specs\n  chaos list --archived\n  chaos list --json\n\n\`--archived\` applies to change listings, not spec listings.`,
     action: 'ListCommand',
   },
   {
@@ -46,20 +46,20 @@ const commandRegistry = [
     options: [
       { flags: '--json', description: 'JSON output' },
     ],
-    helpText: `Examples:\n  stdd status\n  stdd status add-dark-mode\n  stdd status --json\n  stdd status add-dark-mode --json`,
+    helpText: `Examples:\n  chaos status\n  chaos status add-dark-mode\n  chaos status --json\n  chaos status add-dark-mode --json`,
     action: 'StatusCommand',
   },
   {
     name: 'skills',
-    description: 'List all available STDD skills',
+    description: 'List all available Chaos Code skills',
     options: [],
-    helpText: `Examples:\n  stdd skills\n\nLists all skills from src/templates/skills/stdd/{name}/SKILL.md`,
+    helpText: `Examples:\n  chaos skills\n\nLists all skills from src/templates/skills/stdd/{name}/SKILL.md`,
     action: 'SkillsCommand',
   },
   {
     name: 'commands',
     description: 'List all Claude Code slash commands',
-    helpText: `Examples:\n  stdd commands\n\nThis command lists Claude Code slash commands, not CLI commands like \`stdd init\`.`,
+    helpText: `Examples:\n  chaos commands\n\nThis command lists Claude Code slash commands, not CLI commands like \`chaos init\`.`,
     action: 'CommandsCommand',
   },
   {
@@ -126,7 +126,7 @@ const commandRegistry = [
       { flags: '--e2e-command <cmd>', description: 'Run E2E probe as part of apply evidence' },
       { flags: '--workspace <workspace>', description: 'Scope to workspace' },
     ],
-    helpText: 'Examples:\n  stdd apply\n  stdd apply --dry-run\n  stdd apply --phase red\n  stdd apply --allow-no-tests',
+    helpText: 'Examples:\n  chaos apply\n  chaos apply --dry-run\n  chaos apply --phase red\n  chaos apply --allow-no-tests',
     action: 'ApplyCommand',
   },
   {
@@ -140,7 +140,7 @@ const commandRegistry = [
       { flags: '--workspace <workspace>', description: 'Scope to workspace' },
       { flags: '--force', description: 'Force verify, bypassing incremental cache' },
     ],
-    helpText: `\nExamples:\n  stdd verify\n  stdd verify --lint\n  stdd verify --workspace packages/api\n  stdd verify --force`,
+    helpText: `\nExamples:\n  chaos verify\n  chaos verify --lint\n  chaos verify --workspace packages/api\n  chaos verify --force`,
     action: 'VerifyCommand',
   },
   {
@@ -190,7 +190,7 @@ const commandRegistry = [
   },
   {
     name: 'guard',
-    description: 'Run STDD Guard checks',
+    description: 'Run Chaos Code Guard checks',
     options: [
       { flags: '--no-constitution', description: 'Skip constitution check' },
       { flags: '--workspace <workspace>', description: 'Scope to workspace' },
@@ -264,7 +264,7 @@ const commandRegistry = [
       { flags: '--lint', description: 'Run lint check' },
       { flags: '--dry-run', description: 'Show what would be done' },
     ],
-    helpText: `Examples:\n  stdd constitution\n  stdd constitution show 2\n  stdd constitution show --article 7\n  stdd constitution check\n\nSupported actions: show, check`,
+    helpText: `Examples:\n  chaos constitution\n  chaos constitution show 2\n  chaos constitution show --article 7\n  chaos constitution check\n\nSupported actions: show, check`,
     action: 'ConstitutionCommand',
   },
   {
@@ -342,7 +342,7 @@ const commandRegistry = [
   },
   {
     name: 'extensions [action] [args...]',
-    description: 'List, install, validate, and package STDD extensions',
+    description: 'List, install, validate, and package Chaos Code extensions',
     options: [
       { flags: '--json', description: 'JSON output' },
     ],
@@ -512,7 +512,7 @@ const commandRegistry = [
   },
   {
     name: 'graph-run [intent]',
-    description: 'Execute the full STDD workflow based on intent DAG',
+    description: 'Execute the full Chaos Code workflow based on intent DAG',
     options: [
       { flags: '--change-name <name>', description: 'Custom change name' },
       { flags: '--workspace <workspace>', description: 'Run with workspace context' },
@@ -566,7 +566,7 @@ const commandRegistry = [
         name: 'sudo [file]',
         description: 'Interpret SudoLang pseudo-code and generate artifacts',
         options: [
-          { flags: '--generate', description: 'Generate STDD artifacts' },
+          { flags: '--generate', description: 'Generate Chaos Code artifacts' },
           { flags: '--json', description: 'JSON output' },
         ],
         action: 'RuntimeSudoCommand',
@@ -663,7 +663,7 @@ const commandRegistry = [
       { flags: '--json', description: 'JSON output' },
     ],
     action: 'ProposeCommand',
-    helpText: `Actions: draft, show, refine, validate, split\n\nExamples:\n  stdd propose draft add-user-auth\n  stdd propose show\n  stdd propose validate`,
+    helpText: `Actions: draft, show, refine, validate, split\n\nExamples:\n  chaos propose draft add-user-auth\n  chaos propose show\n  chaos propose validate`,
   },
   {
     name: 'clarify [action] [change]',
@@ -674,7 +674,7 @@ const commandRegistry = [
       { flags: '--json', description: 'JSON output' },
     ],
     action: 'ClarifyCommand',
-    helpText: `Actions: clarify, questions, edge-cases, constraints\n\nExamples:\n  stdd clarify add-user-auth\n  stdd clarify questions`,
+    helpText: `Actions: clarify, questions, edge-cases, constraints\n\nExamples:\n  chaos clarify add-user-auth\n  chaos clarify questions`,
   },
   {
     name: 'confirm [change]',
@@ -684,7 +684,7 @@ const commandRegistry = [
       { flags: '--json', description: 'JSON output' },
     ],
     action: 'ConfirmCommand',
-    helpText: `Examples:\n  stdd confirm\n  stdd confirm add-user-auth\n\nDisplays proposal summary and requests approval.`,
+    helpText: `Examples:\n  chaos confirm\n  chaos confirm add-user-auth\n\nDisplays proposal summary and requests approval.`,
   },
   {
     name: 'plan [action] [change]',
@@ -695,7 +695,7 @@ const commandRegistry = [
       { flags: '--json', description: 'JSON output' },
     ],
     action: 'PlanCommand',
-    helpText: `Actions: generate, show, estimate, dependencies\n\nExamples:\n  stdd plan add-user-auth\n  stdd plan estimate\n  stdd plan dependencies`,
+    helpText: `Actions: generate, show, estimate, dependencies\n\nExamples:\n  chaos plan add-user-auth\n  chaos plan estimate\n  chaos plan dependencies`,
   },
   {
     name: 'execute [action] [change]',
@@ -706,7 +706,7 @@ const commandRegistry = [
       { flags: '--json', description: 'JSON output' },
     ],
     action: 'ExecuteCommand',
-    helpText: `Actions: run, status, evidence, retry\n\nLoop: RED → CHECK → GREEN → MUTATION → REFACTOR\n\nExamples:\n  stdd execute run\n  stdd execute status`,
+    helpText: `Actions: run, status, evidence, retry\n\nLoop: RED → CHECK → GREEN → MUTATION → REFACTOR\n\nExamples:\n  chaos execute run\n  chaos execute status`,
   },
   {
     name: 'final-doc [change]',
@@ -717,7 +717,7 @@ const commandRegistry = [
       { flags: '--json', description: 'JSON output' },
     ],
     action: 'FinalDocCommand',
-    helpText: `Examples:\n  stdd final-doc\n  stdd final-doc add-user-auth --include-evidence\n\nAggregates all phase artifacts into comprehensive document.`,
+    helpText: `Examples:\n  chaos final-doc\n  chaos final-doc add-user-auth --include-evidence\n\nAggregates all phase artifacts into comprehensive document.`,
   },
   {
     name: 'commit-tdd [action] [change]',
@@ -731,7 +731,7 @@ const commandRegistry = [
       { flags: '-y, --yes', description: 'Skip confirmation' },
     ],
     action: 'CommitTddCommand',
-    helpText: `Actions: commit, check, amend, status\n\nExamples:\n  stdd commit-tdd commit\n  stdd commit-tdd check\n  stdd commit-tdd commit --phase green\n\nCreates atomic commits with red:/green:/refactor: prefix.`,
+    helpText: `Actions: commit, check, amend, status\n\nExamples:\n  chaos commit-tdd commit\n  chaos commit-tdd check\n  chaos commit-tdd commit --phase green\n\nCreates atomic commits with red:/green:/refactor: prefix.`,
   },
   {
     name: 'profile [action]',
@@ -742,17 +742,17 @@ const commandRegistry = [
       { flags: '--force', description: 'Force overwrite' },
     ],
     action: 'ProfileCommand',
-    helpText: `Actions: detect, set, list, recommend\n\nExamples:\n  stdd profile detect\n  stdd profile set thorough\n  stdd profile list\n  stdd profile recommend --change feature\n\nProfiles: quick (depth 1), standard (depth 2), thorough (depth 3), enterprise (depth 4)`,
+    helpText: `Actions: detect, set, list, recommend\n\nExamples:\n  chaos profile detect\n  chaos profile set thorough\n  chaos profile list\n  chaos profile recommend --change feature\n\nProfiles: quick (depth 1), standard (depth 2), thorough (depth 3), enterprise (depth 4)`,
   },
   {
     name: 'modules [action] [args...]',
-    description: 'Browse, search, install, and manage STDD modules from the marketplace',
+    description: 'Browse, search, install, and manage Chaos Code modules from the marketplace',
     options: [
       { flags: '--json', description: 'JSON output' },
       { flags: '--category <cat>', description: 'Filter by category (for search)' },
     ],
     action: 'ModulesCommand',
-    helpText: `Actions: featured, search, install, list, info, publish, categories\n\nExamples:\n  stdd modules                     # Show featured/official modules\n  stdd modules search tdd          # Search for modules matching "tdd"\n  stdd modules search workflow --category workflow\n  stdd modules install stdd-tdd-core\n  stdd modules info stdd-tdd-core\n  stdd modules list\n  stdd modules categories`,
+    helpText: `Actions: featured, search, install, list, info, publish, categories\n\nExamples:\n  chaos modules                     # Show featured/official modules\n  chaos modules search tdd          # Search for modules matching "tdd"\n  chaos modules search workflow --category workflow\n  chaos modules install stdd-tdd-core\n  chaos modules info stdd-tdd-core\n  chaos modules list\n  chaos modules categories`,
   },
   {
     name: 'dashboard [action]',
@@ -765,7 +765,7 @@ const commandRegistry = [
     action: 'DashboardCommand',
     create: () => new (require('../commands/dashboard').DashboardCommand)(process.cwd()),
     mapper: (action, options) => [action || 'generate', [], options],
-    helpText: `Actions: generate (default), open, serve\n\nExamples:\n  stdd dashboard                # Generate dashboard to stdd/dashboard/index.html\n  stdd dashboard generate       # Same as above\n  stdd dashboard open           # Generate and open in browser\n  stdd dashboard serve --port 3456 # Serve dashboard locally\n  stdd dashboard --json         # Output raw data as JSON\n  stdd dashboard --output ./report.html`,
+    helpText: `Actions: generate (default), open, serve\n\nExamples:\n  chaos dashboard                # Generate dashboard to stdd/dashboard/index.html\n  chaos dashboard generate       # Same as above\n  chaos dashboard open           # Generate and open in browser\n  chaos dashboard serve --port 3456 # Serve dashboard locally\n  chaos dashboard --json         # Output raw data as JSON\n  chaos dashboard --output ./report.html`,
   },
   {
     name: 'adapt [action] [ide]',
@@ -776,7 +776,7 @@ const commandRegistry = [
     action: 'AdaptCommand',
     create: () => new (require('../commands/adapt').AdaptCommand)(process.cwd()),
     mapper: (action, ide, options) => [action || 'all', [ide || ''], options],
-    helpText: `Actions: all (default), generate, setup, list\n\nExamples:\n  stdd adapt              # Generate all IDE configurations\n  stdd adapt list         # List supported IDE adapters\n  stdd adapt generate cursor\n  stdd adapt setup claude --json`,
+    helpText: `Actions: all (default), generate, setup, list\n\nExamples:\n  chaos adapt              # Generate all IDE configurations\n  chaos adapt list         # List supported IDE adapters\n  chaos adapt generate cursor\n  chaos adapt setup claude --json`,
   },
   {
     name: 'builder [action] [name]',
@@ -797,7 +797,7 @@ const commandRegistry = [
     action: 'BuilderCommand',
     create: () => new (require('../commands/builder').BuilderCommand)(process.cwd()),
     mapper: (action, name, options) => [action || 'list', [name || ''], options],
-    helpText: `Actions: agent, workflow, skill, list, validate, export\n\nExamples:\n  stdd builder agent security-reviewer\n  stdd builder workflow custom-pipeline --phases stdd-propose,stdd-spec,stdd-plan\n  stdd builder skill data-validator\n  stdd builder list\n  stdd builder validate stdd/builders/agents/my-agent.json\n  stdd builder export my-agent --type agent`,
+    helpText: `Actions: agent, workflow, skill, list, validate, export\n\nExamples:\n  chaos builder agent security-reviewer\n  chaos builder workflow custom-pipeline --phases stdd-propose,stdd-spec,stdd-plan\n  chaos builder skill data-validator\n  chaos builder list\n  chaos builder validate stdd/builders/agents/my-agent.json\n  chaos builder export my-agent --type agent`,
   },
   {
     name: 'ui [action] [name]',
@@ -817,7 +817,7 @@ const commandRegistry = [
       const validActions = ['page', 'component', 'scaffold', 'preview', 'test', 'diff', 'list'];
       return [validActions.includes(action) ? action : 'list', [name || ''], options];
     },
-    helpText: `Actions: page, component, scaffold, preview, test, diff, list\n\nExamples:\n  stdd ui page dashboard                     # Generate a React page\n  stdd ui page home --layout sidebar         # Page with sidebar layout\n  stdd ui page about --framework vanilla     # Vanilla HTML page\n  stdd ui component SubmitButton --type button  # Button component\n  stdd ui component UserCard --type card     # Card component\n  stdd ui scaffold                           # Scaffold full UI app\n  stdd ui preview                            # Generate preview gallery\n  stdd ui test <name>                        # Generate test scaffold\n  stdd ui diff [name]                        # Visual diff comparison\n  stdd ui list                               # List generated artifacts`,
+    helpText: `Actions: page, component, scaffold, preview, test, diff, list\n\nExamples:\n  chaos ui page dashboard                     # Generate a React page\n  chaos ui page home --layout sidebar         # Page with sidebar layout\n  chaos ui page about --framework vanilla     # Vanilla HTML page\n  chaos ui component SubmitButton --type button  # Button component\n  chaos ui component UserCard --type card     # Card component\n  chaos ui scaffold                           # Scaffold full UI app\n  chaos ui preview                            # Generate preview gallery\n  chaos ui test <name>                        # Generate test scaffold\n  chaos ui diff [name]                        # Visual diff comparison\n  chaos ui list                               # List generated artifacts`,
   },
   {
     name: 'docs [action]',
@@ -830,14 +830,14 @@ const commandRegistry = [
     action: 'DocsCommand',
     create: () => new (require('../commands/docs').DocsCommand)(process.cwd()),
     mapper: (action, options) => [action || 'generate', [], options],
-    helpText: `Actions: generate (default), open, sources, deploy\n\nExamples:\n  stdd docs                     # Generate docs site to stdd/docs-site/\n  stdd docs generate            # Same as above\n  stdd docs open                # Generate and open in browser\n  stdd docs sources             # List documentation sources\n  stdd docs deploy              # Deploy docs site (gh-pages, netlify, custom)\n  stdd docs deploy --provider netlify\n  stdd docs --json              # Output source listing as JSON\n  stdd docs --lang en           # Generate English-only docs\n  stdd docs --output ./my-docs  # Custom output directory`,
+    helpText: `Actions: generate (default), open, sources, deploy\n\nExamples:\n  chaos docs                     # Generate docs site to stdd/docs-site/\n  chaos docs generate            # Same as above\n  chaos docs open                # Generate and open in browser\n  chaos docs sources             # List documentation sources\n  chaos docs deploy              # Deploy docs site (gh-pages, netlify, custom)\n  chaos docs deploy --provider netlify\n  chaos docs --json              # Output source listing as JSON\n  chaos docs --lang en           # Generate English-only docs\n  chaos docs --output ./my-docs  # Custom output directory`,
   },
   {
     name: 'mcp',
     description: 'Start the Model Context Protocol stdio server for native AI agent integration',
     options: [],
     action: 'McpCommand',
-    helpText: `Examples:\n  stdd mcp\n\nThis starts the stdio server. Use it with Claude Code or Cursor.`,
+    helpText: `Examples:\n  chaos mcp\n\nThis starts the stdio server. Use it with Claude Code or Cursor.`,
   },
 ];
 

@@ -57,9 +57,9 @@ Displays all official STDD modules. These are vetted, maintained modules
 published by the STDD team.
 
 ```bash
-stdd modules
-stdd modules featured
-stdd modules featured --json
+chaos modules
+chaos modules featured
+chaos modules featured --json
 ```
 
 ### search
@@ -67,9 +67,9 @@ Full-text search across module names, descriptions, and keywords.
 Optionally filter by category.
 
 ```bash
-stdd modules search tdd
-stdd modules search workflow --category workflow
-stdd modules search design --json
+chaos modules search tdd
+chaos modules search workflow --category workflow
+chaos modules search design --json
 ```
 
 ### install
@@ -77,24 +77,24 @@ Install a module from the catalog. Creates the extension directory and
 writes a manifest file.
 
 ```bash
-stdd modules install stdd-tdd-core
-stdd modules install stdd-design-system --json
+chaos modules install stdd-tdd-core
+chaos modules install stdd-design-system --json
 ```
 
 ### list
 Show all installed modules (those with an `installedAt` timestamp).
 
 ```bash
-stdd modules list
-stdd modules list --json
+chaos modules list
+chaos modules list --json
 ```
 
 ### info
 Display detailed information about a specific module.
 
 ```bash
-stdd modules info stdd-tdd-core
-stdd modules info stdd-roles-pack --json
+chaos modules info stdd-tdd-core
+chaos modules info stdd-roles-pack --json
 ```
 
 ### publish
@@ -102,16 +102,16 @@ Validate and package a module for publishing to the catalog.
 Requires an `extension.json` manifest with name, version, and description.
 
 ```bash
-stdd modules publish ./my-module
-stdd modules publish ./my-module --json
+chaos modules publish ./my-module
+chaos modules publish ./my-module --json
 ```
 
 ### categories
 List all unique categories found in the module catalog.
 
 ```bash
-stdd modules categories
-stdd modules categories --json
+chaos modules categories
+chaos modules categories --json
 ```
 
 ## Official Modules

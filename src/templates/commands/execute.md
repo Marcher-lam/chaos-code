@@ -6,12 +6,12 @@ description: Execute the Ralph Loop TDD closed-loop (language-agnostic)
 
 ## Usage
 ```bash
-stdd execute <change-id>              # Execute all pending tasks
-stdd execute <change-id> --task=TASK-001  # Execute specific task
-stdd execute <change-id> --next       # Execute next phase only
-stdd execute <change-id> --phase=GREEN # Start from specific phase
-stdd execute <change-id> --test-command "pytest"  # Custom test command
-stdd execute <change-id> --workspace packages/api # Workspace scope
+chaos execute <change-id>              # Execute all pending tasks
+chaos execute <change-id> --task=TASK-001  # Execute specific task
+chaos execute <change-id> --next       # Execute next phase only
+chaos execute <change-id> --phase=GREEN # Start from specific phase
+chaos execute <change-id> --test-command "pytest"  # Custom test command
+chaos execute <change-id> --workspace packages/api # Workspace scope
 ```
 
 ## Description

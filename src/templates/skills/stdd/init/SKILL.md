@@ -43,7 +43,7 @@ graph:
 # STDD Skill: /stdd:init
 
 ## Purpose
-**初始化 STDD 项目结构、配置、workspace 与 greenfield/brownfield 基线**。这是 STDD Copilot 的初始化 skill，设置项目所需的目录结构和配置。
+**初始化 STDD 项目结构、配置、workspace 与 greenfield/brownfield 基线**。这是 Chaos Code 的初始化 skill，设置项目所需的目录结构和配置。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -105,43 +105,43 @@ stdd/
 
 ```bash
 # 交互式初始化
-stdd init
+chaos init
 
 # 快速初始化（使用默认值）
-stdd init --yes
+chaos init --yes
 
 # 初始化指定路径
-stdd init /path/to/project
+chaos init /path/to/project
 
 # 强制重新初始化
-stdd init --force
+chaos init --force
 
 # 包含项目记忆
-stdd init --with-memory
+chaos init --with-memory
 
 # 指定项目类型
-stdd init --type greenfield
-stdd init --type brownfield
+chaos init --type greenfield
+chaos init --type brownfield
 
 # 指定技术栈
-stdd init --stack typescript
-stdd init --stack python
-stdd init --stack go
+chaos init --stack typescript
+chaos init --stack python
+chaos init --stack go
 
 # 使用预设模板
-stdd init --preset minimal
-stdd init --preset full
-stdd init --preset monorepo
+chaos init --preset minimal
+chaos init --preset full
+chaos init --preset monorepo
 
 # 初始化后操作
-stdd init && stdd new "First feature"
+chaos init && chaos new "First feature"
 ```
 
 ## 交互式初始化流程
 
 ### 完整交互式流程
 ```bash
-$ stdd init
+$ chaos init
 
 ? 项目名称: my-awesome-app
 ? 项目类型: 
@@ -176,12 +176,12 @@ $ stdd init
 ✓ 初始化完成！
 
 下一步：
-  stdd new "First feature"
+  chaos new "First feature"
 ```
 
 ### 快速模式
 ```bash
-$ stdd init --yes
+$ chaos init --yes
 
 ✓ 使用默认配置初始化完成
 
@@ -247,7 +247,7 @@ preset: monorepo
 
 ### TypeScript Express 模板
 ```bash
-stdd init --stack typescript-express
+chaos init --stack typescript-express
 ```
 
 创建:
@@ -270,7 +270,7 @@ my-app/
 
 ### Python FastAPI 模板
 ```bash
-stdd init --stack python-fastapi
+chaos init --stack python-fastapi
 ```
 
 创建:
@@ -295,7 +295,7 @@ my-app/
 
 ### Go Gin 模板
 ```bash
-stdd init --stack go-gin
+chaos init --stack go-gin
 ```
 
 创建:
@@ -376,9 +376,9 @@ output:
 
 # Git 钩子
 git_hooks:
-  pre_commit: stdd guard
-  pre_push: stdd verify
-  commit_msg: stdd commit --validate
+  pre_commit: chaos guard
+  pre_push: chaos verify
+  commit_msg: chaos commit --validate
 
 # Memory 配置
 memory:
@@ -432,22 +432,22 @@ workspaces:
 ### Git Hooks 自动配置
 ```bash
 # 初始化时自动配置
-stdd init --with-hooks
+chaos init --with-hooks
 
 # 创建 .git/hooks/pre-commit
 #!/bin/bash
 set -e
-stdd guard || exit 1
+chaos guard || exit 1
 
 # 创建 .git/hooks/pre-push
 #!/bin/bash
 set -e
-stdd verify --all || exit 1
+chaos verify --all || exit 1
 
 # 创建 .git/hooks/commit-msg
 #!/bin/bash
 set -e
-stdd commit --validate "$1" || exit 1
+chaos commit --validate "$1" || exit 1
 ```
 
 ## 设计决策

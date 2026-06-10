@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:factory
 
 ## Purpose
-**生成可复用测试数据工厂与场景 fixture**。这是 STDD Copilot 的测试数据生成 skill，为 TDD 提供一致、可复用的测试数据。
+**生成可复用测试数据工厂与场景 fixture**。这是 Chaos Code 的测试数据生成 skill，为 TDD 提供一致、可复用的测试数据。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -331,22 +331,22 @@ $user = UserFactory::valid(['name' => 'John']);
 
 ```bash
 # 生成工厂文件
-stdd factory <change-id>
+chaos factory <change-id>
 
 # 指定实体类型
-stdd factory <change-id> --entity User
+chaos factory <change-id> --entity User
 
 # 指定场景
-stdd factory <change-id> --scenario valid,edge,invalid
+chaos factory <change-id> --scenario valid,edge,invalid
 
 # 指定输出路径
-stdd factory <change-id> --output tests/factories
+chaos factory <change-id> --output tests/factories
 
 # 使用特定 Faker 库
-stdd factory <change-id> --faker-type @faker-js/faker
+chaos factory <change-id> --faker-type @faker-js/faker
 
 # Workspace 支持
-stdd factory <change-id> --workspace packages/api
+chaos factory <change-id> --workspace packages/api
 ```
 
 ## 多语言 Faker 库

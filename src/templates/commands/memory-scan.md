@@ -6,10 +6,10 @@ description: Vector database memory scan
 
 ## Usage
 ```
-stdd memory-scan                 # Scan memory
-stdd memory scan                 # Alias
-stdd memory search <query>       # Semantic search
-stdd memory stats                # Memory statistics
+chaos memory-scan                 # Scan memory
+chaos memory scan                 # Alias
+chaos memory search <query>       # Semantic search
+chaos memory stats                # Memory statistics
 ```
 
 ## Description

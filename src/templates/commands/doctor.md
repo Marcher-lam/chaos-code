@@ -6,9 +6,9 @@ description: Project health diagnostic check
 
 ## Usage
 ```
-stdd doctor                      # Run health check
-stdd doctor --deep               # Deep diagnostic
-stdd doctor --fix                # Auto-fix issues
+chaos doctor                      # Run health check
+chaos doctor --deep               # Deep diagnostic
+chaos doctor --fix                # Auto-fix issues
 ```
 
 ## Description

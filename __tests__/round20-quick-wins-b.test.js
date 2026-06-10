@@ -689,16 +689,16 @@ describe('Round20: ConstitutionFixCommand branch coverage', () => {
   });
 
   describe('Article 9 - _hasCiConfig with existing CI path', () => {
-    it('should report skipped with path when CI config is the stdd-ci.yml', async () => {
+    it('should report skipped with path when CI config is the chaos-ci.yml', async () => {
       const dir = setup();
       fs.mkdirSync(path.join(dir, '.github', 'workflows'), { recursive: true });
-      fs.writeFileSync(path.join(dir, '.github', 'workflows', 'stdd-ci.yml'), 'name: STDD CI/CD\n');
+      fs.writeFileSync(path.join(dir, '.github', 'workflows', 'chaos-ci.yml'), 'name: STDD CI/CD\n');
 
       const cmd = new ConstitutionFixCommand(silentSpinner);
       const results = await cmd.execute(dir, { article: 9 });
       const a9 = results.find(r => r.article === 9);
       expect(a9.skipped).toBe(true);
-      expect(a9.path).toBe('.github/workflows/stdd-ci.yml');
+      expect(a9.path).toBe('.github/workflows/chaos-ci.yml');
     });
   });
 

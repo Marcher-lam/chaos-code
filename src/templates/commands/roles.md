@@ -6,9 +6,9 @@ description: 12 Agent role collaboration
 
 ## Usage
 ```
-stdd roles                       # List roles
-stdd roles <action>              # Use role
-stdd roles --mode=party          # Party Mode debate
+chaos roles                       # List roles
+chaos roles <action>              # Use role
+chaos roles --mode=party          # Party Mode debate
 ```
 
 ## Description

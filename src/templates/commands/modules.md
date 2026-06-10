@@ -6,15 +6,15 @@ description: STDD modules marketplace
 
 ## Usage
 ```
-stdd modules                          # Show featured/official modules
-stdd modules featured                 # Show curated official modules
-stdd modules search <query>           # Search modules by name, description, keywords
-stdd modules search <query> --category workflow  # Filter by category
-stdd modules install <module>         # Install a module from the catalog
-stdd modules list                     # List all installed modules
-stdd modules info <module>            # Show detailed module information
-stdd modules publish [target]         # Publish a module
-stdd modules categories               # List available module categories
+chaos modules                          # Show featured/official modules
+chaos modules featured                 # Show curated official modules
+chaos modules search <query>           # Search modules by name, description, keywords
+chaos modules search <query> --category workflow  # Filter by category
+chaos modules install <module>         # Install a module from the catalog
+chaos modules list                     # List all installed modules
+chaos modules info <module>            # Show detailed module information
+chaos modules publish [target]         # Publish a module
+chaos modules categories               # List available module categories
 ```
 
 ## Description

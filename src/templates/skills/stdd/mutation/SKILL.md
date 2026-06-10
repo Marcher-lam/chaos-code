@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:mutation
 
 ## Purpose
-**生成 mutation evidence 以检验测试有效性**。这是 STDD Copilot 的变异测试 skill，通过代码变异来验证测试质量。
+**生成 mutation evidence 以检验测试有效性**。这是 Chaos Code 的变异测试 skill，通过代码变异来验证测试质量。
 
 **核心设计原则：**
 - **语言无关**：支持多种编程语言的变异测试
@@ -57,34 +57,34 @@ graph:
 
 ```bash
 # Quick 模式（启发式检查）
-stdd mutation <change-id> --mode quick
+chaos mutation <change-id> --mode quick
 
 # 完整模式（运行真实 mutation）
-stdd mutation <change-id> --mode full
+chaos mutation <change-id> --mode full
 
 # 指定工具
-stdd mutation <change-id> --tool stryker
-stdd mutation <change-id> --tool pit
-stdd mutation <change-id> --tool cargo-mutants
-stdd mutation <change-id> --tool infection
+chaos mutation <change-id> --tool stryker
+chaos mutation <change-id> --tool pit
+chaos mutation <change-id> --tool cargo-mutants
+chaos mutation <change-id> --tool infection
 
 # Workspace 支持
-stdd mutation <change-id> --workspace packages/api
+chaos mutation <change-id> --workspace packages/api
 
 # 设置阈值
-stdd mutation <change-id> --threshold 80
+chaos mutation <change-id> --threshold 80
 
 # 并发执行
-stdd mutation <change-id> --concurrent 4
+chaos mutation <change-id> --concurrent 4
 
 # 增量模式（只测试变更文件）
-stdd mutation <change-id> --incremental
+chaos mutation <change-id> --incremental
 
 # 输出 HTML 报告
-stdd mutation <change-id> --html
+chaos mutation <change-id> --html
 
 # 输出 JSON
-stdd mutation <change-id> --json
+chaos mutation <change-id> --json
 ```
 
 ## 多语言 Mutation 工具
@@ -326,10 +326,10 @@ quick_checks:
 
 ```bash
 # 只测试变更的文件
-stdd mutation <change-id> --incremental
+chaos mutation <change-id> --incremental
 
 # 基于 Git diff
-stdd mutation <change-id> --from-ref HEAD~1 --to-ref HEAD
+chaos mutation <change-id> --from-ref HEAD~1 --to-ref HEAD
 ```
 
 ## Graph Semantics

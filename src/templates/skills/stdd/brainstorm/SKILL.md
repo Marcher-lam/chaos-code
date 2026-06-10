@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:brainstorm
 
 ## Purpose
-**多视角头脑风暴与方案对比分析**。这是 STDD Copilot 的只读分析 skill，服务技术决策、方案评估和风险识别。
+**多视角头脑风暴与方案对比分析**。这是 Chaos Code 的只读分析 skill，服务技术决策、方案评估和风险识别。
 
 **核心设计原则：**
 - **语言无关**：适用于任何技术栈和项目类型
@@ -140,31 +140,31 @@ graph:
 
 ```bash
 # 基础用法 - 所有视角分析
-stdd brainstorm "添加用户登录功能"
+chaos brainstorm "添加用户登录功能"
 
 # 指定分析视角
-stdd brainstorm "微服务架构迁移" --angles technical,business,scalability
+chaos brainstorm "微服务架构迁移" --angles technical,business,scalability
 
 # 生成更多方案
-stdd brainstorm "API 网关选型" --solutions 5
+chaos brainstorm "API 网关选型" --solutions 5
 
 # JSON 格式输出
-stdd brainstorm "数据库选型" --format json
+chaos brainstorm "数据库选型" --format json
 
 # 输出到文件
-stdd brainstorm "缓存策略" --format json > brainstorm-result.json
+chaos brainstorm "缓存策略" --format json > brainstorm-result.json
 ```
 
 ### 分析视角组合
 ```bash
 # 技术决策
-stdd brainstorm "技术选型" --angles technical,performance,scalability
+chaos brainstorm "技术选型" --angles technical,performance,scalability
 
 # 产品决策
-stdd brainstorm "新功能" --angles user,business,security
+chaos brainstorm "新功能" --angles user,business,security
 
 # 架构决策
-stdd brainstorm "系统重构" --angles technical,maintainability,scalability
+chaos brainstorm "系统重构" --angles technical,maintainability,scalability
 ```
 
 ## 输出格式

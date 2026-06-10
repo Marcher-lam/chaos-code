@@ -6,10 +6,10 @@ description: Constitution waiver management
 
 ## Usage
 ```
-stdd waiver-manager list         # List waivers
-stdd waiver-manager create       # Create waiver
-stdd waiver-manager revoke <id>  # Revoke waiver
-stdd waiver-manager audit        # Audit waiver history
+chaos waiver-manager list         # List waivers
+chaos waiver-manager create       # Create waiver
+chaos waiver-manager revoke <id>  # Revoke waiver
+chaos waiver-manager audit        # Audit waiver history
 ```
 
 ## Description

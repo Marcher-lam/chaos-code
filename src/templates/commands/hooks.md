@@ -6,11 +6,11 @@ description: Hook system management
 
 ## Usage
 ```
-stdd hooks install               # Install hooks
-stdd hooks verify                # Verify hooks
-stdd hooks status                # Check status
-stdd hooks disable               # Disable hooks
-stdd hooks enable                # Re-enable hooks
+chaos hooks install               # Install hooks
+chaos hooks verify                # Verify hooks
+chaos hooks status                # Check status
+chaos hooks disable               # Disable hooks
+chaos hooks enable                # Re-enable hooks
 ```
 
 ## Description

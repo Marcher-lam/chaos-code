@@ -6,13 +6,13 @@ description: Multi-agent coordinator (Supervisor pattern)
 
 ## Usage
 ```
-stdd supervisor start "<topic>"              # Start supervisor session
-stdd supervisor consult                      # Get recommendations
-stdd supervisor review [change]              # Review work
-stdd supervisor debate "<topic>"             # Agent debate
-stdd supervisor roles                        # List available roles
-stdd supervisor status                       # Show session status
-stdd supervisor history                      # Show session history
+chaos supervisor start "<topic>"              # Start supervisor session
+chaos supervisor consult                      # Get recommendations
+chaos supervisor review [change]              # Review work
+chaos supervisor debate "<topic>"             # Agent debate
+chaos supervisor roles                        # List available roles
+chaos supervisor status                       # Show session status
+chaos supervisor history                      # Show session history
 ```
 
 ## Description

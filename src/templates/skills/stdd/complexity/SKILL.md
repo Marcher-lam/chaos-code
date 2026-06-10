@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:complexity
 
 ## Purpose
-**代码复杂度分析与热点检测**。这是 STDD Copilot 的只读分析 skill，通过多种指标识别技术债务和重构机会。
+**代码复杂度分析与热点检测**。这是 Chaos Code 的只读分析 skill，通过多种指标识别技术债务和重构机会。
 
 **核心设计原则：**
 - **语言无关**：支持多种编程语言
@@ -107,25 +107,25 @@ graph:
 
 ```bash
 # 分析当前项目
-stdd complexity analyze
+chaos complexity analyze
 
 # 分析特定目录
-stdd complexity analyze src/
+chaos complexity analyze src/
 
 # JSON 格式输出
-stdd complexity analyze --json
+chaos complexity analyze --json
 
 # 查看最新报告
-stdd complexity report
+chaos complexity report
 
 # 查看热点
-stdd complexity hotspots
+chaos complexity hotspots
 
 # 查看趋势
-stdd complexity trend
+chaos complexity trend
 
 # 限制趋势条目
-stdd complexity trend --limit 10
+chaos complexity trend --limit 10
 ```
 
 ## 输出格式

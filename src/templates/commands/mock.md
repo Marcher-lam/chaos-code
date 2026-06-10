@@ -6,13 +6,13 @@ description: Auto mock generation for dependencies
 
 ## Usage
 ```
-stdd mock generate <target>                  # Generate mock
-stdd mock module <module-name>               # Generate module mock
-stdd mock function <function-name>           # Generate function mock
-stdd mock api <api-name>                     # Generate API mock
-stdd mock list                               # List existing mocks
-stdd mock scan                               # Scan for dependencies
-stdd mock init                               # Initialize mocks directory
+chaos mock generate <target>                  # Generate mock
+chaos mock module <module-name>               # Generate module mock
+chaos mock function <function-name>           # Generate function mock
+chaos mock api <api-name>                     # Generate API mock
+chaos mock list                               # List existing mocks
+chaos mock scan                               # Scan for dependencies
+chaos mock init                               # Initialize mocks directory
 ```
 
 ## Description

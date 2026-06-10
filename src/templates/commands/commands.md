@@ -6,8 +6,8 @@ description: List all available Claude Code commands
 
 ## Usage
 ```
-stdd commands                    # List all commands
-stdd commands --filter=core      # Filter by category
+chaos commands                    # List all commands
+chaos commands --filter=core      # Filter by category
 ```
 
 ## Description

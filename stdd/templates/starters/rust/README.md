@@ -1,6 +1,6 @@
 # {{name}}
 
-A Rust project bootstrapped with STDD Copilot.
+A Rust project bootstrapped with Chaos Code.
 
 ## Get Started
 

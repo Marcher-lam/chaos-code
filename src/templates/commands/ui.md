@@ -6,22 +6,22 @@ description: Generate frontend pages and components using DESIGN.md design token
 
 ## Usage
 ```
-stdd ui page <name>                            # Generate a React page
-stdd ui page <name> --layout sidebar           # Page with sidebar layout
-stdd ui page <name> --framework vanilla        # Vanilla HTML page
-stdd ui page <name> --sections hero,features   # Page with named sections
-stdd ui component <name> --type button         # Generate a button component
-stdd ui component <name> --type card           # Generate a card component
-stdd ui component <name> --type form           # Generate a form component
-stdd ui component <name> --type input          # Generate an input component
-stdd ui component <name> --type modal          # Generate a modal component
-stdd ui component <name> --type nav            # Generate a nav component
-stdd ui component <name> --type table          # Generate a table component
-stdd ui component <name> --type list           # Generate a list component
-stdd ui scaffold                               # Scaffold full UI app structure
-stdd ui scaffold react                         # Scaffold with React
-stdd ui preview                                # Generate preview gallery
-stdd ui list                                   # List generated artifacts
+chaos ui page <name>                            # Generate a React page
+chaos ui page <name> --layout sidebar           # Page with sidebar layout
+chaos ui page <name> --framework vanilla        # Vanilla HTML page
+chaos ui page <name> --sections hero,features   # Page with named sections
+chaos ui component <name> --type button         # Generate a button component
+chaos ui component <name> --type card           # Generate a card component
+chaos ui component <name> --type form           # Generate a form component
+chaos ui component <name> --type input          # Generate an input component
+chaos ui component <name> --type modal          # Generate a modal component
+chaos ui component <name> --type nav            # Generate a nav component
+chaos ui component <name> --type table          # Generate a table component
+chaos ui component <name> --type list           # Generate a list component
+chaos ui scaffold                               # Scaffold full UI app structure
+chaos ui scaffold react                         # Scaffold with React
+chaos ui preview                                # Generate preview gallery
+chaos ui list                                   # List generated artifacts
 ```
 
 ## Description

@@ -6,13 +6,13 @@ description: Generate a static HTML documentation site from project docs
 
 ## Usage
 ```
-stdd docs                     # Generate docs site to stdd/docs-site/
-stdd docs generate            # Same as above
-stdd docs open                # Generate and open in browser
-stdd docs sources             # List documentation sources
-stdd docs --json              # Output source listing as JSON
-stdd docs --lang en           # Generate English-only docs
-stdd docs --output ./my-docs  # Custom output directory
+chaos docs                     # Generate docs site to stdd/docs-site/
+chaos docs generate            # Same as above
+chaos docs open                # Generate and open in browser
+chaos docs sources             # List documentation sources
+chaos docs --json              # Output source listing as JSON
+chaos docs --lang en           # Generate English-only docs
+chaos docs --output ./my-docs  # Custom output directory
 ```
 
 ## Description

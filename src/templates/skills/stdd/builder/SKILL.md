@@ -1,7 +1,7 @@
 ---
 id: stdd.builder
 command: /stdd:builder
-description: Create custom agents, workflows, and skills for STDD Copilot
+description: Create custom agents, workflows, and skills for Chaos Code
 version: "1.0"
 category: workflow
 phase: governance
@@ -41,7 +41,7 @@ graph:
 # STDD Skill: /stdd:builder
 
 ## Purpose
-The builder skill provides a creation toolkit for extending STDD Copilot with custom agents, workflows, and skills. It enables teams to codify their own review perspectives, pipeline compositions, and specialized capabilities.
+The builder skill provides a creation toolkit for extending Chaos Code with custom agents, workflows, and skills. It enables teams to codify their own review perspectives, pipeline compositions, and specialized capabilities.
 
 ## When to Use
 - Creating a custom review agent for domain-specific concerns (security, accessibility, performance)
@@ -97,29 +97,29 @@ Packages a custom creation as an installable extension with manifest.
 
 ```bash
 # Create custom agents
-stdd builder agent security-reviewer
-stdd builder agent api-designer --expertise "REST,GraphQL" --lens "API consistency" --focus "naming,versioning"
+chaos builder agent security-reviewer
+chaos builder agent api-designer --expertise "REST,GraphQL" --lens "API consistency" --focus "naming,versioning"
 
 # Create custom workflows
-stdd builder workflow full-pipeline
-stdd builder workflow quick-fix --phases stdd-spec,stdd-verify
+chaos builder workflow full-pipeline
+chaos builder workflow quick-fix --phases stdd-spec,stdd-verify
 
 # Create custom skills
-stdd builder skill data-validator
-stdd builder skill perf-analyzer --description "Performance regression detection" --category quality
+chaos builder skill data-validator
+chaos builder skill perf-analyzer --description "Performance regression detection" --category quality
 
 # List all custom creations
-stdd builder list
-stdd builder list --json
+chaos builder list
+chaos builder list --json
 
 # Validate creations
-stdd builder validate stdd/builders/agents/security-reviewer.json
-stdd builder validate stdd/builders/workflows/full-pipeline.yaml
+chaos builder validate stdd/builders/agents/security-reviewer.json
+chaos builder validate stdd/builders/workflows/full-pipeline.yaml
 
 # Export as extension
-stdd builder export security-reviewer --type agent
-stdd builder export full-pipeline --type workflow
-stdd builder export data-validator --type skill
+chaos builder export security-reviewer --type agent
+chaos builder export full-pipeline --type workflow
+chaos builder export data-validator --type skill
 ```
 
 ## Graph Semantics

@@ -6,10 +6,10 @@ description: Mutation testing for anti-fake-green
 
 ## Usage
 ```
-stdd mutation [change]            # Run mutation testing
-stdd mutation --mode=quick        # Quick heuristic mode
-stdd mutation --mode=stryker     # Stryker deep analysis
-stdd mutation --threshold=80      # Set score threshold
+chaos mutation [change]            # Run mutation testing
+chaos mutation --mode=quick        # Quick heuristic mode
+chaos mutation --mode=stryker     # Stryker deep analysis
+chaos mutation --threshold=80      # Set score threshold
 ```
 
 ## Description

@@ -6,12 +6,12 @@ description: Generate Golden Packet fix context for failed tasks (language-agnos
 
 ## Usage
 ```bash
-stdd fix-packet <change-id>                      # Generate fix packet
-stdd fix-packet <change-id> --task TASK-001      # Specific task
-stdd fix-packet <change-id> --json-only          # JSON only
-stdd fix-packet <change-id> --full-source        # Include full source
-stdd fix-packet <change-id> --output path/       # Custom output
-stdd fix-packet <change-id> --workspace packages/api  # Workspace scope
+chaos fix-packet <change-id>                      # Generate fix packet
+chaos fix-packet <change-id> --task TASK-001      # Specific task
+chaos fix-packet <change-id> --json-only          # JSON only
+chaos fix-packet <change-id> --full-source        # Include full source
+chaos fix-packet <change-id> --output path/       # Custom output
+chaos fix-packet <change-id> --workspace packages/api  # Workspace scope
 ```
 
 ## Description

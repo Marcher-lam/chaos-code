@@ -6,11 +6,11 @@ description: 5-dimension confidence scoring for critical decisions
 
 ## Usage
 ```
-stdd certainty assess                        # Interactive assessment
-stdd certainty check [context]               # Check confidence level
-stdd certainty history                       # Show assessment history
-stdd certainty thresholds                    # Show current thresholds
-stdd certainty configure                     # Configure thresholds
+chaos certainty assess                        # Interactive assessment
+chaos certainty check [context]               # Check confidence level
+chaos certainty history                       # Show assessment history
+chaos certainty thresholds                    # Show current thresholds
+chaos certainty configure                     # Configure thresholds
 ```
 
 ## Description

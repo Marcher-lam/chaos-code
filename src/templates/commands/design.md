@@ -6,10 +6,10 @@ description: Generate technical design document from specifications
 
 ## Usage
 ```
-stdd design create                           # Create DESIGN.md
-stdd design show                             # Show design document
-stdd design check                            # Check design completeness
-stdd design update                           # Update design document
+chaos design create                           # Create DESIGN.md
+chaos design show                             # Show design document
+chaos design check                            # Check design completeness
+chaos design update                           # Update design document
 ```
 
 ## Description

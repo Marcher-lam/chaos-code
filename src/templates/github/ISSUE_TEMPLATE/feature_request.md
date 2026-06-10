@@ -21,7 +21,7 @@ labels: enhancement
 
 ## Workspace Context
 
-<!-- Export workspace context when this request is scoped to a package/app: `stdd context --workspace <workspace> --export` -->
+<!-- Export workspace context when this request is scoped to a package/app: `chaos context --workspace <workspace> --export` -->
 
 ## Proposal Link
 

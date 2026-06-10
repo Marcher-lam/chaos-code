@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:schema
 
 ## Purpose
-**生成和验证 JSON Schema、Zod 与类型约束**。这是 STDD Copilot 的 Schema skill，提供跨语言的数据结构定义和验证。
+**生成和验证 JSON Schema、Zod 与类型约束**。这是 Chaos Code 的 Schema skill，提供跨语言的数据结构定义和验证。
 
 **核心设计原则：**
 - **语言无关**：支持多种 schema 格式
@@ -165,30 +165,30 @@ pub struct User {
 
 ```bash
 # 创建 schema
-stdd schema create User
+chaos schema create User
 
 # 验证 schema
-stdd schema validate schemas/
+chaos schema validate schemas/
 
 # Fork 现有 schema
-stdd schema fork User UserWithRole
+chaos schema fork User UserWithRole
 
 # 从 spec 生成
-stdd schema generate --from-spec <change-id>
+chaos schema generate --from-spec <change-id>
 
 # 转换格式
-stdd schema convert user.schema.json --to zod
-stdd schema convert user.schema.json --to pydantic
+chaos schema convert user.schema.json --to zod
+chaos schema convert user.schema.json --to pydantic
 
 # Workspace 支持
-stdd schema create User --workspace packages/api
+chaos schema create User --workspace packages/api
 ```
 
 ## Schema 操作
 
 ### 创建
 ```bash
-stdd schema create User \
+chaos schema create User \
   --field id:uuid:required \
   --field email:string:email:required \
   --field name:string:min=1,max=100:required
@@ -196,15 +196,15 @@ stdd schema create User \
 
 ### 验证
 ```bash
-stdd schema validate schemas/user.schema.json
-stdd schema validate --data user-data.json
+chaos schema validate schemas/user.schema.json
+chaos schema validate --data user-data.json
 ```
 
 ### 转换
 ```bash
-stdd schema convert user.json-schema --to zod
-stdd schema convert user.json-schema --to pydantic
-stdd schema convert user.json-schema --to java
+chaos schema convert user.json-schema --to zod
+chaos schema convert user.json-schema --to pydantic
+chaos schema convert user.json-schema --to java
 ```
 
 ## Graph Semantics

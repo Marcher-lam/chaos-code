@@ -6,8 +6,8 @@ description: Interact with STDD runtime engines for multi-agent simulation and S
 
 ## Usage
 ```
-stdd runtime agent <action> [topic]   # Multi-agent party mode
-stdd runtime sudo [file]              # SudoLang interpreter
+chaos runtime agent <action> [topic]   # Multi-agent party mode
+chaos runtime sudo [file]              # SudoLang interpreter
 ```
 
 ## Description
@@ -17,16 +17,16 @@ Manages STDD runtime engines including multi-agent simulation (Party Mode) and t
 
 ### runtime agent
 ```
-stdd runtime agent start <topic>    # Start party mode simulation
-stdd runtime agent next             # Advance to next turn
-stdd runtime agent stop             # Stop simulation
-stdd runtime agent run --role <r>   # Run single-agent turn
+chaos runtime agent start <topic>    # Start party mode simulation
+chaos runtime agent next             # Advance to next turn
+chaos runtime agent stop             # Stop simulation
+chaos runtime agent run --role <r>   # Run single-agent turn
 ```
 
 ### runtime sudo
 ```
-stdd runtime sudo <file>            # Parse and execute SudoLang
-stdd runtime sudo <file> --generate  # Generate STDD artifacts
+chaos runtime sudo <file>            # Parse and execute SudoLang
+chaos runtime sudo <file> --generate  # Generate STDD artifacts
 ```
 
 ## Execution Flow

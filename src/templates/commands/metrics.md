@@ -6,10 +6,10 @@ description: Quality metrics dashboard
 
 ## Usage
 ```
-stdd metrics                      # Show metrics
-stdd metrics [change]             # Metrics for change
-stdd metrics --workspace <pkg>    # Monorepo package
-stdd metrics --export             # Export metrics
+chaos metrics                      # Show metrics
+chaos metrics [change]             # Metrics for change
+chaos metrics --workspace <pkg>    # Monorepo package
+chaos metrics --export             # Export metrics
 ```
 
 ## Description

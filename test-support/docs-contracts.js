@@ -145,26 +145,26 @@ const SKILL_DRIVEN_ENTRIES = [
 ];
 
 const CANONICAL_CLI_ENTRIES = [
-  'stdd init',
-  'stdd init /path/to/project',
-  'stdd init --force',
-  'stdd list',
-  'stdd list --specs',
-  'stdd list --archived',
-  'stdd list --json',
-  'stdd status',
-  'stdd status add-dark-mode',
-  'stdd new change add-dark-mode',
-  'stdd skills',
-  'stdd commands',
-  'stdd constitution',
-  'stdd constitution show 2',
-  'stdd constitution check',
-  'stdd hooks install',
-  'stdd hooks verify',
-  'stdd hooks status',
-  'stdd hooks disable',
-  'stdd hooks enable'
+  'chaos init',
+  'chaos init /path/to/project',
+  'chaos init --force',
+  'chaos list',
+  'chaos list --specs',
+  'chaos list --archived',
+  'chaos list --json',
+  'chaos status',
+  'chaos status add-dark-mode',
+  'chaos new change add-dark-mode',
+  'chaos skills',
+  'chaos commands',
+  'chaos constitution',
+  'chaos constitution show 2',
+  'chaos constitution check',
+  'chaos hooks install',
+  'chaos hooks verify',
+  'chaos hooks status',
+  'chaos hooks disable',
+  'chaos hooks enable'
 ];
 
 function readFile(relativePath) {

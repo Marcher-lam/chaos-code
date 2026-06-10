@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:propose
 
 ## Purpose
-**把用户意图整理为边界清晰的变更 proposal**。这是 STDD Copilot 的提案 skill，将用户需求转化为结构化的提案文档。
+**把用户意图整理为边界清晰的变更 proposal**。这是 Chaos Code 的提案 skill，将用户需求转化为结构化的提案文档。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -97,21 +97,21 @@ graph:
 
 ```bash
 # 生成提案
-stdd propose <change-id>
+chaos propose <change-id>
 
 # 从描述生成
-stdd propose <change-id> --description "Add user login"
+chaos propose <change-id> --description "Add user login"
 
 # 从探索报告生成
-stdd propose <change-id> --from-explore
+chaos propose <change-id> --from-explore
 
 # 指定类型
-stdd propose <change-id> --type feature
-stdd propose <change-id> --type bugfix
-stdd propose <change-id> --type refactor
+chaos propose <change-id> --type feature
+chaos propose <change-id> --type bugfix
+chaos propose <change-id> --type refactor
 
 # Workspace 支持
-stdd propose <change-id> --workspace packages/api
+chaos propose <change-id> --workspace packages/api
 ```
 
 ## 提案类型

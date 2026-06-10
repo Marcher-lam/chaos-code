@@ -6,8 +6,8 @@ description: Generate user acceptance tests
 
 ## Usage
 ```
-stdd user-test [change]          # Generate user tests
-stdd user-test --format=human    # Human-readable format
+chaos user-test [change]          # Generate user tests
+chaos user-test --format=human    # Human-readable format
 ```
 
 ## Description

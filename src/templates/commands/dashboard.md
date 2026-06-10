@@ -6,11 +6,11 @@ description: Generate a static HTML dashboard showing project health, changes, a
 
 ## Usage
 ```
-stdd dashboard                # Generate dashboard to stdd/dashboard/index.html
-stdd dashboard generate       # Same as above
-stdd dashboard open           # Generate and open in browser
-stdd dashboard --json         # Output raw dashboard data as JSON
-stdd dashboard --output ./r   # Custom output file path
+chaos dashboard                # Generate dashboard to stdd/dashboard/index.html
+chaos dashboard generate       # Same as above
+chaos dashboard open           # Generate and open in browser
+chaos dashboard --json         # Output raw dashboard data as JSON
+chaos dashboard --output ./r   # Custom output file path
 ```
 
 ## Description

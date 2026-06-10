@@ -16,7 +16,7 @@ labels: bug
 
 ## Workspace Context
 
-<!-- Export workspace context when this issue is scoped to a package/app: `stdd context --workspace <workspace> --export` -->
+<!-- Export workspace context when this issue is scoped to a package/app: `chaos context --workspace <workspace> --export` -->
 
 ## Description
 

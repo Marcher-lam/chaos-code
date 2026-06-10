@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:issue
 
 ## Purpose
-**用失败测试先行的 TDD 流程处理 bug 或回归**。这是 STDD Copilot 的 bug 修复 skill，确保 bug 修复符合 TDD 原则。
+**用失败测试先行的 TDD 流程处理 bug 或回归**。这是 Chaos Code 的 bug 修复 skill，确保 bug 修复符合 TDD 原则。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -106,26 +106,26 @@ graph:
 
 ```bash
 # 创建 bug 修复
-stdd issue "用户登录失败" --severity high
+chaos issue "用户登录失败" --severity high
 
 # 指定标题
-stdd issue "Bug description" --title "fix-login-failure"
+chaos issue "Bug description" --title "fix-login-failure"
 
 # 指定严重级别
-stdd issue "..." --severity critical
-stdd issue "..." --severity high
-stdd issue "..." --severity medium
-stdd issue "..." --severity low
+chaos issue "..." --severity critical
+chaos issue "..." --severity high
+chaos issue "..." --severity medium
+chaos issue "..." --severity low
 
 # 提供复现步骤
-stdd issue "..." --steps "1. Go to /login\n2. Enter invalid creds\n3. Click submit"
+chaos issue "..." --steps "1. Go to /login\n2. Enter invalid creds\n3. Click submit"
 
 # 指定 workspace
-stdd issue "..." --workspace packages/api
+chaos issue "..." --workspace packages/api
 
 # 包含日志/截图
-stdd issue "..." --attach error.log
-stdd issue "..." --attach screenshot.png
+chaos issue "..." --attach error.log
+chaos issue "..." --attach screenshot.png
 ```
 
 ## Bug 报告模板

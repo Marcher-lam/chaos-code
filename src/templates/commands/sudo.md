@@ -6,9 +6,9 @@ description: Interpret SudoLang pseudo-code and generate STDD artifacts
 
 ## Usage
 ```
-stdd sudo run <file>               # Execute SudoLang and validate
-stdd sudo run <file> --generate     # Generate artifacts from SudoLang
-stdd sudo run <file> --json         # Output structured JSON
+chaos sudo run <file>               # Execute SudoLang and validate
+chaos sudo run <file> --generate     # Generate artifacts from SudoLang
+chaos sudo run <file> --json         # Output structured JSON
 ```
 
 ## Description

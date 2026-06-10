@@ -15,7 +15,7 @@ describe('CLI help output alignment', () => {
     const output = runCli(['skills', '--help']);
 
     expect(output).toContain('Examples:');
-    expect(output).toContain('stdd skills');
+    expect(output).toContain('chaos skills');
     expect(output).toContain('src/templates/skills/stdd/{name}/SKILL.md');
   });
 
@@ -23,13 +23,13 @@ describe('CLI help output alignment', () => {
     const output = runCli(['commands', '--help']);
 
     expect(output).toContain('This command lists Claude Code slash commands');
-    expect(output).toContain('stdd commands');
+    expect(output).toContain('chaos commands');
   });
 
   it('constitution help should include examples and supported actions', () => {
     const output = runCli(['constitution', '--help']);
 
-    expect(output).toContain('stdd constitution show 2');
+    expect(output).toContain('chaos constitution show 2');
     expect(output).toContain('Supported: show, check');
   });
 

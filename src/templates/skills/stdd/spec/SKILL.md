@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:spec
 
 ## Purpose
-**从已确认需求生成可测试 BDD delta specs**。这是 STDD Copilot 的规格 skill，使用 BDD 格式编写行为规格。
+**从已确认需求生成可测试 BDD delta specs**。这是 Chaos Code 的规格 skill，使用 BDD 格式编写行为规格。
 
 **核心设计原则：**
 - **语言无关**：BDD 适用于任何编程语言
@@ -88,17 +88,17 @@ REMOVED - 删除功能
 
 ```bash
 # 生成规格
-stdd spec <change-id>
+chaos spec <change-id>
 
 # 合并到全局 specs
-stdd spec <change-id> --merge
+chaos spec <change-id> --merge
 
 # 指定输出格式
-stdd spec <change-id> --format gherkin
-stdd spec <change-id> --format markdown
+chaos spec <change-id> --format gherkin
+chaos spec <change-id> --format markdown
 
 # Workspace 支持
-stdd spec <change-id> --workspace packages/api
+chaos spec <change-id> --workspace packages/api
 ```
 
 ## 多语言 BDD 框架

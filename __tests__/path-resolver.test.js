@@ -13,13 +13,13 @@ describe('path-resolver', () => {
       const pkgPath = path.join(root, 'package.json');
       expect(fs.existsSync(pkgPath)).toBe(true);
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-      expect(['stdd-copilot-ultra', '@marcher-lam/stdd-copilot-ultra', '@marcher-lam/stdd-copilot']).toContain(pkg.name);
+      expect(['stdd-copilot-ultra', '@marcher-lam/stdd-copilot-ultra', '@marcher-lam/stdd-copilot', 'chaos-code', '@marcher-lam/chaos-code']).toContain(pkg.name);
     });
 
     test('returned root contains package.json with correct name', () => {
       const root = getPackageRoot();
       const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-      expect(pkg.name === 'stdd-copilot-ultra' || pkg.name === '@marcher-lam/stdd-copilot-ultra' || pkg.name === '@marcher-lam/stdd-copilot').toBe(true);
+      expect(pkg.name === 'stdd-copilot-ultra' || pkg.name === '@marcher-lam/stdd-copilot-ultra' || pkg.name === '@marcher-lam/stdd-copilot' || pkg.name === 'chaos-code' || pkg.name === '@marcher-lam/chaos-code').toBe(true);
     });
   });
 

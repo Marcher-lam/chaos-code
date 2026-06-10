@@ -6,11 +6,11 @@ description: DAG parallel execution engine
 
 ## Usage
 ```
-stdd parallel run "<intent>"                 # Execute parallel DAG
-stdd parallel dry-run "<intent>"             # Show execution plan
-stdd parallel visualize "<intent>"           # Visualize DAG structure
-stdd parallel layers "<intent>"              # Show execution layers
-stdd parallel status                         # Show execution status
+chaos parallel run "<intent>"                 # Execute parallel DAG
+chaos parallel dry-run "<intent>"             # Show execution plan
+chaos parallel visualize "<intent>"           # Visualize DAG structure
+chaos parallel layers "<intent>"              # Show execution layers
+chaos parallel status                         # Show execution status
 ```
 
 ## Description

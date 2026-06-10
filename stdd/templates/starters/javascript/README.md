@@ -1,6 +1,6 @@
 # {{name}}
 
-A Node.js project bootstrapped with STDD Copilot.
+A Node.js project bootstrapped with Chaos Code.
 
 ## Get Started
 

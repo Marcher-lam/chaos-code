@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:certainty
 
 ## Purpose
-**五维置信度评分与 HITL (Human-In-The-Loop) 决策框架**。这是 STDD Copilot 的决策质量评估 skill，帮助团队在关键决策点评估信心水平。
+**五维置信度评分与 HITL (Human-In-The-Loop) 决策框架**。这是 Chaos Code 的决策质量评估 skill，帮助团队在关键决策点评估信心水平。
 
 **核心设计原则：**
 - **语言无关**：适用于任何技术栈和项目类型
@@ -105,33 +105,33 @@ graph:
 ### 评估模式
 ```bash
 # 交互式评估（推荐）
-stdd certainty assess
-stdd certainty evaluate "添加用户认证"
+chaos certainty assess
+chaos certainty evaluate "添加用户认证"
 
 # 非交互式评估
-stdd certainty assess --scores "req:4,tech:5,risk:3,test:4,vision:5"
+chaos certainty assess --scores "req:4,tech:5,risk:3,test:4,vision:5"
 
 # JSON 输出
-stdd certainty assess --format json
+chaos certainty assess --format json
 ```
 
 ### 查看状态
 ```bash
 # 查看当前状态
-stdd certainty check
+chaos certainty check
 
 # 查看历史
-stdd certainty history
-stdd certainty history --limit 50
+chaos certainty history
+chaos certainty history --limit 50
 
 # 查看阈值
-stdd certainty thresholds
+chaos certainty thresholds
 ```
 
 ### 配置
 ```bash
 # 自定义阈值
-stdd certainty configure --set "auto=0.9,warning=0.8,confirm=0.7"
+chaos certainty configure --set "auto=0.9,warning=0.8,confirm=0.7"
 ```
 
 ## 输出格式

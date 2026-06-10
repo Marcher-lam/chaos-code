@@ -6,10 +6,10 @@ description: Monorepo workspace registry management
 
 ## Usage
 ```
-stdd workspace list              # List workspaces
-stdd workspace validate          # Validate registry
-stdd workspace repair            # Repair registry
-stdd workspace --json            # JSON format
+chaos workspace list              # List workspaces
+chaos workspace validate          # Validate registry
+chaos workspace repair            # Repair registry
+chaos workspace --json            # JSON format
 ```
 
 ## Description

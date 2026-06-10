@@ -43,7 +43,7 @@ graph:
 # STDD Skill: /stdd:apply
 
 ## Purpose
-按 Red-Green-Refactor 循环执行**语言无关的 TDD 实现**。这是 STDD Copilot 的 Spec-First + TDD CLI skill，服务 Skill Graph 编排、Constitution gate、evidence 留痕和 workspace 作用域。
+按 Red-Green-Refactor 循环执行**语言无关的 TDD 实现**。这是 Chaos Code 的 Spec-First + TDD CLI skill，服务 Skill Graph 编排、Constitution gate、evidence 留痕和 workspace 作用域。
 
 **核心设计原则：**
 - **语言无关**：支持任何编程语言的测试框架
@@ -58,8 +58,8 @@ graph:
 - monorepo 中使用 --workspace <path-or-package> 限定作用域。
 
 ## Preconditions
-- 已在仓库根或目标 workspace 中运行 stdd init；只读技能例外但仍应识别项目状态。
-- 明确 <change-id>、scope 或 topic；未明确时先询问或运行 stdd status / stdd recommend。
+- 已在仓库根或目标 workspace 中运行 chaos init；只读技能例外但仍应识别项目状态。
+- 明确 <change-id>、scope 或 topic；未明确时先询问或运行 chaos status / chaos recommend。
 - 不得伪造 evidence；缺失测试、mutation 或 Constitution 结果必须显式标记。
 
 ## Inputs
@@ -91,7 +91,7 @@ graph:
 
 #### 🔴 RED Phase - 写失败测试
 ```bash
-stdd apply <change-id> --task TASK-001 --phase red
+chaos apply <change-id> --task TASK-001 --phase red
 ```
 
 **目标**: 写一个**失败**的测试，定义期望行为。
@@ -104,7 +104,7 @@ stdd apply <change-id> --task TASK-001 --phase red
 
 #### 🟢 GREEN Phase - 最小实现
 ```bash
-stdd apply <change-id> --task TASK-001 --phase green
+chaos apply <change-id> --task TASK-001 --phase green
 ```
 
 **目标**: 写**最少**代码让测试通过。
@@ -118,7 +118,7 @@ stdd apply <change-id> --task TASK-001 --phase green
 
 #### 🔵 REFACTOR Phase - 重构优化
 ```bash
-stdd apply <change-id> --task TASK-001 --phase refactor
+chaos apply <change-id> --task TASK-001 --phase refactor
 ```
 
 **目标**: 改进代码结构，**保持测试全绿**。
@@ -134,7 +134,7 @@ stdd apply <change-id> --task TASK-001 --phase refactor
 对于没有 phase 标签的旧任务，直接运行测试并标记完成：
 
 ```bash
-stdd apply <change-id> --test-command "npm test"
+chaos apply <change-id> --test-command "npm test"
 ```
 
 ## CLI Runtime
@@ -142,19 +142,19 @@ stdd apply <change-id> --test-command "npm test"
 ### 基础用法
 ```bash
 # 自动检测语言和测试命令
-stdd apply <change-id>
+chaos apply <change-id>
 
 # 指定测试命令
-stdd apply <change-id> --test-command "pytest"
+chaos apply <change-id> --test-command "pytest"
 
 # TDD 模式 - Red phase
-stdd apply <change-id> --task TASK-001 --phase red
+chaos apply <change-id> --task TASK-001 --phase red
 
 # TDD 模式 - Green phase
-stdd apply <change-id> --task TASK-001 --phase green
+chaos apply <change-id> --task TASK-001 --phase green
 
 # TDD 模式 - Refactor phase
-stdd apply <change-id> --task TASK-001 --phase refactor
+chaos apply <change-id> --task TASK-001 --phase refactor
 ```
 
 ### 语言特定示例
@@ -162,121 +162,121 @@ stdd apply <change-id> --task TASK-001 --phase refactor
 #### TypeScript/JavaScript
 ```bash
 # 自动检测 npm/yarn/pnpm
-stdd apply <change-id>
+chaos apply <change-id>
 
 # 显式指定测试命令
-stdd apply <change-id> --test-command "npm test"
+chaos apply <change-id> --test-command "npm test"
 
 # Jest with coverage
-stdd apply <change-id> --test-command "npm test -- --coverage"
+chaos apply <change-id> --test-command "npm test -- --coverage"
 
 # Vitest
-stdd apply <change-id> --test-command "npx vitest run"
+chaos apply <change-id> --test-command "npx vitest run"
 ```
 
 #### Python
 ```bash
 # 自动检测 pytest
-stdd apply <change-id>
+chaos apply <change-id>
 
 # 显式指定 pytest
-stdd apply <change-id> --test-command "pytest"
+chaos apply <change-id> --test-command "pytest"
 
 # Pytest with coverage
-stdd apply <change-id> --test-command "pytest --cov=src tests/"
+chaos apply <change-id> --test-command "pytest --cov=src tests/"
 
 # unittest
-stdd apply <change-id> --test-command "python -m unittest discover"
+chaos apply <change-id> --test-command "python -m unittest discover"
 ```
 
 #### Java
 ```bash
 # 自动检测 Maven/Gradle
-stdd apply <change-id>
+chaos apply <change-id>
 
 # Maven
-stdd apply <change-id> --test-command "mvn test"
+chaos apply <change-id> --test-command "mvn test"
 
 # Gradle
-stdd apply <change-id> --test-command "gradle test"
+chaos apply <change-id> --test-command "gradle test"
 
 # 特定测试类
-stdd apply <change-id> --test-command "mvn test -Dtest=UserServiceTest"
+chaos apply <change-id> --test-command "mvn test -Dtest=UserServiceTest"
 ```
 
 #### Go
 ```bash
 # 自动检测 go test
-stdd apply <change-id>
+chaos apply <change-id>
 
 # 运行所有测试
-stdd apply <change-id> --test-command "go test ./..."
+chaos apply <change-id> --test-command "go test ./..."
 
 # 带覆盖率
-stdd apply <change-id> --test-command "go test -cover ./..."
+chaos apply <change-id> --test-command "go test -cover ./..."
 
 # 带详细输出
-stdd apply <change-id> --test-command "go test -v ./..."
+chaos apply <change-id> --test-command "go test -v ./..."
 ```
 
 #### Rust
 ```bash
 # 自动检测 cargo test
-stdd apply <change-id>
+chaos apply <change-id>
 
 # 运行所有测试
-stdd apply <change-id> --test-command "cargo test"
+chaos apply <change-id> --test-command "cargo test"
 
 # 带输出
-stdd apply <change-id> --test-command "cargo test -- --nocapture"
+chaos apply <change-id> --test-command "cargo test -- --nocapture"
 ```
 
 #### C#
 ```bash
 # 自动检测 dotnet test
-stdd apply <change-id>
+chaos apply <change-id>
 
 # 运行所有测试
-stdd apply <change-id> --test-command "dotnet test"
+chaos apply <change-id> --test-command "dotnet test"
 
 # 特定项目
-stdd apply <change-id> --test-command "dotnet test src/Tests/Tests.csproj"
+chaos apply <change-id> --test-command "dotnet test src/Tests/Tests.csproj"
 ```
 
 #### PHP
 ```bash
 # 自动检测 PHPUnit/Pest
-stdd apply <change-id>
+chaos apply <change-id>
 
 # PHPUnit
-stdd apply <change-id> --test-command "vendor/bin/phpunit"
+chaos apply <change-id> --test-command "vendor/bin/phpunit"
 
 # Pest
-stdd apply <change-id> --test-command "vendor/bin/pest"
+chaos apply <change-id> --test-command "vendor/bin/pest"
 ```
 
 ### Monorepo Workspace
 ```bash
 # 限定作用域到特定 workspace
-stdd apply <change-id> --workspace packages/api
+chaos apply <change-id> --workspace packages/api
 
 # 在多个 workspace 中运行测试
-stdd apply <change-id>  # 自动检测所有 workspaces
+chaos apply <change-id>  # 自动检测所有 workspaces
 ```
 
 ### 其他选项
 ```bash
 # Dry run - 只显示会执行的命令
-stdd apply <change-id> --dry-run
+chaos apply <change-id> --dry-run
 
 # 运行 E2E 探针测试
-stdd apply <change-id> --e2e-command "npx cypress run"
+chaos apply <change-id> --e2e-command "npx cypress run"
 
 # 允许无测试任务（文档任务等）
-stdd apply <change-id> --allow-no-tests
+chaos apply <change-id> --allow-no-tests
 
 # 委托给其他 AI 引擎
-stdd apply <change-id> --delegate
+chaos apply <change-id> --delegate
 ```
 
 ## Graph Semantics
@@ -295,10 +295,10 @@ stdd apply <change-id> --delegate
 - 证据文件应包含 command、timestamp、workspace、input summary、result、exit code 和关键 stdout/stderr 摘要。
 
 ## Error Handling
-- 缺少 STDD 初始化时提示 stdd init。
-- 缺少 change-id 时列出 stdd list / stdd status 的下一步。
-- 连续失败 3 次触发熔断，生成或建议 stdd fix-packet <change-id>。
-- workspace 不存在时提示 stdd workspace validate / repair。
+- 缺少 STDD 初始化时提示 chaos init。
+- 缺少 change-id 时列出 chaos list / chaos status 的下一步。
+- 连续失败 3 次触发熔断，生成或建议 chaos fix-packet <change-id>。
+- workspace 不存在时提示 chaos workspace validate / repair。
 - 缺少测试命令时失败（TDD 纪律），除非使用 --allow-no-tests。
 
 ## Outputs

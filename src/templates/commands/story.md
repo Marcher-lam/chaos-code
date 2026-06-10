@@ -6,9 +6,9 @@ description: Story Mapping to BDD conversion
 
 ## Usage
 ```
-stdd story <action>              # Story mapping action
-stdd story create                # Create user story map
-stdd story convert               # Convert to BDD
+chaos story <action>              # Story mapping action
+chaos story create                # Create user story map
+chaos story convert               # Convert to BDD
 ```
 
 ## Description

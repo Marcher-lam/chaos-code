@@ -6,9 +6,9 @@ description: Outside-in TDD from E2E to unit
 
 ## Usage
 ```
-stdd outside-in init             # Initialize outside-in TDD
-stdd outside-in scaffold [change] # Generate test scaffold
-stdd outside-in status           # Check status
+chaos outside-in init             # Initialize outside-in TDD
+chaos outside-in scaffold [change] # Generate test scaffold
+chaos outside-in status           # Check status
 ```
 
 ## Description

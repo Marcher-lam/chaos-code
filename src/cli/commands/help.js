@@ -1,6 +1,6 @@
 /**
  * Help Command
- * Context-aware help system for STDD Copilot.
+ * Context-aware help system for Chaos Code.
  */
 
 const fs = require('fs');
@@ -59,31 +59,31 @@ class HelpCommand {
     const techStack = await detectTechStack(this.cwd);
 
     const output = [
-      chalk.bold('\nSTDD Copilot - Spec & Test Driven Development Framework\n'),
+      chalk.bold('\nChaos Code - Spec & Test Driven AI Copilot\n'),
       chalk.dim('─'.repeat(50)),
       '',
       chalk.bold('Quick Start:'),
-      '  stdd init                    # Initialize project',
-      '  stdd new change <name>        # Create a change',
-      '  stdd ff "<description>"       # Fast-forward all steps',
-      '  stdd apply <change>           # TDD implementation',
-      '  stdd verify <change>          # Verify & validate',
-      '  stdd archive <change>         # Archive completed change',
+      '  chaos init                    # Initialize project',
+      '  chaos new change <name>        # Create a change',
+      '  chaos ff "<description>"       # Fast-forward all steps',
+      '  chaos apply <change>           # TDD implementation',
+      '  chaos verify <change>          # Verify & validate',
+      '  chaos archive <change>         # Archive completed change',
       '',
       chalk.bold('Common Workflows:'),
-      '  stdd issue "<bug>"            # Bug fix workflow',
-      '  stdd turbo "<feature>"        # One-shot full workflow',
-      '  stdd outside-in init          # Outside-in TDD',
+      '  chaos issue "<bug>"            # Bug fix workflow',
+      '  chaos turbo "<feature>"        # One-shot full workflow',
+      '  chaos outside-in init          # Outside-in TDD',
       '',
       chalk.bold('Quality Gates:'),
-      '  stdd constitution check       # Check compliance',
-      '  stdd guard                    # TDD quality gate',
-      '  stdd metrics                  # Quality metrics',
+      '  chaos constitution check       # Check compliance',
+      '  chaos guard                    # TDD quality gate',
+      '  chaos metrics                  # Quality metrics',
       '',
       chalk.bold('Get Help:'),
-      `  stdd help <command>           # Command-specific help`,
-      `  stdd help workflow            # Detailed workflow guide`,
-      `  stdd help search <term>       # Search for help`,
+      `  chaos help <command>           # Command-specific help`,
+      `  chaos help workflow            # Detailed workflow guide`,
+      `  chaos help search <term>       # Search for help`,
       '',
     ];
 
@@ -97,7 +97,7 @@ class HelpCommand {
     }
 
     output.push(chalk.dim('─'.repeat(50)));
-    output.push(`  ${chalk.dim('Full docs: https://github.com/Marcher-lam/STDD-COPILOT-ULTRA')}\n`);
+    output.push(`  ${chalk.dim('Full docs: https://github.com/Marcher-lam/chaos-code')}\n`);
 
     console.log(output.join('\n'));
     return { topic: 'overview', techStack };
@@ -105,46 +105,46 @@ class HelpCommand {
 
   async workflowGuide(_options = {}) {
     const output = [
-      chalk.bold('\nSTDD Workflow Guide\n'),
+      chalk.bold('\nChaos Code Workflow Guide\n'),
       chalk.dim('─'.repeat(50)),
       '',
       chalk.bold('1. Initialization'),
-      '  stdd init                    # Set up STDD in your project',
-      '  stdd start                    # Interactive quick-start',
+      '  chaos init                    # Set up Chaos Code in your project',
+      '  chaos start                    # Interactive quick-start',
       '',
       chalk.bold('2. Requirements Phase'),
-      '  stdd new change <name>        # Create a change',
-      '  stdd propose                  # Generate proposal',
-      '  stdd clarify                  # Clarify requirements (78 methods)',
-      '  stdd confirm                  # Human confirmation gate',
+      '  chaos new change <name>        # Create a change',
+      '  chaos propose                  # Generate proposal',
+      '  chaos clarify                  # Clarify requirements (78 methods)',
+      '  chaos confirm                  # Human confirmation gate',
       '',
       chalk.bold('3. Specification Phase'),
-      '  stdd spec <change>            # Generate BDD specs',
-      '  stdd api-spec <change>        # API specifications',
-      '  stdd schema                   # JSON Schema/Zod types',
+      '  chaos spec <change>            # Generate BDD specs',
+      '  chaos api-spec <change>        # API specifications',
+      '  chaos schema                   # JSON Schema/Zod types',
       '',
       chalk.bold('4. Planning Phase'),
-      '  stdd plan <change>            # Task breakdown',
-      '  stdd prp                      # What/Why/How/Success planning',
+      '  chaos plan <change>            # Task breakdown',
+      '  chaos prp                      # What/Why/How/Success planning',
       '',
       chalk.bold('5. Implementation Phase (TDD)'),
-      '  stdd apply <change>           # Red-Green-Refactor loop',
-      '  stdd continue <change>        # Continue next task',
-      '  stdd outside-in               # E2E → Integration → Unit',
+      '  chaos apply <change>           # Red-Green-Refactor loop',
+      '  chaos continue <change>        # Continue next task',
+      '  chaos outside-in               # E2E → Integration → Unit',
       '',
       chalk.bold('6. Verification Phase'),
-      '  stdd verify <change>          # Run all checks',
-      '  stdd mutation <change>        # Mutation testing',
-      '  stdd validate <change>        # Spec validation',
+      '  chaos verify <change>          # Run all checks',
+      '  chaos mutation <change>        # Mutation testing',
+      '  chaos validate <change>        # Spec validation',
       '',
       chalk.bold('7. Completion Phase'),
-      '  stdd archive <change>         # Merge and archive',
-      '  stdd commit <change>          # Atomic commits',
+      '  chaos archive <change>         # Merge and archive',
+      '  chaos commit <change>          # Atomic commits',
       '',
       chalk.bold('Quality Gates (run anytime)'),
-      '  stdd constitution check       # 9-article compliance',
-      '  stdd guard                    # TDD gate check',
-      '  stdd metrics                  # Quality dashboard',
+      '  chaos constitution check       # 9-article compliance',
+      '  chaos guard                    # TDD gate check',
+      '  chaos metrics                  # Quality dashboard',
       '',
       chalk.dim('─'.repeat(50)),
       '',
@@ -155,17 +155,17 @@ class HelpCommand {
   }
 
   listCommands(_options = {}) {
-    const output = [chalk.bold('\nSTDD Commands\n'), chalk.dim('─'.repeat(50)), ''];
+    const output = [chalk.bold('\nChaos Code Commands\n'), chalk.dim('─'.repeat(50)), ''];
 
     for (const [category, commands] of Object.entries(COMMAND_CATEGORIES)) {
       output.push(chalk.bold(category + ':'));
       for (const cmd of commands) {
-        output.push(`  stdd ${chalk.cyan(cmd.padEnd(20))} ${this.getShortDescription(cmd)}`);
+        output.push(`  chaos ${chalk.cyan(cmd.padEnd(20))} ${this.getShortDescription(cmd)}`);
       }
       output.push('');
     }
 
-    output.push(chalk.dim(`  Run ${chalk.cyan('stdd help <command>')} for detailed help.\n`));
+    output.push(chalk.dim(`  Run ${chalk.cyan('chaos help <command>')} for detailed help.\n`));
 
     console.log(output.join('\n'));
     return { topic: 'commands', categories: Object.keys(COMMAND_CATEGORIES) };
@@ -242,7 +242,7 @@ class HelpCommand {
 
   search(query, options = {}) {
     if (!query) {
-      throw new Error('Search query is required. Usage: stdd help search "<query>"');
+      throw new Error('Search query is required. Usage: chaos help search "<query>"');
     }
 
     const queryLower = query.toLowerCase();
@@ -268,7 +268,7 @@ class HelpCommand {
         console.log(chalk.dim('  No matches found. Try different keywords.\n'));
       } else {
         results.forEach(r => {
-          console.log(`  ${chalk.cyan('stdd ' + r.command)} - ${r.description}`);
+          console.log(`  ${chalk.cyan('chaos ' + r.command)} - ${r.description}`);
         });
         console.log('');
       }
@@ -295,7 +295,7 @@ class HelpCommand {
 
     const stddConfigPath = path.join(this.cwd, 'stdd', 'config.yaml');
     if (fs.existsSync(stddConfigPath)) {
-      output.push(chalk.bold('STDD Status:'));
+      output.push(chalk.bold('Chaos Code Status:'));
       output.push(`  ${chalk.green('✓')} Project initialized`);
       output.push(`  Config: ${chalk.dim(stddConfigPath)}`);
 
@@ -306,16 +306,16 @@ class HelpCommand {
       }
       output.push('');
     } else {
-      output.push(chalk.bold('STDD Status:'));
+      output.push(chalk.bold('Chaos Code Status:'));
       output.push(`  ${chalk.yellow('○')} Not initialized`);
-      output.push(`  Run ${chalk.cyan('stdd init')} to get started`);
+      output.push(`  Run ${chalk.cyan('chaos init')} to get started`);
       output.push('');
     }
 
     output.push(chalk.bold('Recommended Next Steps:'));
-    output.push(`  ${chalk.cyan('stdd doctor')} - Check project health`);
-    output.push(`  ${chalk.cyan('stdd status')} - Show current status`);
-    output.push(`  ${chalk.cyan('stdd recommend')} - Get recommendations\n`);
+    output.push(`  ${chalk.cyan('chaos doctor')} - Check project health`);
+    output.push(`  ${chalk.cyan('chaos status')} - Show current status`);
+    output.push(`  ${chalk.cyan('chaos recommend')} - Get recommendations\n`);
 
     console.log(output.join('\n'));
     return { context: techStack, initialized: fs.existsSync(stddConfigPath) };
@@ -329,32 +329,32 @@ class HelpCommand {
       chalk.bold('Common Issues:'),
       '',
       chalk.yellow('Problem: Tests not found'),
-      '  stdd doctor                    # Check project health',
-      '  stdd tdd init                  # Generate test skeleton',
+      '  chaos doctor                    # Check project health',
+      '  chaos tdd init                  # Generate test skeleton',
       '',
       chalk.yellow('Problem: Low test coverage'),
-      '  stdd metrics                   # Check coverage',
-      '  stdd guard                     # Identify gaps',
+      '  chaos metrics                   # Check coverage',
+      '  chaos guard                     # Identify gaps',
       '',
       chalk.yellow('Problem: Constitution violations'),
-      '  stdd constitution check        # Check violations',
-      '  stdd constitution fix          # Auto-fix some issues',
+      '  chaos constitution check        # Check violations',
+      '  chaos constitution fix          # Auto-fix some issues',
       '',
-      chalk.yellow('Problem: STDD not initialized'),
-      '  stdd init                      # Initialize project',
+      chalk.yellow('Problem: Chaos Code not initialized'),
+      '  chaos init                      # Initialize project',
       '',
       chalk.yellow('Problem: Change not progressing'),
-      '  stdd status <change>           # Check status',
-      '  stdd recommend                 # Get next step',
+      '  chaos status <change>           # Check status',
+      '  chaos recommend                 # Get next step',
       '',
       chalk.yellow('Problem: Hooks not working'),
-      '  stdd hooks verify              # Verify hooks',
-      '  stdd hooks install             # Re-install hooks',
+      '  chaos hooks verify              # Verify hooks',
+      '  chaos hooks install             # Re-install hooks',
       '',
       chalk.bold('Get More Help:'),
-      '  stdd help <command>            # Command-specific help',
-      '  stdd help search <term>        # Search documentation',
-      `  ${chalk.dim('https://github.com/Marcher-lam/STDD-COPILOT-ULTRA/issues')}\n`,
+      '  chaos help <command>            # Command-specific help',
+      '  chaos help search <term>        # Search documentation',
+      `  ${chalk.dim('https://github.com/Marcher-lam/chaos-code/issues')}\n`,
     ];
 
     console.log(output.join('\n'));
@@ -363,32 +363,32 @@ class HelpCommand {
 
   cheatsheet(_options = {}) {
     const output = [
-      chalk.bold('\nSTDD Cheatsheet\n'),
+      chalk.bold('\nChaos Code Cheatsheet\n'),
       chalk.dim('─'.repeat(50)),
       '',
       chalk.bold('Quick Commands:'),
-      '  stdd init                      # Initialize',
-      '  stdd ff "<desc>"               # Quick flow',
-      '  stdd turbo "<desc>"            # One-shot',
-      '  stdd issue "<bug>"             # Bug fix',
+      '  chaos init                      # Initialize',
+      '  chaos ff "<desc>"               # Quick flow',
+      '  chaos turbo "<desc>"            # One-shot',
+      '  chaos issue "<bug>"             # Bug fix',
       '',
       chalk.bold('Common Workflow:'),
       '  new → spec → plan → apply → verify → archive',
       '',
       chalk.bold('Status & Info:'),
-      '  stdd status                    # Overall status',
-      '  stdd list                      # List changes',
-      '  stdd progress                  # Show progress',
+      '  chaos status                    # Overall status',
+      '  chaos list                      # List changes',
+      '  chaos progress                  # Show progress',
       '',
       chalk.bold('Quality:'),
-      '  stdd constitution check       # Compliance',
-      '  stdd guard                     # TDD gate',
-      '  stdd metrics                   # Metrics',
+      '  chaos constitution check       # Compliance',
+      '  chaos guard                     # TDD gate',
+      '  chaos metrics                   # Metrics',
       '',
       chalk.bold('Testing:'),
-      '  stdd mutation                  # Mutation test',
-      '  stdd outside-in                # Outside-in TDD',
-      '  stdd mock                      # Mock generation',
+      '  chaos mutation                  # Mutation test',
+      '  chaos outside-in                # Outside-in TDD',
+      '  chaos mock                      # Mock generation',
       '',
       chalk.bold('Flags:'),
       '  --json                         # JSON output',
@@ -396,7 +396,7 @@ class HelpCommand {
       '  --force                        # Force action',
       '',
       chalk.dim('─'.repeat(50)),
-      `  ${chalk.dim('Run "stdd help <command>" for details')}\n`,
+      `  ${chalk.dim('Run "chaos help <command>" for details')}\n`,
     ];
 
     console.log(output.join('\n'));
@@ -406,7 +406,7 @@ class HelpCommand {
   commandHelp(command, _options = {}) {
     const description = this.getShortDescription(command);
     const output = [
-      chalk.bold(`\nstdd ${command}\n`),
+      chalk.bold(`\nchaos ${command}\n`),
       chalk.dim(description),
       '',
     ];
@@ -417,10 +417,10 @@ class HelpCommand {
       output.push(chalk.dim('─'.repeat(50)));
       output.push('');
       output.push(chalk.bold('Usage:'));
-      output.push(`  stdd ${command} [options] [args]\n`);
+      output.push(`  chaos ${command} [options] [args]\n`);
     }
 
-    output.push(chalk.dim(`Run ${chalk.cyan('stdd help workflow')} for usage examples.\n`));
+    output.push(chalk.dim(`Run ${chalk.cyan('chaos help workflow')} for usage examples.\n`));
 
     console.log(output.join('\n'));
     return { command, description };

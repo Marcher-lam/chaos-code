@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:fix-packet
 
 ## Purpose
-**为失败任务生成 Golden Packet 风格修复上下文**。这是 STDD Copilot 的失败修复 skill，聚合所有相关信息用于诊断和修复失败的任务。
+**为失败任务生成 Golden Packet 风格修复上下文**。这是 Chaos Code 的失败修复 skill，聚合所有相关信息用于诊断和修复失败的任务。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -258,22 +258,22 @@ describe('POST /auth/login', () => {
 
 ```bash
 # 生成修复包
-stdd fix-packet <change-id>
+chaos fix-packet <change-id>
 
 # 指定任务
-stdd fix-packet <change-id> --task TASK-001
+chaos fix-packet <change-id> --task TASK-001
 
 # 只生成 JSON
-stdd fix-packet <change-id> --json-only
+chaos fix-packet <change-id> --json-only
 
 # 包含完整源码
-stdd fix-packet <change-id> --full-source
+chaos fix-packet <change-id> --full-source
 
 # 指定输出目录
-stdd fix-packet <change-id> --output stdd/fix-packets/
+chaos fix-packet <change-id> --output stdd/fix-packets/
 
 # Workspace 支持
-stdd fix-packet <change-id> --workspace packages/api
+chaos fix-packet <change-id> --workspace packages/api
 ```
 
 ## 诊断信息收集

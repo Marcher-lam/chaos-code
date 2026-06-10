@@ -514,7 +514,7 @@ describe('round25 init.js branch coverage', () => {
     // Call with no args — triggers defaults selectedAgents=[], techStack={}
     cmd.printNextSteps();
 
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('STDD Copilot initialized'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Chaos Code initialized'));
   });
 });
 

@@ -6,8 +6,8 @@ description: BDD spec generation from requirements
 
 ## Usage
 ```
-stdd spec-generator [change]     # Generate specs
-stdd spec-generator --format=bdd # BDD format
+chaos spec-generator [change]     # Generate specs
+chaos spec-generator --format=bdd # BDD format
 ```
 
 ## Description

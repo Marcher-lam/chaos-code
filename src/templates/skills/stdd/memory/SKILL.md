@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:memory
 
 ## Purpose
-**保存和检索跨会话语义记忆与决策**。这是 STDD Copilot 的记忆 skill，维护项目的历史决策和知识。
+**保存和检索跨会话语义记忆与决策**。这是 Chaos Code 的记忆 skill，维护项目的历史决策和知识。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -80,25 +80,25 @@ graph:
 
 ```bash
 # 搜索记忆
-stdd memory search "decision"
-stdd memory search "authentication"
+chaos memory search "decision"
+chaos memory search "authentication"
 
 # 查看统计
-stdd memory stats
+chaos memory stats
 
 # 查看最近记忆
-stdd memory recent
+chaos memory recent
 
 # 按主题查看
-stdd memory topic architecture
-stdd memory topic testing
+chaos memory topic architecture
+chaos memory topic testing
 
 # 按变更查看
-stdd memory change add-user-login
+chaos memory change add-user-login
 
 # 导出记忆
-stdd memory export --format json
-stdd memory export --output memory-backup.json
+chaos memory export --format json
+chaos memory export --output memory-backup.json
 ```
 
 ## 记忆结构

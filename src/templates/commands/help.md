@@ -6,13 +6,13 @@ description: Context-aware help system
 
 ## Usage
 ```
-stdd help overview                          # Show STDD overview
-stdd help workflow                          # Show workflow guides
-stdd help list                              # List all commands
-stdd help search "<term>"                   # Search commands
-stdd help context                           # Show context-specific help
-stdd help troubleshoot                      # Show troubleshooting guide
-stdd help cheatsheet                        # Show quick reference
+chaos help overview                          # Show STDD overview
+chaos help workflow                          # Show workflow guides
+chaos help list                              # List all commands
+chaos help search "<term>"                   # Search commands
+chaos help context                           # Show context-specific help
+chaos help troubleshoot                      # Show troubleshooting guide
+chaos help cheatsheet                        # Show quick reference
 ```
 
 ## Description

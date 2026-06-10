@@ -6,9 +6,9 @@ description: Generate mock implementations
 
 ## Usage
 ```
-stdd mock [change]                # Generate mocks
-stdd mock --all                   # Scan all dependencies
-stdd mock --fake                  # Generate runnable fakes
+chaos mock [change]                # Generate mocks
+chaos mock --all                   # Scan all dependencies
+chaos mock --fake                  # Generate runnable fakes
 ```
 
 ## Description

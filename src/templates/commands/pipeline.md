@@ -6,8 +6,8 @@ description: Generate test pipeline from specs
 
 ## Usage
 ```
-stdd pipeline [change]           # Generate pipeline
-stdd pipeline --format=parser    # Parser IR format
+chaos pipeline [change]           # Generate pipeline
+chaos pipeline --format=parser    # Parser IR format
 ```
 
 ## Description

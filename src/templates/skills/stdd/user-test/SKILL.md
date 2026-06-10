@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:user-test
 
 ## Purpose
-**从 BDD 场景生成人工验收测试脚本**。这是 STDD Copilot 的用户验收测试 skill，将技术规格转换为用户可执行的测试脚本。
+**从 BDD 场景生成人工验收测试脚本**。这是 Chaos Code 的用户验收测试 skill，将技术规格转换为用户可执行的测试脚本。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -56,17 +56,17 @@ graph:
 
 ```bash
 # 生成用户测试
-stdd user-test <change-id>
+chaos user-test <change-id>
 
 # 指定输出格式
-stdd user-test <change-id> --format markdown
-stdd user-test <change-id> --format html
+chaos user-test <change-id> --format markdown
+chaos user-test <change-id> --format html
 
 # 包含测试数据
-stdd user-test <change-id> --with-data
+chaos user-test <change-id> --with-data
 
 # Workspace 支持
-stdd user-test <change-id> --workspace packages/api
+chaos user-test <change-id> --workspace packages/api
 ```
 
 ## 测试脚本格式

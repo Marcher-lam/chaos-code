@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:continue
 
 ## Purpose
-**根据状态机恢复并推进下一个 STDD 产物**。这是 STDD Copilot 的会话恢复 skill，智能检测项目状态并继续工作。
+**根据状态机恢复并推进下一个 STDD 产物**。这是 Chaos Code 的会话恢复 skill，智能检测项目状态并继续工作。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言和项目
@@ -100,22 +100,22 @@ graph:
 
 ```bash
 # 自动检测并继续
-stdd continue
+chaos continue
 
 # 继续指定变更
-stdd continue <change-id>
+chaos continue <change-id>
 
 # 强制跳过当前阶段
-stdd continue --force
+chaos continue --force
 
 # 覆盖测试命令
-stdd continue --test-command "pytest"
+chaos continue --test-command "pytest"
 
 # 查看进度（不执行）
-stdd continue --dry-run
+chaos continue --dry-run
 
 # 指定工作空间
-stdd continue --workspace packages/api
+chaos continue --workspace packages/api
 ```
 
 ## 状态检测
@@ -140,13 +140,13 @@ stdd continue --workspace packages/api
 ### Apply 阶段恢复
 ```bash
 # 检测 TDD 阶段
-stdd continue
+chaos continue
 
 # 输出示例：
 # 📌 Continuing change: add-user-login
 # 🔵 Current phase: GREEN
 # 📝 Task: TASK-001 Implement login endpoint
-# 💡 Next: stdd apply add-user-login --phase green
+# 💡 Next: chaos apply add-user-login --phase green
 ```
 
 ### 任务状态恢复
@@ -164,10 +164,10 @@ stdd continue
 ### 熔断后恢复
 ```bash
 # 查看修复包
-stdd fix-packet <change-id>
+chaos fix-packet <change-id>
 
 # 修复后继续
-stdd continue <change-id>
+chaos continue <change-id>
 ```
 
 ## Graph Semantics

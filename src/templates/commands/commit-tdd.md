@@ -6,10 +6,10 @@ description: Perform atomic git commits with TDD phase prefix (red:/green:/refac
 
 ## Usage
 ```
-stdd commit-tdd commit [change]          # Create atomic TDD commit
-stdd commit-tdd check [change]           # Check commit readiness
-stdd commit-tdd amend [change]           # Amend last commit
-stdd commit-tdd status                   # Show git commit status
+chaos commit-tdd commit [change]          # Create atomic TDD commit
+chaos commit-tdd check [change]           # Check commit readiness
+chaos commit-tdd amend [change]           # Amend last commit
+chaos commit-tdd status                   # Show git commit status
 ```
 
 ## Description

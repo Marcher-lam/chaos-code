@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:constitution
 
 ## Purpose
-**管理 9 篇 Constitution 条例与质量门禁**。这是 STDD Copilot 的治理 skill，定义和执行项目开发规范。
+**管理 9 篇 Constitution 条例与质量门禁**。这是 Chaos Code 的治理 skill，定义和执行项目开发规范。
 
 **核心设计原则：**
 - **语言无关**：条例适用于任何编程语言
@@ -150,30 +150,30 @@ graph:
 
 ```bash
 # 显示特定条例
-stdd constitution show 2
-stdd constitution show --all
+chaos constitution show 2
+chaos constitution show --all
 
 # 检查合规性
-stdd constitution check
-stdd constitution check --article 2,7,9
+chaos constitution check
+chaos constitution check --article 2,7,9
 
 # 查看状态
-stdd constitution status
-stdd constitution status --json
+chaos constitution status
+chaos constitution status --json
 
 # 修复违规
-stdd constitution fix --article 2
-stdd constitution fix --dry-run
+chaos constitution fix --article 2
+chaos constitution fix --dry-run
 
 # 申请豁免
-stdd constitution waive 2 --reason "Legacy code" --days 7
+chaos constitution waive 2 --reason "Legacy code" --days 7
 
 # 查看豁免列表
-stdd constitution waivers
+chaos constitution waivers
 
 # 审计历史
-stdd constitution audit
-stdd constitution audit --json
+chaos constitution audit
+chaos constitution audit --json
 ```
 
 ## 豁免管理
@@ -225,7 +225,7 @@ Constitution Compliance Report
 
   Overall Status: FAIL (1 blocking violation)
 
-  Run: stdd constitution fix --article 9
+  Run: chaos constitution fix --article 9
 ```
 
 ## Graph Semantics

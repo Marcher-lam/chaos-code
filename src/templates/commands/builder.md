@@ -1,24 +1,24 @@
 ---
-description: Create custom agents, workflows, and skills for STDD Copilot
+description: Create custom agents, workflows, and skills for Chaos Code
 ---
 
 # Command: /stdd:builder
 
 ## Usage
 ```
-stdd builder agent <name>                        # Create a custom review agent
-stdd builder agent <name> --expertise "..." --lens "..." --focus "..."
-stdd builder workflow <name>                     # Create a custom workflow
-stdd builder workflow <name> --phases stdd-propose,stdd-spec,stdd-plan
-stdd builder skill <name>                        # Create a custom skill
-stdd builder list                                # List all custom builders
-stdd builder list --json                         # JSON output
-stdd builder validate <path>                     # Validate a custom creation
-stdd builder export <name> --type <agent|workflow|skill>  # Package as extension
+chaos builder agent <name>                        # Create a custom review agent
+chaos builder agent <name> --expertise "..." --lens "..." --focus "..."
+chaos builder workflow <name>                     # Create a custom workflow
+chaos builder workflow <name> --phases stdd-propose,stdd-spec,stdd-plan
+chaos builder skill <name>                        # Create a custom skill
+chaos builder list                                # List all custom builders
+chaos builder list --json                         # JSON output
+chaos builder validate <path>                     # Validate a custom creation
+chaos builder export <name> --type <agent|workflow|skill>  # Package as extension
 ```
 
 ## Description
-The builder command allows users to create custom agents, workflows, and skills that extend STDD Copilot's capabilities. Each creation type is stored in `stdd/builders/` and can be exported as a reusable extension.
+The builder command allows users to create custom agents, workflows, and skills that extend Chaos Code's capabilities. Each creation type is stored in `stdd/builders/` and can be exported as a reusable extension.
 
 ## Actions
 

@@ -15,6 +15,7 @@ module.exports = {
   ],
   modulePathIgnorePatterns: [
     '<rootDir>/stdd/templates/starters',
+    '<rootDir>/.claude',
   ],
   verbose: true,
   detectOpenHandles: true,

@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:learn
 
 ## Purpose
-**从项目代码和反馈学习本地模式与偏好**。这是 STDD Copilot 的学习 skill，通过分析代码和反馈来理解项目约定。
+**从项目代码和反馈学习本地模式与偏好**。这是 Chaos Code 的学习 skill，通过分析代码和反馈来理解项目约定。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -76,21 +76,21 @@ graph:
 
 ```bash
 # 扫描代码模式
-stdd learn scan
+chaos learn scan
 
 # 分析模式
-stdd learn analyze-patterns
+chaos learn analyze-patterns
 
 # 记录反馈
-stdd learn good "prefer explicit errors"
-stdd learn bad "avoid implicit any"
-stdd learn suggest "add more tests"
+chaos learn good "prefer explicit errors"
+chaos learn bad "avoid implicit any"
+chaos learn suggest "add more tests"
 
 # 查看状态
-stdd learn status --json
+chaos learn status --json
 
 # 更新风格指南
-stdd learn update-styleguide
+chaos learn update-styleguide
 ```
 
 ## 多语言模式识别

@@ -53,25 +53,25 @@ Generates a polished static HTML documentation site from all existing project do
 Scans the project for documentation sources and generates the full static site.
 
 ```
-stdd docs
-stdd docs generate
-stdd docs --output ./public/docs
-stdd docs --lang en
+chaos docs
+chaos docs generate
+chaos docs --output ./public/docs
+chaos docs --lang en
 ```
 
 ### open
 Generates the docs site and opens `index.html` in the default browser.
 
 ```
-stdd docs open
+chaos docs open
 ```
 
 ### sources
 Lists all discovered documentation sources without generating the site.
 
 ```
-stdd docs sources
-stdd docs sources --json
+chaos docs sources
+chaos docs sources --json
 ```
 
 ## Documentation Sources
@@ -103,22 +103,22 @@ stdd/docs-site/
 
 ```bash
 # Generate docs site
-stdd docs
+chaos docs
 
 # Generate and open in browser
-stdd docs open
+chaos docs open
 
 # List doc sources
-stdd docs sources
+chaos docs sources
 
 # JSON output
-stdd docs --json
+chaos docs --json
 
 # Language filter
-stdd docs --lang en
+chaos docs --lang en
 
 # Custom output directory
-stdd docs --output ./public/docs
+chaos docs --output ./public/docs
 ```
 
 ## Markdown to HTML Conversion

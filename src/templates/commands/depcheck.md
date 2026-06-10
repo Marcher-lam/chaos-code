@@ -6,9 +6,9 @@ description: Check for unused dependencies
 
 ## Usage
 ```
-stdd depcheck                    # Check dependencies
-stdd depcheck path/to/dir        # Check specific directory
-stdd depcheck --json             # JSON format
+chaos depcheck                    # Check dependencies
+chaos depcheck path/to/dir        # Check specific directory
+chaos depcheck --json             # JSON format
 ```
 
 ## Description

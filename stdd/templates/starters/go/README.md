@@ -1,6 +1,6 @@
 # {{name}}
 
-A Go project bootstrapped with STDD Copilot.
+A Go project bootstrapped with Chaos Code.
 
 ## Get Started
 

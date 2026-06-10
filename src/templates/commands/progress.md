@@ -6,12 +6,12 @@ description: Real-time progress tracking with resume
 
 ## Usage
 ```
-stdd progress                    # Show progress
-stdd progress --summary          # Progress overview
-stdd progress --resume           # Resume from last state
-stdd progress --json             # JSON format
-stdd progress --last N           # Last N entries
-stdd progress --clear            # Clear progress
+chaos progress                    # Show progress
+chaos progress --summary          # Progress overview
+chaos progress --resume           # Resume from last state
+chaos progress --json             # JSON format
+chaos progress --last N           # Last N entries
+chaos progress --clear            # Clear progress
 ```
 
 ## Description

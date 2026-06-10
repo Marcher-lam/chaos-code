@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:metrics
 
 ## Purpose
-**汇总项目、变更和 workspace 质量指标**。这是 STDD Copilot 的指标 skill，聚合和展示项目质量数据。
+**汇总项目、变更和 workspace 质量指标**。这是 Chaos Code 的指标 skill，聚合和展示项目质量数据。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -93,22 +93,22 @@ graph:
 
 ```bash
 # 查看变更指标
-stdd metrics <change-id>
+chaos metrics <change-id>
 
 # 查看项目指标
-stdd metrics --project
+chaos metrics --project
 
 # JSON 输出
-stdd metrics <change-id> --json
+chaos metrics <change-id> --json
 
 # 指定 workspace
-stdd metrics --workspace packages/api
+chaos metrics --workspace packages/api
 
 # 趋势报告
-stdd metrics <change-id> --trend
+chaos metrics <change-id> --trend
 
 # 导出报告
-stdd metrics <change-id> --output report.json
+chaos metrics <change-id> --output report.json
 ```
 
 ## 报告格式

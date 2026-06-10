@@ -6,12 +6,12 @@ description: Pattern teaching and style extraction
 
 ## Usage
 ```
-stdd learn                       # Show learning status
-stdd learn scan                  # Scan for patterns
-stdd learn good <pattern>        # Teach good pattern
-stdd learn bad <pattern>         # Teach bad pattern
-stdd learn suggest               # Get suggestions
-stdd learn status                # Show learned patterns
+chaos learn                       # Show learning status
+chaos learn scan                  # Scan for patterns
+chaos learn good <pattern>        # Teach good pattern
+chaos learn bad <pattern>         # Teach bad pattern
+chaos learn suggest               # Get suggestions
+chaos learn status                # Show learned patterns
 ```
 
 ## Description

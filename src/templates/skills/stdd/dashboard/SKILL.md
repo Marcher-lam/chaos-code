@@ -49,7 +49,7 @@ Generates a self-contained static HTML dashboard that visualizes the current sta
 - Before a review meeting to generate a shareable status page
 - During CI/CD to produce an artifact showing build/test health
 - When onboarding new team members to show project status
-- As part of a `stdd doctor` or health check workflow
+- As part of a `chaos doctor` or health check workflow
 
 ## Dashboard Sections
 
@@ -78,19 +78,19 @@ Generates a self-contained static HTML dashboard that visualizes the current sta
 
 ```bash
 # Generate dashboard (default action)
-stdd dashboard
+chaos dashboard
 
 # Generate with explicit action
-stdd dashboard generate
+chaos dashboard generate
 
 # Generate and open in browser
-stdd dashboard open
+chaos dashboard open
 
 # Output raw data as JSON (no HTML generation)
-stdd dashboard --json
+chaos dashboard --json
 
 # Custom output path
-stdd dashboard --output ./reports/dashboard.html
+chaos dashboard --output ./reports/dashboard.html
 ```
 
 ## Design Token Integration

@@ -6,9 +6,9 @@ description: Validate spec consistency and integrity
 
 ## Usage
 ```
-stdd validate [change]           # Validate change
-stdd validate --spec-guardian    # Spec Guardian check
-stdd validate --fix              # Auto-fix issues
+chaos validate [change]           # Validate change
+chaos validate --spec-guardian    # Spec Guardian check
+chaos validate --fix              # Auto-fix issues
 ```
 
 ## Description

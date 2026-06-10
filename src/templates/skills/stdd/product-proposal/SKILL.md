@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:product-proposal
 
 ## Purpose
-**从全项目产物生成 15 章节产品方案报告**。这是 STDD Copilot 的产品方案 skill，聚合项目信息生成完整的产品文档。
+**从全项目产物生成 15 章节产品方案报告**。这是 Chaos Code 的产品方案 skill，聚合项目信息生成完整的产品文档。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -134,19 +134,19 @@ graph:
 
 ```bash
 # 生成产品方案
-stdd product-proposal
+chaos product-proposal
 
 # JSON 格式
-stdd product-proposal --json
+chaos product-proposal --json
 
 # 指定输出
-stdd product-proposal --output docs/PRODUCT-PROPOSAL.md
+chaos product-proposal --output docs/PRODUCT-PROPOSAL.md
 
 # 指定语言
-stdd product-proposal --lang en
+chaos product-proposal --lang en
 
 # Workspace 支持
-stdd product-proposal --workspace packages/api
+chaos product-proposal --workspace packages/api
 ```
 
 ## 数据来源

@@ -6,12 +6,12 @@ description: Generate reusable test data factories and fixtures (language-agnost
 
 ## Usage
 ```bash
-stdd factory <change-id>                      # Generate factory
-stdd factory <change-id> --entity User        # Specify entity type
-stdd factory <change-id> --scenario valid,edge,invalid  # Test scenarios
-stdd factory <change-id> --output tests/factories  # Output path
-stdd factory <change-id> --faker-type @faker-js/faker  # Faker library
-stdd factory <change-id> --workspace packages/api  # Workspace scope
+chaos factory <change-id>                      # Generate factory
+chaos factory <change-id> --entity User        # Specify entity type
+chaos factory <change-id> --scenario valid,edge,invalid  # Test scenarios
+chaos factory <change-id> --output tests/factories  # Output path
+chaos factory <change-id> --faker-type @faker-js/faker  # Faker library
+chaos factory <change-id> --workspace packages/api  # Workspace scope
 ```
 
 ## Description

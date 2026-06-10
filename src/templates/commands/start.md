@@ -6,7 +6,7 @@ description: Interactive quick start wizard
 
 ## Usage
 ```
-stdd start                       # Launch wizard
+chaos start                       # Launch wizard
 ```
 
 ## Description

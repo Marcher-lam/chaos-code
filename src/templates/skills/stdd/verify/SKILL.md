@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:verify
 
 ## Purpose
-**验证任务、测试、Constitution 与 evidence 完整性**。这是 STDD Copilot 的综合验证 skill，确保变更满足所有质量标准。
+**验证任务、测试、Constitution 与 evidence 完整性**。这是 Chaos Code 的综合验证 skill，确保变更满足所有质量标准。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -57,25 +57,25 @@ graph:
 
 ```bash
 # 综合验证
-stdd verify <change-id>
+chaos verify <change-id>
 
 # 包含 lint
-stdd verify <change-id> --lint
+chaos verify <change-id> --lint
 
 # 跳过 Constitution
-stdd verify <change-id> --no-constitution
+chaos verify <change-id> --no-constitution
 
 # 跳过 mutation
-stdd verify <change-id> --no-mutation
+chaos verify <change-id> --no-mutation
 
 # Workspace 支持
-stdd verify <change-id> --workspace packages/api
+chaos verify <change-id> --workspace packages/api
 
 # 详细输出
-stdd verify <change-id> --verbose
+chaos verify <change-id> --verbose
 
 # JSON 输出
-stdd verify <change-id> --json
+chaos verify <change-id> --json
 ```
 
 ## 验证维度

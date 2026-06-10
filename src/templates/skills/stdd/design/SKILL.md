@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:design
 
 ## Purpose
-**技术设计文档与视觉系统生成**。这是 STDD Copilot 的设计 skill，支持技术设计文档（TDD）和视觉设计系统两种模式。
+**技术设计文档与视觉系统生成**。这是 Chaos Code 的设计 skill，支持技术设计文档（TDD）和视觉设计系统两种模式。
 
 **核心设计原则：**
 - **语言无关**：适用于任何技术栈
@@ -70,13 +70,13 @@ graph:
 
 **CLI**:
 ```bash
-stdd design <change-id>
+chaos design <change-id>
 
 # 最小化设计
-stdd design <change-id> --minimal
+chaos design <change-id> --minimal
 
 # 包含 ADR
-stdd design <change-id> --adr
+chaos design <change-id> --adr
 ```
 
 ### 模式 2: 视觉设计系统 (Visual Design System)
@@ -93,15 +93,15 @@ stdd design <change-id> --adr
 **CLI**:
 ```bash
 # 生成视觉设计系统
-stdd design --visual
+chaos design --visual
 
 # 使用预设模板
-stdd design --visual --preset modern
-stdd design --visual --preset dark
-stdd design --visual --preset minimal
+chaos design --visual --preset modern
+chaos design --visual --preset dark
+chaos design --visual --preset minimal
 
 # 指定 workspace
-stdd design --visual --workspace packages/web
+chaos design --visual --workspace packages/web
 ```
 
 ## 技术设计文档结构
@@ -268,21 +268,21 @@ Accepted
 
 ```bash
 # 技术设计
-stdd design <change-id>
-stdd design <change-id> --minimal
-stdd design <change-id> --adr
-stdd design <change-id> --workspace packages/api
+chaos design <change-id>
+chaos design <change-id> --minimal
+chaos design <change-id> --adr
+chaos design <change-id> --workspace packages/api
 
 # 视觉设计系统
-stdd design --visual
-stdd design --visual --preset modern
-stdd design --visual --preset dark
-stdd design --visual --preset minimal
-stdd design --visual --workspace packages/web
+chaos design --visual
+chaos design --visual --preset modern
+chaos design --visual --preset dark
+chaos design --visual --preset minimal
+chaos design --visual --workspace packages/web
 
 # 更新现有设计
-stdd design <change-id> --update
-stdd design --visual --update
+chaos design <change-id> --update
+chaos design --visual --update
 ```
 
 ## Graph Semantics

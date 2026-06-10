@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:commit
 
 ## Purpose
-**生成符合 TDD 阶段和 Conventional Commits 规范的提交信息**。这是 STDD Copilot 的 Git commit 规范化 skill，确保提交历史清晰、可追溯、可自动化。
+**生成符合 TDD 阶段和 Conventional Commits 规范的提交信息**。这是 Chaos Code 的 Git commit 规范化 skill，确保提交历史清晰、可追溯、可自动化。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言和项目
@@ -125,45 +125,45 @@ git commit -m "[REFACTOR] extract auth service"
 
 ```bash
 # 交互式生成提交信息
-stdd commit
+chaos commit
 
 # 生成提交信息（不自动执行 git commit）
-stdd commit <change-id>
+chaos commit <change-id>
 
 # 指定 TDD 阶段
-stdd commit <change-id> --tdd-phase green
+chaos commit <change-id> --tdd-phase green
 
 # 关联 issue
-stdd commit <change-id> --issue 42
-stdd commit <change-id> --issue PROJ-123
+chaos commit <change-id> --issue 42
+chaos commit <change-id> --issue PROJ-123
 
 # 要求必须有 issue
-stdd commit <change-id> --require-issue
+chaos commit <change-id> --require-issue
 
 # JSON 格式输出
-stdd commit <change-id> --format json
+chaos commit <change-id> --format json
 
 # 预览模式（不修改任何东西）
-stdd commit <change-id> --dry-run
+chaos commit <change-id> --dry-run
 
 # 实际执行 git commit
-stdd commit <change-id> --execute
+chaos commit <change-id> --execute
 
 # 使用 Commitizen 风格的交互式提示
-stdd commit --interactive
+chaos commit --interactive
 
 # 验证提交信息
-stdd commit --validate "feat: add new feature"
+chaos commit --validate "feat: add new feature"
 
 # 从模板生成
-stdd commit --template feature
+chaos commit --template feature
 ```
 
 ## 交互式提交 (Commitizen 风格)
 
 ### 交互式流程
 ```bash
-$ stdd commit --interactive
+$ chaos commit --interactive
 
 ? Select the type of change: 
   feat:     A new feature

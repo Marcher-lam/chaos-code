@@ -41,7 +41,7 @@ graph:
 # STDD Skill: /stdd:archive
 
 ## Purpose
-归档完成变更并合并 **delta specs 到主规格**。这是 STDD Copilot 的 Spec-First + TDD CLI skill，服务 Skill Graph 编排、Constitution gate、evidence 留痕和 workspace 作用域。
+归档完成变更并合并 **delta specs 到主规格**。这是 Chaos Code 的 Spec-First + TDD CLI skill，服务 Skill Graph 编排、Constitution gate、evidence 留痕和 workspace 作用域。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言和框架
@@ -56,8 +56,8 @@ graph:
 - monorepo 中使用 --workspace <path-or-package> 限定作用域。
 
 ## Preconditions
-- 已在仓库根或目标 workspace 中运行 stdd init；只读技能例外但仍应识别项目状态。
-- 明确 <change-id>、scope 或 topic；未明确时先询问或运行 stdd status / stdd recommend。
+- 已在仓库根或目标 workspace 中运行 chaos init；只读技能例外但仍应识别项目状态。
+- 明确 <change-id>、scope 或 topic；未明确时先询问或运行 chaos status / chaos recommend。
 - 不得伪造 evidence；缺失测试、mutation 或 Constitution 结果必须显式标记。
 - 所有任务必须完成（tasks.md 中全部标记为 `[x]`）。
 
@@ -71,7 +71,7 @@ graph:
 
 ### 1. 前置检查
 - 验证所有任务已完成（`[x]` 标记）
-- 如有未完成任务，提示完成或运行 `stdd verify`
+- 如有未完成任务，提示完成或运行 `chaos verify`
 
 ### 2. Delta Specs 合并
 
@@ -121,13 +121,13 @@ stdd/changes/<change-id>/
 
 ```bash
 # 归档指定变更
-stdd archive <change-id>
+chaos archive <change-id>
 
 # 归档当前活跃变更
-stdd archive
+chaos archive
 
 # 强制归档（跳过某些检查）
-stdd archive <change-id> --force
+chaos archive <change-id> --force
 ```
 
 ## Outputs
@@ -196,10 +196,10 @@ stdd/
 - 证据文件应包含 command、timestamp、workspace、input summary、result、exit code 和关键 stdout/stderr 摘要。
 
 ## Error Handling
-- 缺少 STDD 初始化时提示 stdd init。
-- 缺少 change-id 时列出 stdd list / stdd status 的下一步。
+- 缺少 STDD 初始化时提示 chaos init。
+- 缺少 change-id 时列出 chaos list / chaos status 的下一步。
 - 任务未完成时列出待完成任务并退出。
-- workspace 不存在时提示 stdd workspace validate / repair。
+- workspace 不存在时提示 chaos workspace validate / repair。
 
 ## Archive 最佳实践
 

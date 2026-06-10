@@ -40,7 +40,7 @@ graph:
 # STDD Skill: /stdd:supervisor
 
 ## Purpose
-**协调多 Agent 任务委派、同步和失败升级**。这是 STDD Copilot 的编排 skill，负责多 Agent 协作和任务分发。
+**协调多 Agent 任务委派、同步和失败升级**。这是 Chaos Code 的编排 skill，负责多 Agent 协作和任务分发。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -58,19 +58,19 @@ graph:
 
 ```bash
 # 启动 supervisor
-stdd supervisor start <change-id> --rounds 3
+chaos supervisor start <change-id> --rounds 3
 
 # 查看状态
-stdd supervisor status <change-id>
+chaos supervisor status <change-id>
 
 # 继续执行
-stdd supervisor next <change-id>
+chaos supervisor next <change-id>
 
 # 停止执行
-stdd supervisor stop <change-id>
+chaos supervisor stop <change-id>
 
 # Workspace 支持
-stdd supervisor start <change-id> --workspace packages/api
+chaos supervisor start <change-id> --workspace packages/api
 ```
 
 ## Agent 角色

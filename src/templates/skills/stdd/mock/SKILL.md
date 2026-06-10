@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:mock
 
 ## Purpose
-**为外部依赖生成测试 Mock、Stub 与 Fake**。这是 STDD Copilot 的 Mock 生成 skill，为测试创建测试替身。
+**为外部依赖生成测试 Mock、Stub 与 Fake**。这是 Chaos Code 的 Mock 生成 skill，为测试创建测试替身。
 
 **核心设计原则：**
 - **语言无关**：支持多种 Mock 模式
@@ -76,20 +76,20 @@ graph:
 
 ```bash
 # 生成 Mock
-stdd mock <change-id>
+chaos mock <change-id>
 
 # 指定接口
-stdd mock <change-id> --interface UserService
+chaos mock <change-id> --interface UserService
 
 # 指定类型
-stdd mock <change-id> --type stub
-stdd mock <change-id> --type fake
+chaos mock <change-id> --type stub
+chaos mock <change-id> --type fake
 
 # 从 API spec 生成
-stdd mock <change-id> --from-api-spec
+chaos mock <change-id> --from-api-spec
 
 # Workspace 支持
-stdd mock <change-id> --workspace packages/api
+chaos mock <change-id> --workspace packages/api
 ```
 
 ## 多语言 Mock 示例
@@ -485,7 +485,7 @@ def test_get_user(vcr_cassette):
 ### 基于 OpenAPI 生成 Mock
 ```bash
 # 从 OpenAPI spec 生成 mock server
-stdd mock --from-api-spec openapi.yaml --output mocks/
+chaos mock --from-api-spec openapi.yaml --output mocks/
 
 # 使用 Prism（OpenAPI mocking）
 npx @stoplight/prism-cli mock openapi.yaml

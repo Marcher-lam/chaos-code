@@ -6,14 +6,14 @@ description: Read-only exploration of project architecture and quality hotspots 
 
 ## Usage
 ```bash
-stdd explore                          # Explore entire project
-stdd explore <scope>                  # Explore specific scope
-stdd explore src                      # Explore src directory
-stdd explore auth                     # Explore auth module
-stdd explore --output report.md       # Save report to file
-stdd explore --json                   # JSON format output
-stdd explore --deep                   # Deep analysis
-stdd explore --workspace packages/api # Workspace scope
+chaos explore                          # Explore entire project
+chaos explore <scope>                  # Explore specific scope
+chaos explore src                      # Explore src directory
+chaos explore auth                     # Explore auth module
+chaos explore --output report.md       # Save report to file
+chaos explore --json                   # JSON format output
+chaos explore --deep                   # Deep analysis
+chaos explore --workspace packages/api # Workspace scope
 ```
 
 ## Description

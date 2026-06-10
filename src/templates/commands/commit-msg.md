@@ -6,8 +6,8 @@ description: Generate TDD-style commit messages
 
 ## Usage
 ```
-stdd commit-msg [change]         # Generate commit message
-stdd commit-msg --phase=red      # Specify TDD phase
+chaos commit-msg [change]         # Generate commit message
+chaos commit-msg --phase=red      # Specify TDD phase
 ```
 
 ## Description

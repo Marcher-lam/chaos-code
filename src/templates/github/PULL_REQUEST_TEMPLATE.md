@@ -14,14 +14,14 @@
 
 - [ ] Proposal created: `stdd/changes/.../proposal.md`
 - [ ] Specs updated: `stdd/specs/` or `stdd/changes/.../specs/`
-- [ ] Tests pass: `stdd verify`
-- [ ] Constitution check: `stdd constitution check`
+- [ ] Tests pass: `chaos verify`
+- [ ] Constitution check: `chaos constitution check`
 
 ## Workspace Scoped Checklist
 
-- [ ] Constitution status: `stdd constitution status --workspace <workspace>`
-- [ ] Workspace verify: `stdd verify --workspace <workspace>`
-- [ ] Workspace metrics: `stdd metrics --workspace <workspace>`
+- [ ] Constitution status: `chaos constitution status --workspace <workspace>`
+- [ ] Workspace verify: `chaos verify --workspace <workspace>`
+- [ ] Workspace metrics: `chaos metrics --workspace <workspace>`
 
 ## Changes
 

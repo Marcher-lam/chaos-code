@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:prp
 
 ## Purpose
-**生成 What/Why/How/Success 结构化规划**。这是 STDD Copilot 的 PRP（Problem-Resolution-Plan）skill，提供结构化的规划框架。
+**生成 What/Why/How/Success 结构化规划**。这是 Chaos Code 的 PRP（Problem-Resolution-Plan）skill，提供结构化的规划框架。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -90,20 +90,20 @@ graph:
 
 ```bash
 # 生成 PRP
-stdd prp <change-id>
+chaos prp <change-id>
 
 # 从描述生成
-stdd prp <change-id> --description "用户登录失败"
+chaos prp <change-id> --description "用户登录失败"
 
 # 指定业务目标
-stdd prp <change-id> --goal "提高用户转化率 20%"
+chaos prp <change-id> --goal "提高用户转化率 20%"
 
 # 指定约束
-stdd prp <change-id> --constraint "预算有限"
-stdd prp <change-id> --constraint "时间紧迫"
+chaos prp <change-id> --constraint "预算有限"
+chaos prp <change-id> --constraint "时间紧迫"
 
 # Workspace 支持
-stdd prp <change-id> --workspace packages/api
+chaos prp <change-id> --workspace packages/api
 ```
 
 ## PRP 模板

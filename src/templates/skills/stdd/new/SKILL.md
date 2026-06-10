@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:new
 
 ## Purpose
-**创建变更工作区并启动 Spec-First 需求流**。这是 STDD Copilot 的变更创建 skill，初始化新的开发任务。
+**创建变更工作区并启动 Spec-First 需求流**。这是 Chaos Code 的变更创建 skill，初始化新的开发任务。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -72,25 +72,25 @@ stdd/changes/<change-id>/
 
 ```bash
 # 创建新变更
-stdd new <change-id>
+chaos new <change-id>
 
 # 带标题
-stdd new <change-id> --title "Add user login"
+chaos new <change-id> --title "Add user login"
 
 # 带描述
-stdd new <change-id> --description "Implement OAuth2 login"
+chaos new <change-id> --description "Implement OAuth2 login"
 
 # 从需求描述生成 ID
-stdd new "Add user authentication"
+chaos new "Add user authentication"
 
 # 指定 workspace
-stdd new <change-id> --workspace packages/api
+chaos new <change-id> --workspace packages/api
 
 # 列出变更
-stdd new --list
+chaos new --list
 
 # 查看状态
-stdd status <change-id>
+chaos status <change-id>
 ```
 
 ## 状态文件

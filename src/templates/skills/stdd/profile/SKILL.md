@@ -95,21 +95,21 @@ ELSE                                    -> enterprise
 
 ```bash
 # Auto-detect from project data
-stdd profile detect
+chaos profile detect
 
 # Explicitly set a profile
-stdd profile set thorough
+chaos profile set thorough
 
 # List all profiles
-stdd profile list
+chaos profile list
 
 # Get full recommendation with workflow
-stdd profile recommend
-stdd profile recommend --change feature
+chaos profile recommend
+chaos profile recommend --change feature
 
 # JSON output for scripting
-stdd profile detect --json
-stdd profile recommend --change hotfix --json
+chaos profile detect --json
+chaos profile recommend --change hotfix --json
 ```
 
 ## Configuration Persistence

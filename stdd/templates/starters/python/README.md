@@ -1,6 +1,6 @@
 # {{name}}
 
-A Python project bootstrapped with STDD Copilot.
+A Python project bootstrapped with Chaos Code.
 
 ## Get Started
 

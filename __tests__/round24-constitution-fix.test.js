@@ -390,14 +390,14 @@ describe('round24 - constitution-fix branch coverage', () => {
 
   // -------------------------------------------------------------------
   // 13. _fixArticle9: ciPath exists path (line 421)
-  //     When CI config already exists and the specific stdd-ci.yml file
+  //     When CI config already exists and the specific chaos-ci.yml file
   //     also exists, the path should be set
   // -------------------------------------------------------------------
   describe('_fixArticle9 - ci file path reporting when exists', () => {
-    it('reports ci file path when stdd-ci.yml already exists alongside other CI', async () => {
+    it('reports ci file path when chaos-ci.yml already exists alongside other CI', async () => {
       const tmp = makeTempDir();
       fs.mkdirSync(path.join(tmp, '.github', 'workflows'), { recursive: true });
-      fs.writeFileSync(path.join(tmp, '.github', 'workflows', 'stdd-ci.yml'), 'name: Existing\n');
+      fs.writeFileSync(path.join(tmp, '.github', 'workflows', 'chaos-ci.yml'), 'name: Existing\n');
       fs.writeFileSync(path.join(tmp, '.github', 'workflows', 'other.yml'), 'name: Other\n');
 
       const cmd = new ConstitutionFixCommand(silentSpinner);
@@ -405,7 +405,7 @@ describe('round24 - constitution-fix branch coverage', () => {
 
       const a9 = results.find(r => r.article === 9);
       expect(a9.skipped).toBe(true);
-      expect(a9.path).toBe('.github/workflows/stdd-ci.yml');
+      expect(a9.path).toBe('.github/workflows/chaos-ci.yml');
     });
   });
 

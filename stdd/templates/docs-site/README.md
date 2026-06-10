@@ -50,7 +50,7 @@ docs_site:
   enabled: true
   framework: "astro"         # astro (默认) / vitepress / docusaurus
   theme: "starlight"         # Astro Starlight 主题
-  title: "STDD Copilot"
+  title: "Chaos Code"
   description: "Specification & Test-Driven Development Framework"
   output_dir: "docs-dist"    # 构建输出目录
   auto_sidebar: true         # 自动生成侧边栏

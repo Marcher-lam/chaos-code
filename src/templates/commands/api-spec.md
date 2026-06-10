@@ -6,9 +6,9 @@ description: Generate OpenAPI format API specifications
 
 ## Usage
 ```
-stdd api-spec [change]           # Generate API spec for change
-stdd api-spec --format=openapi   # Specify output format
-stdd api-spec --output=file.yaml # Specify output file
+chaos api-spec [change]           # Generate API spec for change
+chaos api-spec --format=openapi   # Specify output format
+chaos api-spec --output=file.yaml # Specify output file
 ```
 
 ## Description

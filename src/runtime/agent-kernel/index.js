@@ -14,6 +14,7 @@ const { AgentHistoryStore } = require('./history');
 const { AgentConfig } = require('./config');
 const { AgentDoctor } = require('./doctor');
 const { StddTools } = require('./stdd-tools');
+const { McpClientManager } = require('./mcp-client');
 
 const STDD_NATIVE_PHASES = [
   'inspect',
@@ -45,6 +46,21 @@ class AgentKernel {
     this.historyStore = options.historyStore || new AgentHistoryStore({ cwd: this.cwd });
     this.stddTools = options.stddTools || new StddTools(this.cwd);
     this.cycleRunner = options.cycleRunner || new AgentCycleRunner({ kernel: this });
+
+    this.mcpClientManager = options.mcpClientManager || new McpClientManager(this.cwd);
+    this.mcpInitPromise = this.mcpClientManager.startAll().then(() => {
+      const mcpTools = this.mcpClientManager.getTools();
+      for (const tool of mcpTools) {
+        this.tools.register({
+          name: tool.name,
+          description: tool.description,
+          category: 'mcp',
+          risk: 'write',
+          requiresApproval: true,
+          inputSchema: tool.inputSchema
+        });
+      }
+    });
   }
 
   describe() {
@@ -92,6 +108,9 @@ class AgentKernel {
     if (permission.decision === 'ask' && !args.approved) {
       throw new Error(`Tool requires approval: ${name} (${permission.reason})`);
     }
+    if (tool && tool.category === 'mcp') {
+      return this.mcpClientManager.callTool(name, args);
+    }
     if (name === 'fs.read' || name === 'fs.search') {
       return this.readOnlyTools.execute(name, args);
     }
@@ -104,6 +123,24 @@ class AgentKernel {
     }
     if (name === 'git.diff') {
       return this.gitTool.diff(args);
+    }
+    if (name === 'git.add') {
+      return this.gitTool.add(args);
+    }
+    if (name === 'git.commit') {
+      return this.gitTool.commit(args);
+    }
+    if (name === 'git.push') {
+      return this.gitTool.push(args);
+    }
+    if (name === 'git.checkout') {
+      return this.gitTool.checkout(args);
+    }
+    if (name === 'git.branch') {
+      return this.gitTool.branch(args);
+    }
+    if (name === 'git.reset') {
+      return this.gitTool.reset(args);
     }
     if (name === 'shell.run') {
       return this.shellTool.run(args);

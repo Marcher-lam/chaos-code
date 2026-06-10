@@ -6,9 +6,9 @@ description: View change status
 
 ## Usage
 ```
-stdd status                      # Show all status
-stdd status [change]             # Show specific change
-stdd status --json               # JSON format
+chaos status                      # Show all status
+chaos status [change]             # Show specific change
+chaos status --json               # JSON format
 ```
 
 ## Description

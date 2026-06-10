@@ -69,6 +69,48 @@ const DEFAULT_TOOLS = [
     risk: 'safe',
     requiresApproval: false,
   },
+  {
+    name: 'git.add',
+    description: 'Stage modified or untracked files in the repository.',
+    category: 'git',
+    risk: 'write',
+    requiresApproval: true,
+  },
+  {
+    name: 'git.commit',
+    description: 'Commit staged changes to the repository with a message.',
+    category: 'git',
+    risk: 'write',
+    requiresApproval: true,
+  },
+  {
+    name: 'git.push',
+    description: 'Push local commits to the remote repository.',
+    category: 'git',
+    risk: 'write',
+    requiresApproval: true,
+  },
+  {
+    name: 'git.checkout',
+    description: 'Switch branch or restore working tree files.',
+    category: 'git',
+    risk: 'write',
+    requiresApproval: true,
+  },
+  {
+    name: 'git.branch',
+    description: 'Create and checkout a new branch in the repository.',
+    category: 'git',
+    risk: 'write',
+    requiresApproval: true,
+  },
+  {
+    name: 'git.reset',
+    description: 'Reset current HEAD to discard local modifications.',
+    category: 'git',
+    risk: 'write',
+    requiresApproval: true,
+  },
 ];
 
 class ToolRegistry {

@@ -6,9 +6,9 @@ description: Graph execution history viewer
 
 ## Usage
 ```
-stdd graph history               # View execution history
-stdd graph history --failures    # Show only failures
-stdd graph history --id=<id>     # View specific run
+chaos graph history               # View execution history
+chaos graph history --failures    # Show only failures
+chaos graph history --id=<id>     # View specific run
 ```
 
 ## Description

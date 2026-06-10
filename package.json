@@ -1,7 +1,7 @@
 {
-  "name": "@marcher-lam/stdd-copilot-ultra",
+  "name": "@marcher-lam/chaos-code",
   "version": "2.0.0",
-  "description": "STDD Copilot Ultra — Smart Team-Driven Development: full-lifecycle AI development platform from ideation to verified delivery",
+  "description": "Chaos Code — Spec + Test Driven AI Copilot: full-lifecycle AI development platform from ideation to verified delivery",
   "main": "cli.js",
   "engines": {
     "node": ">=20.0.0"
@@ -26,9 +26,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Marcher-lam/STDD-COPILOT-ULTRA.git"
+    "url": "git+https://github.com/Marcher-lam/chaos-code.git"
   },
   "bin": {
+    "chaos": "cli.js",
     "stdd": "cli.js"
   },
   "dependencies": {

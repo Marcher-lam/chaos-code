@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:outside-in
 
 ## Purpose
-**建立 E2E 到集成到单元的外向内 TDD 骨架**。这是 STDD Copilot 的 Outside-In TDD skill，从外向内建立测试骨架。
+**建立 E2E 到集成到单元的外向内 TDD 骨架**。这是 Chaos Code 的 Outside-In TDD skill，从外向内建立测试骨架。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -94,19 +94,19 @@ graph:
 
 ```bash
 # 初始化 Outside-In
-stdd outside-in init
+chaos outside-in init
 
 # 生成测试骨架
-stdd outside-in scaffold <change-id>
+chaos outside-in scaffold <change-id>
 
 # 查看层级状态
-stdd outside-in status
+chaos outside-in status
 
 # 添加 E2E 场景
-stdd outside-in add-e2e <change-id> "User login flow"
+chaos outside-in add-e2e <change-id> "User login flow"
 
 # Workspace 支持
-stdd outside-in scaffold <change-id> --workspace packages/web
+chaos outside-in scaffold <change-id> --workspace packages/web
 ```
 
 ## 多语言 E2E 测试

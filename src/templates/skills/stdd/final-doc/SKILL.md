@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:final-doc
 
 ## Purpose
-**聚合变更产物生成最终交付文档**。这是 STDD Copilot 的文档聚合 skill，将整个开发周期的产物整合成完整的交付文档。
+**聚合变更产物生成最终交付文档**。这是 Chaos Code 的文档聚合 skill，将整个开发周期的产物整合成完整的交付文档。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -183,22 +183,22 @@ graph:
 
 ```bash
 # 生成最终文档
-stdd final-doc <change-id>
+chaos final-doc <change-id>
 
 # 输出到指定位置
-stdd final-doc <change-id> --output docs/
+chaos final-doc <change-id> --output docs/
 
 # 包含代码差异
-stdd final-doc <change-id> --include-diff
+chaos final-doc <change-id> --include-diff
 
 # 包含测试报告
-stdd final-doc <change-id> --include-test-report
+chaos final-doc <change-id> --include-test-report
 
 # JSON 格式
-stdd final-doc <change-id> --json
+chaos final-doc <change-id> --json
 
 # Workspace 支持
-stdd final-doc <change-id> --workspace packages/api
+chaos final-doc <change-id> --workspace packages/api
 ```
 
 ## 产物聚合逻辑
@@ -233,7 +233,7 @@ stdd final-doc <change-id> --workspace packages/api
 
 ### 缺失证据
 - 突变测试报告未生成
-- 建议运行: `stdd mutation <change-id>`
+- 建议运行: `chaos mutation <change-id>`
 ```
 
 ## Graph Semantics

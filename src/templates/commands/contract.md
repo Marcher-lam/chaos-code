@@ -6,9 +6,9 @@ description: Consumer-driven contract testing
 
 ## Usage
 ```
-stdd contract generate [change]  # Generate contracts
-stdd contract verify [change]    # Verify contracts
-stdd contract --mode=pact        # Specify contract format
+chaos contract generate [change]  # Generate contracts
+chaos contract verify [change]    # Verify contracts
+chaos contract --mode=pact        # Specify contract format
 ```
 
 ## Description

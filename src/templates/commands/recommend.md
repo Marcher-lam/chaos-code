@@ -6,9 +6,9 @@ description: Recommend next step based on state
 
 ## Usage
 ```
-stdd recommend                   # Get recommendation
-stdd recommend --json            # JSON format
-stdd graph recommend             # Alias
+chaos recommend                   # Get recommendation
+chaos recommend --json            # JSON format
+chaos graph recommend             # Alias
 ```
 
 ## Description

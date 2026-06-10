@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:context
 
 ## Purpose
-**装配三层上下文用于 AI 交互**。这是 STDD Copilot 的上下文管理 skill，为 AI 助手提供精确、相关的项目上下文，避免信息过载。
+**装配三层上下文用于 AI 交互**。这是 Chaos Code 的上下文管理 skill，为 AI 助手提供精确、相关的项目上下文，避免信息过载。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言和项目类型
@@ -152,27 +152,27 @@ graph:
 
 ```bash
 # 显示所有层
-stdd context
+chaos context
 
 # 显示特定层
-stdd context --layer foundation
-stdd context --layer components
-stdd context --layer contracts
+chaos context --layer foundation
+chaos context --layer components
+chaos context --layer contracts
 
 # JSON 格式输出
-stdd context --json
+chaos context --json
 
 # 导出上下文
-stdd context --export
-stdd context --export --format json
-stdd context --export --output context.md
+chaos context --export
+chaos context --export --format json
+chaos context --export --output context.md
 
 # 复制到剪贴板
-stdd context --export --copy
+chaos context --export --copy
 
 # Workspace 上下文
-stdd context --workspace packages/api
-stdd context --workspace packages/web --export
+chaos context --workspace packages/api
+chaos context --workspace packages/web --export
 ```
 
 ## 导出格式
@@ -216,7 +216,7 @@ stdd context --workspace packages/web --export
 ### Workspace 上下文
 ```bash
 # 获取特定 workspace 的上下文
-stdd context --workspace packages/api
+chaos context --workspace packages/api
 
 # Workspace 上下文包含：
 # - Workspace 名称和路径
@@ -230,7 +230,7 @@ stdd context --workspace packages/api
 ### 用于 AI 助手
 ```bash
 # 导出上下文供 AI 使用
-stdd context --export --copy
+chaos context --export --copy
 
 # 在 AI 对话中引用
 # "Here's the project context:\n\n<PASTE CONTEXT>"

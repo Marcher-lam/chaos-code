@@ -6,9 +6,9 @@ description: List all available skills
 
 ## Usage
 ```
-stdd skills                      # List all skills
-stdd skills --phase N            # Filter by phase
-stdd skills --category <name>    # Filter by category
+chaos skills                      # List all skills
+chaos skills --phase N            # Filter by phase
+chaos skills --category <name>    # Filter by category
 ```
 
 ## Description

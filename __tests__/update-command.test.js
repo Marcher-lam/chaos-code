@@ -101,7 +101,7 @@ describe('UpdateCommand', () => {
       expect(fs.existsSync(bugReportPath)).toBe(true);
       expect(fs.existsSync(featureRequestPath)).toBe(true);
       expect(fs.readFileSync(bugReportPath, 'utf8')).toContain('Affected Workspace(s)');
-      expect(fs.readFileSync(featureRequestPath, 'utf8')).toContain('stdd context --workspace <workspace> --export');
+      expect(fs.readFileSync(featureRequestPath, 'utf8')).toContain('chaos context --workspace <workspace> --export');
       expect(fs.readFileSync(path.join(projectPath, '.github', 'PULL_REQUEST_TEMPLATE.md'), 'utf8'))
         .toBe('# Existing PR Template\n');
     });
@@ -122,7 +122,7 @@ describe('UpdateCommand', () => {
       const content = fs.readFileSync(prTemplatePath, 'utf8');
 
       expect(content).toContain('- [ ] packages/api');
-      expect(content).toContain('stdd constitution status --workspace <workspace>');
+      expect(content).toContain('chaos constitution status --workspace <workspace>');
     });
   });
 

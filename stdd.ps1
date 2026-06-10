@@ -3,8 +3,8 @@
 
 <#
 .SYNOPSIS
-    STDD Copilot CLI — PowerShell 入口
-    Spec + Test Driven Development Copilot
+    Chaos Code CLI — PowerShell 入口
+    Chaos Code - Spec + Test Driven AI Copilot
 
 .DESCRIPTION
     Windows PowerShell 包装器，调用 Node.js CLI (cli.js)。
@@ -44,7 +44,7 @@ function Test-NodeJS {
         # 验证 >= 18
         $major = [int]($version -replace '^v', '' -split '\.')[0]
         if ($major -lt 18) {
-            Write-Error "STDD 需要 Node.js >= 18，当前: $version"
+            Write-Error "Chaos Code 需要 Node.js >= 18，当前: $version"
             exit 1
         }
         return $true
@@ -66,18 +66,18 @@ function Get-ScriptRoot {
 function Show-Help {
     $helpText = @"
 
-$(Write-Host "STDD Copilot CLI" -ForegroundColor Cyan) $(Write-Host "v1.0" -ForegroundColor Gray)
-Spec + Test Driven Development Copilot — PowerShell Entry
+$(Write-Host "Chaos Code CLI" -ForegroundColor Cyan) $(Write-Host "v1.0" -ForegroundColor Gray)
+Chaos Code - Spec + Test Driven AI Copilot — PowerShell Entry
 
 $(Write-Host "USAGE:" -ForegroundColor Yellow)
     .\stdd.ps1 <command> [options]
 
 $(Write-Host "COMMANDS:" -ForegroundColor Yellow)
-    init              初始化 STDD 工作流（检测项目类型、生成配置）
+    init              初始化 Chaos Code 工作流（检测项目类型、生成配置）
     new <type> <name> 创建新变更提案
                       type: feature | bugfix | refactor | hotfix
     status            查看当前工作区状态
-    update            更新 STDD 配置和依赖
+    update            更新 Chaos Code 配置和依赖
     hooks             管理 Git Hooks（安装/卸载/状态）
     list              列出所有变更和归档
 
@@ -98,7 +98,7 @@ $(Write-Host "SKILL COMMANDS (Claude Code):" -ForegroundColor Yellow)
     /stdd:apply       /stdd:execute     /stdd:verify
     /stdd:commit      /stdd:turbo       /stdd:issue
 
-$(Write-Host "更多信息:" -ForegroundColor Gray) https://github.com/Marcher-lam/stdd-copilot
+$(Write-Host "更多信息:" -ForegroundColor Gray) https://github.com/Marcher-lam/chaos-code
 
 "@
     Write-Host $helpText
@@ -115,7 +115,7 @@ function Invoke-STDDInit {
 
     $scriptDir = Get-ScriptRoot
 
-    Write-Host "🚀 初始化 STDD Copilot..." -ForegroundColor Cyan
+    Write-Host "🚀 初始化 Chaos Code..." -ForegroundColor Cyan
 
     # 创建目录结构
     $dirs = @(
@@ -187,7 +187,7 @@ function Invoke-STDDInit {
     }
 
     Write-Host ""
-    Write-Host "✅ STDD 初始化完成！" -ForegroundColor Green
+    Write-Host "✅ Chaos Code 初始化完成！" -ForegroundColor Green
     Write-Host "   下一步: 使用 /stdd:propose 提出新需求" -ForegroundColor Gray
 }
 
@@ -243,7 +243,7 @@ function Invoke-STDDStatus {
     .SYNOPSIS
         查看当前工作区状态
     #>
-    Write-Host "📊 STDD 工作区状态" -ForegroundColor Cyan
+    Write-Host "📊 Chaos Code 工作区状态" -ForegroundColor Cyan
     Write-Host ("━" * 40)
 
     # 活跃变更
@@ -351,7 +351,7 @@ function Invoke-STDDList {
     .SYNOPSIS
         列出所有变更
     #>
-    Write-Host "📋 STDD 变更列表" -ForegroundColor Cyan
+    Write-Host "📋 Chaos Code 变更列表" -ForegroundColor Cyan
     Write-Host ("━" * 40)
 
     $changesDir = "stdd\changes"
@@ -384,7 +384,7 @@ function Invoke-STDDUpdate {
     .SYNOPSIS
         更新 STDD 配置
     #>
-    Write-Host "🔄 检查 STDD 更新..." -ForegroundColor Cyan
+    Write-Host "🔄 检查 Chaos Code 更新..." -ForegroundColor Cyan
 
     $scriptDir = Get-ScriptRoot
     $packageJson = Join-Path $scriptDir "package.json"

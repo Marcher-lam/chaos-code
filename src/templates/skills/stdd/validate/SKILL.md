@@ -39,7 +39,7 @@ graph:
 # STDD Skill: /stdd:validate
 
 ## Purpose
-**验证规格一致性并运行 Spec Guardian 泄漏检测**。这是 STDD Copilot 的验证 skill，确保规格质量和一致性。
+**验证规格一致性并运行 Spec Guardian 泄漏检测**。这是 Chaos Code 的验证 skill，确保规格质量和一致性。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -57,19 +57,19 @@ graph:
 
 ```bash
 # 验证规格
-stdd validate <change-id>
+chaos validate <change-id>
 
 # 运行 Spec Guardian
-stdd validate <change-id> --spec-guardian
+chaos validate <change-id> --spec-guardian
 
 # 自动修复
-stdd validate <change-id> --fix
+chaos validate <change-id> --fix
 
 # JSON 输出
-stdd validate <change-id> --json
+chaos validate <change-id> --json
 
 # Workspace 支持
-stdd validate <change-id> --workspace packages/api
+chaos validate <change-id> --workspace packages/api
 ```
 
 ## 验证维度
@@ -173,31 +173,31 @@ Scenario: 用户登录
 ### JavaScript/TypeScript (Cucumber)
 ```bash
 # 验证 Cucumber 格式
-stdd validate <change-id> --framework cucumber
+chaos validate <change-id> --framework cucumber
 ```
 
 ### Python (behave)
 ```bash
 # 验证 behave 格式
-stdd validate <change-id> --framework behave
+chaos validate <change-id> --framework behave
 ```
 
 ### Java (Cucumber-JVM)
 ```bash
 # 验证 Cucumber-JVM 格式
-stdd validate <change-id> --framework cucumber-jvm
+chaos validate <change-id> --framework cucumber-jvm
 ```
 
 ### Go (godog)
 ```bash
 # 验证 godog 格式
-stdd validate <change-id> --framework godog
+chaos validate <change-id> --framework godog
 ```
 
 ### Rust (cucumber-rust)
 ```bash
 # 验证 cucumber-rust 格式
-stdd validate <change-id> --framework cucumber-rust
+chaos validate <change-id> --framework cucumber-rust
 ```
 
 ## Graph Semantics

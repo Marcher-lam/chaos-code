@@ -6,10 +6,10 @@ description: Constitution compliance audit history
 
 ## Usage
 ```
-stdd audit                       # View audit history
-stdd audit --json                # JSON format output
-stdd audit --article=2           # Filter by article
-stdd audit --limit=20            # Limit entries
+chaos audit                       # View audit history
+chaos audit --json                # JSON format output
+chaos audit --article=2           # Filter by article
+chaos audit --limit=20            # Limit entries
 ```
 
 ## Description

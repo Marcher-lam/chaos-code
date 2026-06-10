@@ -6,8 +6,8 @@ description: Interactive TDD small-step guidance
 
 ## Usage
 ```
-stdd baby-steps [task]           # Guide through TDD in small steps
-stdd baby-steps --auto           # Auto-advance mode
+chaos baby-steps [task]           # Guide through TDD in small steps
+chaos baby-steps --auto           # Auto-advance mode
 ```
 
 ## Description

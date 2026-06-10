@@ -38,7 +38,7 @@ graph:
 # STDD Skill: /stdd:help
 
 ## Purpose
-**根据当前状态提供上下文感知帮助和下一步建议**。这是 STDD Copilot 的帮助 skill，根据项目当前状态提供智能建议。
+**根据当前状态提供上下文感知帮助和下一步建议**。这是 Chaos Code 的帮助 skill，根据项目当前状态提供智能建议。
 
 **核心设计原则：**
 - **语言无关**：适用于任何编程语言
@@ -60,7 +60,7 @@ graph:
 
 Your project is not yet initialized. Get started:
 
-  stdd init
+  chaos init
 
 This will set up the STDD directory structure and configuration.
 ```
@@ -71,11 +71,11 @@ This will set up the STDD directory structure and configuration.
 
 Create your first change:
 
-  stdd new "Add user login"
+  chaos new "Add user login"
 
 Or use fast-forward for clear requirements:
 
-  stdd ff "Simple bug fix"
+  chaos ff "Simple bug fix"
 ```
 
 ### 有活跃变更
@@ -85,8 +85,8 @@ Or use fast-forward for clear requirements:
 Current phase: apply
 
 Next steps:
-  stdd apply add-user-login          # Continue implementation
-  stdd status                        # View progress
+  chaos apply add-user-login          # Continue implementation
+  chaos status                        # View progress
   stdd tasks add-user-login          # View tasks
 ```
 
@@ -96,7 +96,7 @@ Next steps:
 
 Run verification:
 
-  stdd verify add-user-login
+  chaos verify add-user-login
 
 This checks:
   - All tasks completed
@@ -109,28 +109,28 @@ This checks:
 
 ```bash
 # 通用帮助
-stdd help
+chaos help
 
 # 列出所有技能
-stdd skills
+chaos skills
 
 # 列出所有命令
-stdd commands
+chaos commands
 
 # 获取推荐
-stdd recommend
+chaos recommend
 
 # 特定主题帮助
-stdd help tdd
-stdd help graph
-stdd help constitution
-stdd help workspace
+chaos help tdd
+chaos help graph
+chaos help constitution
+chaos help workspace
 
 # 查看状态
-stdd status
+chaos status
 
 # 查看进度
-stdd progress
+chaos progress
 ```
 
 ## 主题帮助
@@ -148,9 +148,9 @@ The Ralph Loop cycle:
   5. REFACTOR - Optimize code
 
 Commands:
-  stdd apply <change-id>      # Execute TDD cycle
-  stdd guard                  # Check TDD compliance
-  stdd mutation <change-id>   # Mutation testing
+  chaos apply <change-id>      # Execute TDD cycle
+  chaos guard                  # Check TDD compliance
+  chaos mutation <change-id>   # Mutation testing
 ```
 
 ### Graph 主题
@@ -162,9 +162,9 @@ The STDD skill dependency graph:
   init → propose → clarify → confirm → spec → plan → apply → verify → archive
 
 Commands:
-  stdd graph run feature       # Run full workflow
-  stdd graph analyze           # Analyze dependencies
-  stdd graph history           # View execution history
+  chaos graph run feature       # Run full workflow
+  chaos graph analyze           # Analyze dependencies
+  chaos graph history           # View execution history
 ```
 
 ### Constitution 主题
@@ -189,9 +189,9 @@ Commands:
     - Article 8: Performance
 
 Commands:
-  stdd constitution show        # View articles
-  stdd constitution check       # Check compliance
-  stdd constitution waive      # Request waiver
+  chaos constitution show        # View articles
+  chaos constitution check       # Check compliance
+  chaos constitution waive      # Request waiver
 ```
 
 ### Workspace 主题
@@ -201,9 +201,9 @@ Commands:
 Monorepo workspace management:
 
 Commands:
-  stdd workspace list          # List workspaces
-  stdd workspace validate      # Validate configuration
-  stdd workspace repair        # Auto-fix configuration
+  chaos workspace list          # List workspaces
+  chaos workspace validate      # Validate configuration
+  chaos workspace repair        # Auto-fix configuration
 ```
 
 ## 推荐系统
@@ -212,40 +212,40 @@ Commands:
 ```javascript
 function recommend(projectState) {
   if (!projectState.initialized) {
-    return "stdd init";
+    return "chaos init";
   }
 
   if (!projectState.activeChange) {
-    return "stdd new or stdd ff";
+    return "chaos new or chaos ff";
   }
 
   const change = projectState.activeChange;
 
   if (!change.proposal) {
-    return "stdd propose " + change.id;
+    return "chaos propose " + change.id;
   }
 
   if (!change.confirmed) {
-    return "stdd confirm " + change.id;
+    return "chaos confirm " + change.id;
   }
 
   if (!change.specs) {
-    return "stdd spec " + change.id;
+    return "chaos spec " + change.id;
   }
 
   if (!change.tasks) {
-    return "stdd plan " + change.id;
+    return "chaos plan " + change.id;
   }
 
   if (change.pendingTasks > 0) {
-    return "stdd apply " + change.id;
+    return "chaos apply " + change.id;
   }
 
   if (!change.verified) {
-    return "stdd verify " + change.id;
+    return "chaos verify " + change.id;
   }
 
-  return "stdd archive " + change.id;
+  return "chaos archive " + change.id;
 }
 ```
 
@@ -297,104 +297,104 @@ function recommend(projectState) {
 ### 常用命令快速参考
 ```bash
 # 初始化项目
-stdd init
+chaos init
 
 # 创建新变更
-stdd new "feature description"
+chaos new "feature description"
 
 # 快速完成（明确需求）
-stdd ff "fix bug in login"
+chaos ff "fix bug in login"
 
 # 查看状态
-stdd status
+chaos status
 
 # 继续/恢复
-stdd continue
+chaos continue
 
 # 执行 TDD
-stdd apply <change-id>
+chaos apply <change-id>
 
 # 验证变更
-stdd verify <change-id>
+chaos verify <change-id>
 
 # 归档完成
-stdd archive <change-id>
+chaos archive <change-id>
 ```
 
 ### TDD 快速参考
 ```bash
 # RED - 写失败测试
-stdd apply <change-id> --phase red
+chaos apply <change-id> --phase red
 
 # GREEN - 最少实现
-stdd apply <change-id> --phase green
+chaos apply <change-id> --phase green
 
 # REFACTOR - 重构
-stdd apply <change-id> --phase refactor
+chaos apply <change-id> --phase refactor
 
 # MUTATION - 变异测试
-stdd mutation <change-id>
+chaos mutation <change-id>
 
 # GUARD - 质量检查
-stdd guard
+chaos guard
 ```
 
 ### 测试命令快速参考
 ```bash
 # 生成 BDD 规格
-stdd spec <change-id>
+chaos spec <change-id>
 
 # 生成测试骨架
-stdd outside-in scaffold <change-id>
+chaos outside-in scaffold <change-id>
 
 # 生成测试数据工厂
-stdd factory <change-id>
+chaos factory <change-id>
 
 # 生成 Mock
-stdd mock <change-id>
+chaos mock <change-id>
 
 # 运行测试验证
-stdd verify <change-id>
+chaos verify <change-id>
 ```
 
 ### Graph 工作流快速参考
 ```bash
 # 完整工作流
-stdd graph run <intent> --full
+chaos graph run <intent> --full
 
 # 热修复流程
-stdd graph run hotfix --fast-track
+chaos graph run hotfix --fast-track
 
 # 分析依赖
-stdd graph analyze
+chaos graph analyze
 
 # 查看历史
-stdd graph history
+chaos graph history
 
 # 重放执行
-stdd graph replay <session-id>
+chaos graph replay <session-id>
 ```
 
 ### Monorepo 快速参考
 ```bash
 # 列出 workspace
-stdd workspace list
+chaos workspace list
 
 # 指定 workspace 执行
 stdd <command> --workspace packages/api
 
 # 验证配置
-stdd workspace validate
+chaos workspace validate
 
 # 自动修复配置
-stdd workspace repair
+chaos workspace repair
 ```
 
 ## 交互式帮助
 
 ### 对话式引导
 ```bash
-$ stdd help --interactive
+$ chaos help --interactive
 
 ? 你想做什么？
   📝 创建新功能
@@ -416,15 +416,15 @@ $ stdd help --interactive
 
 ✓ 建议执行流程：
 
-1. stdd new "用户登录功能"
-2. stdd propose user-login-001
-3. stdd clarify user-login-001
-4. stdd confirm user-login-001
-5. stdd spec user-login-001
-6. stdd plan user-login-001
-7. stdd apply user-login-001
-8. stdd verify user-login-001
-9. stdd archive user-login-001
+1. chaos new "用户登录功能"
+2. chaos propose user-login-001
+3. chaos clarify user-login-001
+4. chaos confirm user-login-001
+5. chaos spec user-login-001
+6. chaos plan user-login-001
+7. chaos apply user-login-001
+8. chaos verify user-login-001
+9. chaos archive user-login-001
 
 ? 是否现在开始？ Yes
 ```
@@ -433,69 +433,69 @@ $ stdd help --interactive
 
 ### 新手入门
 ```bash
-$ stdd help --scenario getting-started
+$ chaos help --scenario getting-started
 
 🎯 STDD 新手入门
 
 第 1 步：初始化项目
-  stdd init
+  chaos init
 
 第 2 步：创建第一个变更
-  stdd new "添加用户登录"
+  chaos new "添加用户登录"
 
 第 3 步：编写规格
-  stdd spec <change-id>
+  chaos spec <change-id>
 
 第 4 步：生成任务
-  stdd plan <change-id>
+  chaos plan <change-id>
 
 第 5 步：执行实现
-  stdd apply <change-id>
+  chaos apply <change-id>
 
 第 6 步：验证完成
-  stdd verify <change-id>
+  chaos verify <change-id>
 
 第 7 步：归档变更
-  stdd archive <change-id>
+  chaos archive <change-id>
 
-📚 更多信息：stdd help tutorial
+📚 更多信息：chaos help tutorial
 ```
 
 ### 紧急修复
 ```bash
-$ stdd help --scenario hotfix
+$ chaos help --scenario hotfix
 
 🔥 紧急修复流程
 
 对于生产环境的紧急 Bug：
 
 1. 创建热修复变更
-   stdd new --type hotfix "修复登录崩溃"
+   chaos new --type hotfix "修复登录崩溃"
 
 2. 快速生成修复代码
-   stdd ff <change-id>
+   chaos ff <change-id>
 
 3. 快速验证
-   stdd verify <change-id> --fast
+   chaos verify <change-id> --fast
 
 4. 紧急归档
-   stdd archive <change-id> --hotfix
+   chaos archive <change-id> --hotfix
 
 ⚠️ 热修复后记得补充测试！
 ```
 
 ### 代码审查准备
 ```bash
-$ stdd help --scenario code-review
+$ chaos help --scenario code-review
 
 📋 代码审查准备清单
 
 在创建 PR 前：
 
-□ stdd verify <change-id>      # 验证通过
-□ stdd mutation <change-id>    # mutation 测试
-□ stdd constitution check      # 合规检查
-□ stdd final-doc <change-id>   # 生成文档
+□ chaos verify <change-id>      # 验证通过
+□ chaos mutation <change-id>    # mutation 测试
+□ chaos constitution check      # 合规检查
+□ chaos final-doc <change-id>   # 生成文档
 
 然后创建 PR：
   stdd pr create <change-id>

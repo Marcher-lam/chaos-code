@@ -6,11 +6,11 @@ description: Built-in browser automation (Playwright)
 
 ## Usage
 ```
-stdd browser snapshot <url>      # Take screenshot
-stdd browser inspect <url>       # Inspect page
-stdd browser doctor              # Browser health check
-stdd browser --width=1920        # Set viewport width
-stdd browser --height=1080       # Set viewport height
+chaos browser snapshot <url>      # Take screenshot
+chaos browser inspect <url>       # Inspect page
+chaos browser doctor              # Browser health check
+chaos browser --width=1920        # Set viewport width
+chaos browser --height=1080       # Set viewport height
 ```
 
 ## Description

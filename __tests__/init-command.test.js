@@ -204,8 +204,8 @@ describe('InitCommand', () => {
     expect(content).toContain('## Affected Workspaces');
     expect(content).toContain('- [ ] packages/api');
     expect(content).toContain('- [ ] apps/web');
-    expect(content).toContain('stdd verify --workspace <workspace>');
-    expect(content).toContain('stdd metrics --workspace <workspace>');
+    expect(content).toContain('chaos verify --workspace <workspace>');
+    expect(content).toContain('chaos metrics --workspace <workspace>');
   });
 
   it('should keep generic workspace placeholders in PR template for non-monorepos', async () => {
@@ -306,9 +306,9 @@ describe('InitCommand', () => {
     );
 
     expect(bugContent).toContain('Affected Workspace(s)');
-    expect(bugContent).toContain('stdd context --workspace <workspace> --export');
+    expect(bugContent).toContain('chaos context --workspace <workspace> --export');
     expect(featureContent).toContain('Affected Workspace(s)');
-    expect(featureContent).toContain('stdd context --workspace <workspace> --export');
+    expect(featureContent).toContain('chaos context --workspace <workspace> --export');
   });
 
   it('should force re-initialize with --force flag', async () => {
@@ -1144,7 +1144,7 @@ describe('InitCommand', () => {
       { language: 'node', framework: 'express', testRunner: 'jest' }
     );
 
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('STDD Copilot initialized'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Chaos Code initialized'));
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Tech stack:'));
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Enabled engines: .claude, .codex'));
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('/stdd:new'));
@@ -1168,7 +1168,7 @@ describe('InitCommand', () => {
 
     cmd.printNextSteps([], { language: 'node', framework: 'unknown', testRunner: 'unknown' });
 
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('STDD Copilot initialized'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Chaos Code initialized'));
     // Should not print enabled engines line when empty
     const engineCalls = logSpy.mock.calls.filter(
       c => typeof c[0] === 'string' && c[0].includes('Enabled engines:')

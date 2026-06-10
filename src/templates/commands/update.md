@@ -1,19 +1,19 @@
 ---
-description: Update STDD Copilot templates
+description: Update Chaos Code templates
 ---
 
 # Command: /stdd:update
 
 ## Usage
 ```
-stdd update                      # Update templates
-stdd update [path]               # Update specific path
-stdd update --force              # Force overwrite
-stdd update --dry-run            # Preview changes
+chaos update                      # Update templates
+chaos update [path]               # Update specific path
+chaos update --force              # Force overwrite
+chaos update --dry-run            # Preview changes
 ```
 
 ## Description
-Updates STDD Copilot template files to the latest version.
+Updates Chaos Code template files to the latest version.
 
 ## Execution Flow
 1. Check for updates

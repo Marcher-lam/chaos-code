@@ -6,10 +6,10 @@ description: Code complexity assessment and quality metrics
 
 ## Usage
 ```
-stdd complexity analyze [path]               # Analyze complexity
-stdd complexity report                       # Generate complexity report
-stdd complexity trend                        # Show complexity trends
-stdd complexity hotspots                     # Show complexity hotspots
+chaos complexity analyze [path]               # Analyze complexity
+chaos complexity report                       # Generate complexity report
+chaos complexity trend                        # Show complexity trends
+chaos complexity hotspots                     # Show complexity hotspots
 ```
 
 ## Description

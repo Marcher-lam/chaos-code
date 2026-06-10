@@ -6,12 +6,12 @@ description: Fast-forward generation of all artifacts in one step (language-agno
 
 ## Usage
 ```bash
-stdd ff "需求描述" --change-name <change-id>   # Fast-forward mode
-stdd ff "需求描述"                             # Auto-generate change name
-stdd ff "需求描述" --workspace packages/api    # Workspace scope
-stdd ff "需求描述" --include-design            # Include design doc
-stdd ff "需求描述" --skip-design               # Skip design doc
-stdd ff "需求描述" --output custom/path        # Custom output path
+chaos ff "需求描述" --change-name <change-id>   # Fast-forward mode
+chaos ff "需求描述"                             # Auto-generate change name
+chaos ff "需求描述" --workspace packages/api    # Workspace scope
+chaos ff "需求描述" --include-design            # Include design doc
+chaos ff "需求描述" --skip-design               # Skip design doc
+chaos ff "需求描述" --output custom/path        # Custom output path
 ```
 
 ## Description

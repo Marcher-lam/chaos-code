@@ -6,8 +6,8 @@ description: Project starter template management
 
 ## Usage
 ```
-stdd starters list               # List templates
-stdd starters create <type>      # Create from template
+chaos starters list               # List templates
+chaos starters create <type>      # Create from template
 ```
 
 ## Description
