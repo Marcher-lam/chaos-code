@@ -75,19 +75,19 @@ const { createSpinner, safeAction } = require('./src/cli/helpers/cli-utils');
 
 
 program
-  .name('chaos')
-  .description('Chaos Code - Spec + Test Driven AI Copilot')
+  .name('ace')
+  .description('Claude Ace - Spec + Test Driven AI Copilot')
   .version(packageJson.version)
   .option('--no-color', 'Disable color output');
 
 program.addHelpText('after', `
 Common examples:
-  chaos init
-  chaos new change add-dark-mode
-  chaos list --archived
-  chaos status --json
+  ace init
+  ace new change add-dark-mode
+  ace list --archived
+  ace status --json
 
-For Claude Code slash commands: chaos commands
+For Claude Code slash commands: ace commands
 `);
 
 // ─── Command factories for dynamic loader ───
@@ -644,9 +644,19 @@ const args = process.argv.slice(2);
 const positionalArgs = args.filter(arg => !arg.startsWith('-'));
 const firstPositional = positionalArgs[0];
 
+// Extract --model and --provider flags for prompt mode
+const cliFlags = {};
+const flagIdx = {};
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--model' && args[i + 1]) { cliFlags.model = args[++i]; }
+  else if (args[i] === '--provider' && args[i + 1]) { cliFlags.provider = args[++i]; }
+}
+// Remove flags from positional args
+const filteredPositional = positionalArgs.filter(a => !Object.values(cliFlags).includes(a));
+
 const isHelpOrVersion = args.some(arg => ['-h', '--help', 'help', '-V', '--version', 'version'].includes(arg));
 const isKnownCommand = program.commands ? program.commands.some(cmd => {
-  return cmd.name() === firstPositional || cmd.aliases().includes(firstPositional);
+  return cmd.name() === (filteredPositional[0] || '') || cmd.aliases().includes(filteredPositional[0] || '');
 }) : false;
 
 if (args.includes('--no-color')) {
@@ -657,7 +667,23 @@ const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID 
 
 if (isTestEnv || isHelpOrVersion) {
   program.parse();
-} else if (!firstPositional) {
+} else if (!process.stdin.isTTY && !filteredPositional[0]) {
+  // Piped stdin (no TTY) -> read from pipe and run as prompt
+  let pipedInput = '';
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', chunk => { pipedInput += chunk; });
+  process.stdin.on('end', () => {
+    const prompt = pipedInput.trim();
+    if (prompt) {
+      const entry = getProgress().start('pipe-prompt');
+      setActive(entry);
+      runChaosAgentPrompt(prompt, cliFlags).catch(err => {
+        console.error(chalk.red(err.stack || err));
+        process.exit(1);
+      });
+    }
+  });
+} else if (!filteredPositional[0]) {
   // No positional args -> start interactive terminal REPL
   const entry = getProgress().start('terminal');
   setActive(entry);
@@ -669,8 +695,8 @@ if (isTestEnv || isHelpOrVersion) {
   // Positional args but not a known subcommand -> treat as a one-off prompt!
   const entry = getProgress().start('agent-prompt');
   setActive(entry);
-  const prompt = args.join(' ');
-  runChaosAgentPrompt(prompt).catch(err => {
+  const prompt = filteredPositional.join(' ');
+  runChaosAgentPrompt(prompt, cliFlags).catch(err => {
     console.error(chalk.red(err.stack || err));
     process.exit(1);
   });

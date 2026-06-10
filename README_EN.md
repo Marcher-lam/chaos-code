@@ -14,15 +14,21 @@ Chaos Code is capable of autonomously reading files, planning modifications, run
 ## 🌟 Key Features
 
 *   **⚡ Claude-like Autonomous REPL**
-    Start a conversational session directly in your terminal. The AI agent can inspect your workspace, search for patterns, apply unified diff patches (`fs_patch`), and verify modifications through local test suites.
+    Start a conversational session directly in your terminal. The AI agent can inspect your workspace, search for patterns, apply unified diff patches (`fs_patch`), and verify modifications through local test suites. Features streaming Markdown rendering, Tab completion (commands/model names/file paths), multi-line input, and dynamic prompt showing git branch + model.
 *   **🛠️ Full Git Automation Pipeline**
-    Supports AI-driven Git operations (`git.add`, `git.commit`, `git.push`, `git.checkout`, etc.) protected by user authorization gates. Allows previewing patches and staging updates via simple shell interactions.
+    Supports AI-driven Git operations (`git.add`, `git.commit`, `git.push`, `git.checkout`, etc.) protected by user authorization gates. Allows previewing patches and staging updates via simple shell interactions. Includes `/undo` for reverting recent AI edits.
 *   **🔌 Model Context Protocol (MCP) Client**
     Includes a built-in JSON-RPC 2.0 based MCP client over stdio. Seamlessly connect and execute tools from external MCP servers (e.g. SQLite database tools, Playwright browser tools) reflection-registered into the LLM prompt context.
 *   **🩺 Self-Healing Test Loops**
     If any test runner (`test_run`) returns a failure, the AI agent automatically parses the stderr/stdout stack traces and enters a "Repair-and-Verify" loop, fixing the codebase using diff patches until all tests pass.
 *   **🧠 Multi-LLM Routing & Cost Tracking**
-    Compatible with OpenAI and Anthropic API models. Easily switch active models via `/model` inside the REPL and track token usage, completion metrics, and session cost dynamically.
+    Compatible with OpenAI, Anthropic, DeepSeek, OpenRouter, Groq, and Ollama. Easily switch active models via `/model` inside the REPL and track token usage, completion metrics, and session cost dynamically. Supports `--model` and `--provider` CLI flags.
+*   **🔧 18+ Built-in Tools + MCP Dynamic Extensions**
+    Includes `fs_read`, `fs_search`, `fs_glob` (file pattern matching), `fs_grep` (regex search with context lines), `fs_write` (direct file creation), `fs_patch` (diff patches), `shell_run`, `test_run`, full Git tool suite, STDD tools, and MCP dynamic tools.
+*   **⚙️ Persistent Configuration System**
+    Manage all preferences (verbosity, auto-compact threshold, temperature, max turns, per-tool permissions) via `~/.chaos/config.json`. Real-time view/edit with `/config` command.
+*   **📊 Session Persistence & Recovery**
+    Auto-saves chat history to `~/.chaos/sessions/`. Resume past sessions with `/resume`, export conversations to Markdown with `/export`.
 *   **📈 Ralph Loop Spec Gates**
     Breaks down developer goals into eight distinct, rigorous phases: `inspect -> propose -> spec -> plan -> patch -> test -> verify -> summarize`, ensuring full code quality compliance.
 
@@ -96,10 +102,19 @@ Within the interactive shell, you can use the following commands to manage your 
 | `/diff` | Display git working tree status and patch previews |
 | `/commit` | Stage and commit all local modifications interactively |
 | `/rollback` | Hard rollback (`git reset --hard`) and discard all uncommitted edits |
+| `/undo [file]` | Revert recently patched files (supports `/undo all`) |
 | `/model [name]` | Inspect current model or switch active model (e.g., `/model gpt-4o`) |
+| `/models` | List all available models from the current provider |
+| `/providers` | List all configured providers and their status |
+| `/connect` | Interactive provider setup (API key, base URL, model) |
 | `/cost` | Display cumulative token usage (Prompt/Completion) and estimated session cost |
 | `/session` | Inspect active provider, model name, message counts, and stats |
+| `/config [key] [value]` | View/edit persistent configuration (verbosity, thresholds, per-tool permissions) |
 | `/compact` | Compact chat history context to fit limits and save tokens |
+| `/history [keyword]` | Search cross-session persistent command history |
+| `/resume` | List and restore previously saved sessions |
+| `/export` | Export conversation to a Markdown file |
+| `/verbose [0-2]` | Set output verbosity (0=minimal, 1=normal, 2=verbose) |
 | `/reset` | Clear the active conversation history context |
 | `/clear` | Clear the terminal screen |
 | `/exit` or `/quit` | Exit the Chaos Code terminal shell |
@@ -133,16 +148,26 @@ On shell initialization, Chaos Code will spawn these subprocesses, fetch their t
 
 ```bash
 chaos-code/
-├── __tests__/           # Jest test suite
+├── __tests__/           # Jest test suite (204 suites)
 ├── cli.js               # CLI Entrypoint & Claw-like command router
 ├── package.json         # Package configuration and scripts
 ├── src/
 │   ├── cli/
 │   │   ├── commands/    # CLI command modules (including chaos-terminal.js)
+│   │   ├── completer.js # Tab completion engine (commands/models/file paths)
+│   │   ├── history.js   # Command history persistence (JSONL)
+│   │   ├── session-store.js # Session persistence manager
+│   │   ├── config.js    # User config manager (~/.chaos/config.json)
+│   │   ├── notifications.js # Notification system (desktop + terminal bell)
+│   │   ├── pager.js     # Output pager
+│   │   ├── renderer/    # Terminal rendering engines
+│   │   │   ├── markdown-renderer.js # Streaming Markdown renderer
+│   │   │   └── code-highlighter.js  # Syntax highlighting
 │   │   └── registry/    # Command loader and registries
 │   └── runtime/
 │       └── agent-kernel/# Core AI Agent Kernel
 │           ├── chaos-agent-loop.js # Claude-like loop & self-healing runner
+│           ├── provider-config.js  # Multi-provider config management
 │           ├── git-tool.js          # Git write automation utilities
 │           ├── mcp-client.js        # stdio JSON-RPC MCP client
 │           ├── tool-registry.js     # Tool registration and schemas

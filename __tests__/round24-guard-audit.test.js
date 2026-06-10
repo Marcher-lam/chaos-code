@@ -177,8 +177,9 @@ describe('Round24 GuardCommand branch coverage', () => {
     // Mock spawnSync to simulate eslint failure
     const { _spawnSync } = require('child_process');
     const origSpawn = jest.requireActual('child_process').spawnSync;
-    const spawnMock = jest.spyOn(require('child_process'), 'spawnSync').mockImplementation((cmd, opts) => {
-      if (String(cmd).includes('eslint')) {
+    const spawnMock = jest.spyOn(require('child_process'), 'spawnSync').mockImplementation((cmd, opts, extra) => {
+      const isEslint = String(cmd).includes('eslint') || (Array.isArray(opts) && opts.some(arg => String(arg).includes('eslint')));
+      if (isEslint) {
         return {
           error: null,
           status: 1,
@@ -186,7 +187,7 @@ describe('Round24 GuardCommand branch coverage', () => {
           stderr: '',
         };
       }
-      return origSpawn(cmd, opts);
+      return origSpawn(cmd, opts, extra);
     });
 
     const report = await cmd.execute({ constitution: false, strict: true });
@@ -423,11 +424,12 @@ describe('Round24 GuardCommand branch coverage', () => {
     });
 
     const { _spawnSync } = require('child_process');
-    const spawnMock = jest.spyOn(require('child_process'), 'spawnSync').mockImplementation((cmd) => {
-      if (String(cmd).includes('eslint')) {
+    const spawnMock = jest.spyOn(require('child_process'), 'spawnSync').mockImplementation((cmd, opts, extra) => {
+      const isEslint = String(cmd).includes('eslint') || (Array.isArray(opts) && opts.some(arg => String(arg).includes('eslint')));
+      if (isEslint) {
         return { error: null, status: 0, stdout: '', stderr: '' };
       }
-      return jest.requireActual('child_process').spawnSync(cmd);
+      return jest.requireActual('child_process').spawnSync(cmd, opts, extra);
     });
 
     const cmd = new GuardCommand(projectPath);
@@ -449,11 +451,12 @@ describe('Round24 GuardCommand branch coverage', () => {
       writeFile(p, '.eslintrc.json', { rules: {} });
     });
 
-    const spawnMock = jest.spyOn(require('child_process'), 'spawnSync').mockImplementation((cmd) => {
-      if (String(cmd).includes('eslint')) {
+    const spawnMock = jest.spyOn(require('child_process'), 'spawnSync').mockImplementation((cmd, opts, extra) => {
+      const isEslint = String(cmd).includes('eslint') || (Array.isArray(opts) && opts.some(arg => String(arg).includes('eslint')));
+      if (isEslint) {
         return { error: new Error('ENOENT - command not found') };
       }
-      return jest.requireActual('child_process').spawnSync(cmd);
+      return jest.requireActual('child_process').spawnSync(cmd, opts, extra);
     });
 
     const cmd = new GuardCommand(projectPath);

@@ -22,8 +22,8 @@ describe('CLI help output', () => {
     expect(status).toBe(0);
     expect(stderr).toBe('');
     expect(stdout).toContain('Common examples:');
-    expect(stdout).toContain('chaos list --archived');
-    expect(stdout).toContain('For Claude Code slash commands: chaos commands');
+    expect(stdout).toContain('ace list --archived');
+    expect(stdout).toContain('For Claude Code slash commands: ace commands');
   });
 
   it('prints examples for init/list/status help output', () => {

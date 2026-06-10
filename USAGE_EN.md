@@ -128,7 +128,14 @@ node cli.js
 
 ### 4.1 Features
 *   **Autonomous Agent Loop**: Prompt the AI directly (e.g. `"Fix the failing tests in __tests__/util.test.js and commit"`). The loop processes files and executes commands automatically.
-*   **Write Approval Gates**: Any operations modifying workspace contents, executing shell scripts, or interacting with Git will prompt the developer for explicit approval (`y/n`).
+*   **Streaming Markdown Rendering**: AI responses stream in real-time with syntax highlighting (12+ languages), table alignment, bold/italic/links, and full Markdown rendering.
+*   **Tab Completion**: Three-layer smart completion: `/` prefix matches slash commands, `/model ` matches model names, `./` `../` `~/` matches file paths.
+*   **Multi-line Input**: Type `"""` or ``` to enter multi-line mode. Supports unclosed bracket/quote detection. Submit with an empty line.
+*   **Dynamic Prompt**: Shows current git branch (dirty marker `*`) and active model name, e.g., `main*:gpt-4o > `.
+*   **Real-time Tool Display**: Structured box display when AI calls tools (tool name + args summary + timer). Streaming tool name detection shows spinner immediately.
+*   **Write Approval Gates**: Any operations modifying workspace contents show a colorized diff preview and prompt for confirmation (`y/n/a/s`, `s` saves to config permanently).
+*   **Auto-compact**: Automatically compresses context when it exceeds 80k tokens, preserving original goal and recent messages.
+*   **Per-turn Summary**: Shows `── 3.2s · 1.2k tok · $0.0034 ──` after each turn (timing/tokens/cost).
 *   **REPL Commands (Slash Commands)**:
 
 | Slash Command | Parameter | Function |
@@ -138,10 +145,19 @@ node cli.js
 | `/diff` | None | Shows unstaged diffs and prints unified patches. |
 | `/commit` | None | Prompts for a message, stages all files, and commits them. |
 | `/rollback` | None | Performs `git reset --hard` to discard current changes. |
+| `/undo` | `[file\|all]` | Revert recently patched files. `/undo` shows list, `/undo <file>` reverts specific file, `/undo all` reverts all. |
 | `/model` | `[model_name]` | Prints active model, or switches model dynamically. |
+| `/models` | None | List all available models from the current provider. |
+| `/providers` | None | List all configured providers and their status. |
+| `/connect` | None | Interactive provider setup (API key, base URL, model). |
 | `/cost` | None | Displays prompt/completion tokens consumed and estimated session cost. |
 | `/session` | None | Shows detailed session state, provider information, and model tags. |
+| `/config` | `[key] [value]` | View/edit persistent config. Supports `set`, `permission`, `reset` subcommands. |
 | `/compact` | None | Compresses chat history context to conserve token limits. |
+| `/history` | `[keyword]` | Search cross-session persistent command history. |
+| `/resume` | None | List and restore previously saved sessions. |
+| `/export` | None | Export conversation to a Markdown file. |
+| `/verbose` | `[0-2]` | Set output verbosity: 0=minimal, 1=normal, 2=verbose. |
 | `/reset` | None | Wipes conversation history and starts a clean session. |
 | `/clear` | None | Clears terminal screen log. |
 | `/exit` | None | Shuts down REPL terminal safely. |

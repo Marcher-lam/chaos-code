@@ -30,13 +30,16 @@
   },
   "bin": {
     "chaos": "cli.js",
-    "stdd": "cli.js"
+    "stdd": "cli.js",
+    "ace": "cli.js"
   },
   "dependencies": {
     "chalk": "^4.1.2",
+    "cli-highlight": "^2.1.11",
     "commander": "^11.0.0",
     "inquirer": "^8.2.5",
-    "js-yaml": "^4.1.1"
+    "js-yaml": "^4.1.1",
+    "marked": "^18.0.5"
   },
   "devDependencies": {
     "eslint": "^8.57.1",

@@ -8,6 +8,14 @@ const { AgentKernel } = require('../src/runtime/agent-kernel/index');
 
 jest.mock('https');
 jest.mock('../src/runtime/agent-kernel/index');
+jest.mock('../src/runtime/agent-kernel/provider-config', () => ({
+  initFromEnv: jest.fn(() => null),
+  getActive: jest.fn(() => null),
+  setActive: jest.fn(),
+  listProviders: jest.fn(() => []),
+  addProvider: jest.fn(),
+  BUILTIN_PROVIDERS: {},
+}));
 
 describe('ChaosAgentLoop', () => {
   let originalEnv;
@@ -108,8 +116,64 @@ describe('ChaosAgentLoop', () => {
       { role: 'assistant', content: 'msg8' },
     ];
     const compacted = agent.compactHistory(history);
-    expect(compacted.length).toBe(6);
-    expect(compacted[0].content).toBe('msg3');
+    // Smart compact: first user msg + summary + tail (6) = 8
+    expect(compacted.length).toBe(8);
+    // First message preserves original goal
+    expect(compacted[0].role).toBe('user');
+    expect(compacted[0].content).toContain('msg1');
+    // Second is the compaction summary
+    expect(compacted[1].role).toBe('assistant');
+    expect(compacted[1].content).toContain('compacted');
+    // Tail starts from message 3 in original (index 2)
+    expect(compacted[2].content).toBe('msg3');
+  });
+
+  test('_callOpenAI should correctly map tool_call_id and name in the payload', async () => {
+    const agent = new ChaosAgentLoop();
+    let requestPayload = null;
+    
+    https.request.mockImplementation((url, options, callback) => {
+      if (typeof options === 'function') {
+        callback = options;
+      }
+      const mockReq = {
+        on: jest.fn(),
+        write: jest.fn((body) => {
+          requestPayload = JSON.parse(body);
+        }),
+        end: jest.fn(() => {
+          const mockRes = {
+            statusCode: 200,
+            on: jest.fn((event, cb) => {
+              if (event === 'data') {
+                cb(JSON.stringify({
+                  choices: [{ message: { content: 'test response' } }]
+                }));
+              }
+              if (event === 'end') {
+                cb();
+              }
+            })
+          };
+          callback(mockRes);
+        })
+      };
+      return mockReq;
+    });
+
+    const messages = [
+      { role: 'user', content: 'hello' },
+      { role: 'assistant', content: 'running tool', tool_calls: [{ id: 'call_123', type: 'function', function: { name: 'shell_run', arguments: '{}' } }] },
+      { role: 'tool', tool_call_id: 'call_123', name: 'shell_run', content: 'tool output' }
+    ];
+
+    await agent._callOpenAI(messages);
+
+    expect(requestPayload).not.toBeNull();
+    // System prompt is prepended at index 0, so messages are shifted by 1
+    expect(requestPayload.messages[1]).toEqual({ role: 'user', content: 'hello' });
+    expect(requestPayload.messages[2]).toEqual({ role: 'assistant', content: 'running tool', tool_calls: [{ id: 'call_123', type: 'function', function: { name: 'shell_run', arguments: '{}' } }] });
+    expect(requestPayload.messages[3]).toEqual({ role: 'tool', tool_call_id: 'call_123', name: 'shell_run', content: 'tool output' });
   });
 });
 
@@ -166,7 +230,7 @@ describe('Chaos Terminal CLI routing and REPL commands', () => {
     launchChaosTerminal();
     
     mockRl.emit('line', '/help');
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Available Slash Commands'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Commands:'));
     logSpy.mockRestore();
   });
 
@@ -175,10 +239,10 @@ describe('Chaos Terminal CLI routing and REPL commands', () => {
     launchChaosTerminal();
 
     mockRl.emit('line', '/model');
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Active Model:'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Model:'));
 
     mockRl.emit('line', '/model gpt-4o');
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Active model switched to:'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Model: gpt-4o'));
     logSpy.mockRestore();
   });
 
@@ -187,7 +251,7 @@ describe('Chaos Terminal CLI routing and REPL commands', () => {
     launchChaosTerminal();
 
     mockRl.emit('line', '/cost');
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Session Token Usage & Cost:'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('tokens:'));
     logSpy.mockRestore();
   });
 
@@ -196,7 +260,7 @@ describe('Chaos Terminal CLI routing and REPL commands', () => {
     launchChaosTerminal();
 
     mockRl.emit('line', '/session');
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Session Info:'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('provider:'));
     logSpy.mockRestore();
   });
 
@@ -205,7 +269,7 @@ describe('Chaos Terminal CLI routing and REPL commands', () => {
     launchChaosTerminal();
 
     mockRl.emit('line', '/compact');
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Compacted conversation history'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Compacted'));
     logSpy.mockRestore();
   });
 
