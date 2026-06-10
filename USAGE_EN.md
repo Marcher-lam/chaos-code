@@ -1,0 +1,218 @@
+# Chaos Code Unified Usage Manual
+
+This manual provides a detailed guide on the core concepts, workflow phases, CLI reference, Interactive Terminal (REPL), Model Context Protocol (MCP) integration, and advanced functionalities of **Chaos Code (Spec + Test Driven AI Copilot)**.
+
+---
+
+## Table of Contents
+1. [Core Concepts & Workflow](#1-core-concepts--workflow)
+2. [Environment Setup & Initialization](#2-environment-setup--initialization)
+3. [CLI Reference](#3-cli-reference)
+4. [Interactive Terminal (REPL) Guide](#4-interactive-terminal-repl-guide)
+5. [Model Context Protocol (MCP) Integration](#5-model-context-protocol-mcp-integration)
+6. [Self-Healing Test-and-Repair Loop](#6-self-healing-test-and-repair-loop)
+7. [Diagnostics & Configuration Customization](#7-diagnostics--configuration-customization)
+8. [Advanced Multi-Agent & Parallel Workflows](#8-advanced-multi-agent--parallel-workflows)
+
+---
+
+## 1. Core Concepts & Workflow
+
+Chaos Code is structured around Specifications (Specs) and Tests, abstracting all features and bug fixes into **Changes**. Every modification is driven by the AI kernel and monitored under the project's **STDD Constitution**.
+
+### 1.1 Core Concepts
+*   **Spec**: Markdown documents in `stdd/specs/` defining requirements, API contracts, and success criteria. Specs must be defined before code alterations begin.
+*   **Change**: Located in `stdd/changes/<change-name>/`. Each change includes a `tasks.md` TODO checklist and stored test execution evidence.
+*   **STDD Constitution**: A set of coding compliance rules. Examples: all exported public APIs must have JSDoc comments, no hardcoded secrets, test coverage thresholds must be met, and tests must be run before final integration.
+
+### 1.2 Ralph Loop Workflow Phases
+Every implementation iteration flows through these 8 lifecycle phases:
+1.  **inspect**: Scan workspace files and check existing change registry state.
+2.  **propose**: Clarify intent, scope, and target files.
+3.  **spec**: Create or update the specs file.
+4.  **plan**: Generate a checklist of modular steps inside `tasks.md`.
+5.  **patch**: AI writes unified diff patches and applies them to sources.
+6.  **test**: Execute configured tests and record the run output as evidence.
+7.  **verify**: Check code compliance, security guidelines, and test results.
+8.  **summarize**: Generate delivery reports and archive completed changes.
+
+---
+
+## 2. Environment Setup & Initialization
+
+### 2.1 Environment Variables
+Chaos Code reads credentials and API routing details from your environment variables:
+
+```bash
+# OpenAI Configuration
+export OPENAI_API_KEY="sk-..."
+export STDD_LLM_BASE_URL="https://api.openai.com/v1" # Optional custom proxy/endpoint
+export OPENAI_MODEL="gpt-4o-mini"                   # Default model choice
+
+# Anthropic Configuration
+export ANTHROPIC_API_KEY="sk-ant-..."
+export ANTHROPIC_MODEL="claude-3-5-sonnet-latest"    # Default model choice
+
+# Override Key & Model (Highest Priority)
+export STDD_LLM_API_KEY="your-api-key"
+export STDD_LLM_MODEL="your-model-name"
+```
+
+### 2.2 Project Initialization
+Run the initialization wizard in your project root:
+
+```bash
+node cli.js init
+```
+This generates the `stdd/` folder, preset folders (`specs`, `changes`), and the configuration file `stdd/config.yaml`.
+
+---
+
+## 3. CLI Reference
+
+Chaos Code offers subcommands suitable for one-off actions or CI pipelines.
+
+### 3.1 Workspace & Health Checks
+*   `chaos init [path]`: Set up Chaos Code scaffolding in the target folder.
+*   `chaos list` (or `chaos ls`): Print all active and archived changes.
+*   `chaos status [change-name]`: Retrieve phase indicators and compliance checklists for the active change.
+*   `chaos doctor`: Scan configuration viability, hook stability, and folder integrity.
+
+### 3.2 Change & Tasks Operations
+*   `chaos new change <change-name>`: Scaffolds a new change record and task checklist.
+*   `chaos ff <description>`: Fast-Forward mode. Creates a change with pre-populated task items.
+*   `chaos turbo <description>`: One-shot CLI option executing the inspect, propose, spec, and plan steps.
+*   `chaos apply [change-name]`: Process the next pending task in `tasks.md`, applying code changes.
+*   `chaos verify [change-name]`: Check tests and constitution rules to verify delivery readiness.
+*   `chaos archive [change-name]`: Move completed and verified changes to `stdd/changes/archive/`.
+
+### 3.3 Quality Gates & Constitution
+*   `chaos guard`: Runs all linter and test gate audits.
+*   `chaos metrics [change-name]`: View current change-level code coverage statistics.
+*   `chaos constitution check`: Audit the codebase for compliance violations.
+*   `chaos constitution fix`: Perform automated hot-fixes for JSDoc formatting and hook corrections.
+
+---
+
+## 4. Interactive Terminal (REPL) Guide
+
+Launch the interactive REPL shell by calling the script without positional parameters:
+
+```bash
+node cli.js
+```
+
+### 4.1 Features
+*   **Autonomous Agent Loop**: Prompt the AI directly (e.g. `"Fix the failing tests in __tests__/util.test.js and commit"`). The loop processes files and executes commands automatically.
+*   **Write Approval Gates**: Any operations modifying workspace contents, executing shell scripts, or interacting with Git will prompt the developer for explicit approval (`y/n`).
+*   **REPL Commands (Slash Commands)**:
+
+| Slash Command | Parameter | Function |
+| :--- | :--- | :--- |
+| `/help` | None | Lists available slash commands. |
+| `/status` | None | Displays current change name, TDD phase, and task stats. |
+| `/diff` | None | Shows unstaged diffs and prints unified patches. |
+| `/commit` | None | Prompts for a message, stages all files, and commits them. |
+| `/rollback` | None | Performs `git reset --hard` to discard current changes. |
+| `/model` | `[model_name]` | Prints active model, or switches model dynamically. |
+| `/cost` | None | Displays prompt/completion tokens consumed and estimated session cost. |
+| `/session` | None | Shows detailed session state, provider information, and model tags. |
+| `/compact` | None | Compresses chat history context to conserve token limits. |
+| `/reset` | None | Wipes conversation history and starts a clean session. |
+| `/clear` | None | Clears terminal screen log. |
+| `/exit` | None | Shuts down REPL terminal safely. |
+
+---
+
+## 5. Model Context Protocol (MCP) Integration
+
+Chaos Code supports Model Context Protocol (MCP) to let AI agents run verified external tool extensions over standard IO processes.
+
+### 5.1 Configuring Servers
+Write configuration items in `stdd/mcp-servers.json`:
+
+```json
+{
+  "mcpServers": {
+    "gitserver": {
+      "command": "node",
+      "args": ["/Users/user/.nvm/versions/node/v20.11.0/bin/mcp-server-git"]
+    },
+    "mysql": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
+    }
+  }
+}
+```
+
+### 5.2 Tool Naming & Permissions
+On boot, Chaos Code spawns the specified command blocks and registers target endpoints.
+*   **Prefix Mapping**: Imported tools are mapped into prompt functions with prefixes, e.g., `mysql` server's `query` becomes `mysql_query`.
+*   **Security Permission**: MCP tools that read/write resources outside of standard safe boundaries are classified with write risks, prompting for user confirmation before running.
+
+---
+
+## 6. Self-Healing Test-and-Repair Loop
+
+Chaos Code features a self-correcting development loop:
+
+```mermaid
+graph TD
+    A[User Prompt] --> B[AI Applies Patch]
+    B --> C[AI Runs test_run tool]
+    C -->|All Tests Pass| D[Constitution Audit Passed]
+    C -->|Tests Fail| E[AI Parses Stack Traces]
+    E --> F[Inject Error Context as Loop Guidance]
+    F --> G[Analyze Failure & Redesign Patch]
+    G --> B
+```
+
+### 6.1 Failure Analysis
+In cases where tests fail during `test_run`, stdout logs are fed back into the context, prompting the model to identify code gaps and apply targeted fixes via `fs_patch` until all assertions pass.
+
+---
+
+## 7. Diagnostics & Configuration Customization
+
+### 7.1 Configuration Options
+Manage parameters in `stdd/config.yaml`:
+
+```yaml
+mode: strict            # strict enforces compliance checks, loose skips gates
+defaults:
+  model: gpt-4o-mini    # standard model tag selection
+
+test:
+  command: npm run test # execution testing script command
+  coverage_threshold: 80 # expected coverage percentage target
+
+linter:
+  tool: eslint          # eslint / prettier / standard linter selection
+
+constitution:
+  enforce_jsdoc: true   # require JSDocs on exported methods
+  block_secrets: true   # scan files for hardcoded API keys
+```
+
+---
+
+## 8. Advanced Multi-Agent & Parallel Workflows
+
+For larger restructuring tasks, Chaos Code offers parallel workflows and multi-agent coordination.
+
+### 8.1 Parallel Pipeline Runs
+Execute multiple sub-actions concurrently:
+```bash
+chaos parallel run "lint-and-format"
+```
+
+### 8.2 Supervisor Orchestration
+To coordinate multiple AI subprocess agents:
+```bash
+chaos supervisor start --agents research,patcher,tester
+```
+*   `research`: Inspects dependencies and files.
+*   `patcher`: Generates code modifications.
+*   `tester`: Evaluates testing evidence.
+This isolates complex responsibilities, keeping token usage under control.
