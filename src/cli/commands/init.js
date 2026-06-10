@@ -196,7 +196,7 @@ class InitCommand {
       try {
         const inquirer = require('inquirer');
         if (this.spinner.stop) this.spinner.stop();
-        console.log('\n');
+        console.log('\n  ' + chalk.dim('Use `chaos init -y` to skip this prompt and use defaults.'));
         const answers = await inquirer.prompt([
           {
             type: 'checkbox',
@@ -209,6 +209,11 @@ class InitCommand {
         ]);
         // Filter out the exit placeholder
         selectedAgents = (answers.agents || []).filter(v => v !== '__exit__');
+      } catch (err) {
+        // Inquirer may fail in non-interactive terminals; fall back to defaults
+        if (this.spinner.start) this.spinner.start();
+        console.log(chalk.dim('\n  Interactive prompt unavailable, using default engine (.claude).'));
+        selectedAgents = this.getDefaultSelectedAgents();
       } finally {
         if (this.spinner.start) this.spinner.start();
       }
@@ -273,8 +278,7 @@ class InitCommand {
     try {
       await fs.access(path);
       return true;
-    } catch (err) {
-      logger.warn(err.message);
+    } catch (_) {
       return false;
     }
   }

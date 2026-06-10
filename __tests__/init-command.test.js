@@ -1271,8 +1271,9 @@ describe('InitCommand', () => {
     process.stdout.isTTY = true;
 
     try {
-      await expect(cmd.execute(targetPath, { skipSkills: true })).rejects.toThrow('User aborted');
-      // The finally block in execute should still restore spinner
+      // When inquirer fails, init falls back to defaults instead of throwing
+      await cmd.execute(targetPath, { skipSkills: true });
+      // The spinner should still be restored (via catch or finally block)
       expect(trackerSpinner.start).toHaveBeenCalled();
     } finally {
       process.stdin.isTTY = origStdin;
