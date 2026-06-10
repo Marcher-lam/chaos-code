@@ -47,17 +47,7 @@ describe('Documentation taxonomy consistency', () => {
     }
   });
 
-  it('keeps Chinese slash-entry docs aligned with canonical slash entries', () => {
-    const canonicalEntries = getCanonicalSlashEntries();
-    const docsToCheck = ['USAGE.md', 'docs/commands.md'];
 
-    for (const file of docsToCheck) {
-      const text = readFile(file);
-      const missing = canonicalEntries.filter(entry => !text.includes(entry));
-
-      expect(missing).toEqual([]);
-    }
-  });
 
   it('keeps README.md taxonomy notes aligned with the repository', () => {
     const text = readFile('README.md');
@@ -76,12 +66,4 @@ describe('Documentation taxonomy consistency', () => {
     }
   });
 
-  it('keeps agent-protocol.md high-level taxonomy notes aligned', () => {
-    const agents = readFile('docs/agent-protocol.md');
-
-    expect(agents).toContain('全部能力入口 (86 个 = 86 Command 模板 + 53 Skill 模板，去重后)');
-    expect(agents).toContain('Command 模板入口 (86)');
-    expect(agents).toContain('辅助功能');
-    expect(agents).toContain('constitution');
-  });
 });

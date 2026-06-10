@@ -40,7 +40,31 @@ Every implementation iteration flows through these 8 lifecycle phases:
 
 ## 2. Environment Setup & Initialization
 
-### 2.1 Environment Variables
+### 2.1 Detailed Installation & Global Setup
+
+#### 2.1.1 Clone and Install Dependencies
+Clone the Chaos Code repository and run npm install inside the repository root to download dependencies:
+```bash
+git clone https://github.com/Marcher-lam/chaos-code.git
+cd chaos-code
+npm install
+```
+
+#### 2.1.2 Globally Link the CLI Tool (Highly Recommended)
+To run the `chaos` or `stdd` commands directly from **any directory** on your workstation, map them globally by creating a symlink.
+Inside the cloned `chaos-code` root folder, run:
+```bash
+# Link the CLI scripts to global bin (prepend sudo on macOS/Linux if you encounter write permission issues)
+npm link
+```
+This maps the following commands globally:
+*   `chaos` -> points to `cli.js`
+*   `stdd` -> points to `cli.js` (compatibility alias)
+
+After establishing the link, open any new shell and type `chaos --help` or simply run `chaos` to start the interactive REPL.
+
+### 2.2 Environment Variables
+
 Chaos Code reads credentials and API routing details from your environment variables:
 
 ```bash
@@ -216,3 +240,33 @@ chaos supervisor start --agents research,patcher,tester
 *   `patcher`: Generates code modifications.
 *   `tester`: Evaluates testing evidence.
 This isolates complex responsibilities, keeping token usage under control.
+
+---
+
+## 9. Appendix: Common Command Examples
+
+Here are some common command examples for quick reference and test mapping:
+
+```bash
+# Setup & Change Operations
+chaos init /path/to/project
+chaos init --force
+chaos new change add-dark-mode
+chaos status add-dark-mode
+
+# List & Info
+chaos list --specs
+chaos list --archived
+chaos list --json
+chaos skills
+chaos commands
+
+# Constitution & Hooks
+chaos constitution show 2
+chaos hooks install
+chaos hooks verify
+chaos hooks status
+chaos hooks disable
+chaos hooks enable
+```
+

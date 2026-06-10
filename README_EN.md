@@ -32,16 +32,33 @@ Chaos Code is capable of autonomously reading files, planning modifications, run
 
 ### 1. Requirements
 
-*   **Node.js**: `>= 20.0.0`
-*   **Git**: A local repository initialized with a remote source configured.
+*   **Node.js**: `>= 20.0.0` (LTS versions such as Node 20 or higher recommended)
+*   **Git**: Git command line tools installed. The local project workspace must be initialized (`git init`) and linked to an `origin` remote repository.
 
-### 2. Installation
+### 2. Detailed Installation Steps
 
-Install project dependencies in the root directory:
+#### Step 1: Clone the Repository
+Clone the Chaos Code repository into your local machine directory:
+```bash
+git clone https://github.com/Marcher-lam/chaos-code.git
+cd chaos-code
+```
 
+#### Step 2: Install Project Dependencies
+Run the install command inside the cloned `chaos-code` directory to load all required Node.js packages:
 ```bash
 npm install
 ```
+
+#### Step 3: Link the CLI Command Globally (Recommended)
+To run the `chaos` or `stdd` commands directly from **any other project workspace** on your computer, create a global symlink:
+```bash
+# Link the local binaries to your global PATH (prepend sudo if permission errors occur on Mac/Linux)
+npm link
+```
+*   **Verification**: Check if it's successfully linked by opening a new shell and running `chaos --version`.
+*   **Alternative Exec Option**: If you prefer not to install the symlink globally, you can invoke the CLI directly using its relative or absolute path, e.g., `node /path/to/chaos-code/cli.js [command]`.
+
 
 ### 3. API Key Setup
 
