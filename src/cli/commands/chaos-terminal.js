@@ -1024,7 +1024,13 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
         console.log('');
 
         rl.pause();
-        const choice = await askInput('  Resume session (number or ID): ');
+        const rlAsk = readline.createInterface({ input: process.stdin, output: process.stdout });
+        const choice = await new Promise((resolve) => {
+          rlAsk.question('  Resume session (number or ID): ', (answer) => {
+            resolve((answer || '').trim());
+          });
+        });
+        rlAsk.close();
         rl.resume();
 
         const num = parseInt(choice.trim(), 10);
@@ -1199,67 +1205,84 @@ async function handleConnect(rl) {
   });
   console.log('');
 
+  // Pause main rl for the entire interactive session to prevent stdin conflicts
   rl.pause();
-  const choice = await askInput('  Select provider (name or number): ');
-  rl.resume();
 
-  let selectedId = choice.trim();
-  const num = parseInt(selectedId, 10);
-  if (num >= 1 && num <= ids.length) {
-    selectedId = ids[num - 1];
-  }
-  if (!BUILTIN_PROVIDERS[selectedId]) {
-    console.log(chalk.red(`  Unknown provider: ${selectedId}`));
-    return;
-  }
-
-  const builtin = BUILTIN_PROVIDERS[selectedId];
-  let apiKey = '';
-  let baseUrl = builtin.baseUrl;
-
-  // Ask for base URL (pre-filled with default)
-  if (selectedId === 'custom' || !builtin.baseUrl) {
-    rl.pause();
-    const urlInput = await askInput(`  Base URL: `);
-    rl.resume();
-    baseUrl = urlInput.trim() || baseUrl;
-  } else {
-    rl.pause();
-    const urlInput = await askInput(`  Base URL (${chalk.dim(builtin.baseUrl)}): `);
-    rl.resume();
-    if (urlInput.trim()) baseUrl = urlInput.trim();
-  }
-
-  // Ask for API key (skip for local providers like Ollama)
-  if (builtin.envKey || selectedId === 'custom') {
-    const envHint = builtin.envKey ? chalk.dim(` (or set ${builtin.envKey})`) : '';
-    rl.pause();
-    apiKey = (await askInput(`  API key${envHint}: `)).trim();
-    rl.resume();
-    // If user skipped, try to resolve from env
-    if (!apiKey && builtin.envKey) {
-      apiKey = process.env[builtin.envKey] || '';
-    }
-  }
-
-  // Ask for default model
-  const defaultModel = builtin.defaultModel || '';
-  rl.pause();
-  const modelInput = (await askInput(`  Default model (${chalk.dim(defaultModel || 'none')}): `)).trim();
-  rl.resume();
-
-  addProvider(selectedId, {
-    name: builtin.name,
-    apiKey,
-    baseUrl,
-    model: modelInput || defaultModel,
-    models: builtin.models,
+  // Use a single readline instance for ALL prompts in this session
+  const rlAsk = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: true,
   });
 
-  // Set as active
-  setActive(selectedId);
+  function ask(promptText) {
+    return new Promise((resolve) => {
+      rlAsk.question(promptText, (answer) => {
+        resolve((answer || '').trim());
+      });
+    });
+  }
 
-  console.log(chalk.green(`  Provider "${builtin.name}" configured and activated.`));
+  try {
+    const choice = await ask('  Select provider (name or number): ');
+
+    let selectedId = choice;
+    const num = parseInt(selectedId, 10);
+    if (num >= 1 && num <= ids.length) {
+      selectedId = ids[num - 1];
+    }
+    if (!BUILTIN_PROVIDERS[selectedId]) {
+      console.log(chalk.red(`  Unknown provider: ${selectedId}`));
+      return;
+    }
+
+    const builtin = BUILTIN_PROVIDERS[selectedId];
+    let apiKey = '';
+    let baseUrl = builtin.baseUrl;
+
+    // Ask for base URL
+    if (selectedId === 'custom' || !builtin.baseUrl) {
+      const urlInput = await ask('  Base URL: ');
+      baseUrl = urlInput || baseUrl;
+    } else {
+      const urlInput = await ask(`  Base URL (${chalk.dim(builtin.baseUrl)}): `);
+      if (urlInput) baseUrl = urlInput;
+    }
+
+    // Ask for API key
+    if (builtin.envKey || selectedId === 'custom') {
+      const envHint = builtin.envKey ? chalk.dim(` (or set ${builtin.envKey})`) : '';
+      apiKey = await ask(`  API key${envHint}: `);
+      if (!apiKey && builtin.envKey) {
+        apiKey = process.env[builtin.envKey] || '';
+      }
+    }
+
+    // Ask for default model
+    const defaultModel = builtin.defaultModel || '';
+    const modelInput = await ask(`  Default model (${chalk.dim(defaultModel || 'none')}): `);
+
+    addProvider(selectedId, {
+      name: builtin.name,
+      apiKey,
+      baseUrl,
+      model: modelInput || defaultModel,
+      models: builtin.models,
+    });
+
+    // Set as active
+    setActive(selectedId);
+
+    // Sync the agentLoop instance with new provider config
+    agentLoop.switchProvider(selectedId);
+    safeSetPrompt(rl, agentLoop);
+
+    console.log(chalk.green(`  Provider "${builtin.name}" configured and activated.`));
+  } finally {
+    // Always clean up the temp readline and resume main rl
+    rlAsk.close();
+    rl.resume();
+  }
 }
 
 // ── Interactive /models command handler ──
@@ -1288,27 +1311,36 @@ async function handleModels(rl, agentLoop) {
   console.log('');
 
   rl.pause();
-  const choice = (await askInput('  Select model (name or number): ')).trim();
-  rl.resume();
+  const rlAsk = readline.createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const choice = await new Promise((resolve) => {
+      rlAsk.question('  Select model (name or number): ', (answer) => {
+        resolve((answer || '').trim());
+      });
+    });
 
-  if (!choice) return;
+    if (!choice) return;
 
-  let selectedModel = choice;
-  const modelNum = parseInt(choice, 10);
-  if (modelNum >= 1 && modelNum <= models.length) {
-    selectedModel = models[modelNum - 1];
+    let selectedModel = choice;
+    const modelNum = parseInt(choice, 10);
+    if (modelNum >= 1 && modelNum <= models.length) {
+      selectedModel = models[modelNum - 1];
+    }
+
+    agentLoop.setModel(selectedModel);
+
+    // Also persist the model choice
+    const data = require('../../runtime/agent-kernel/provider-config').loadProviders();
+    if (data.providers[data.active]) {
+      data.providers[data.active].model = selectedModel;
+      require('../../runtime/agent-kernel/provider-config').saveProviders(data);
+    }
+
+    console.log(chalk.green(`  Model: ${selectedModel}`));
+  } finally {
+    rlAsk.close();
+    rl.resume();
   }
-
-  agentLoop.setModel(selectedModel);
-
-  // Also persist the model choice
-  const data = require('../../runtime/agent-kernel/provider-config').loadProviders();
-  if (data.providers[data.active]) {
-    data.providers[data.active].model = selectedModel;
-    require('../../runtime/agent-kernel/provider-config').saveProviders(data);
-  }
-
-  console.log(chalk.green(`  Model: ${selectedModel}`));
 }
 
 // ── /providers command handler ──
@@ -1330,19 +1362,6 @@ function handleProviders() {
 }
 
 // ── Helper: readline-based input prompt ──
-function askInput(prompt) {
-  return new Promise((resolve) => {
-    const rlTemp = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-    rlTemp.question(prompt, (answer) => {
-      rlTemp.close();
-      resolve(answer || '');
-    });
-  });
-}
-
 module.exports = {
   launchChaosTerminal,
   runChaosAgentPrompt,
