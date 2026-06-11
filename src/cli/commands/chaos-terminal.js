@@ -36,6 +36,9 @@ const toolTimers = new Map();
 // ── Track patched files for /undo ──
 const patchedFiles = [];
 
+// ── Reference to main readline instance (set in launchChaosTerminal) ──
+let _mainReadline = null;
+
 function printBanner() {
   const agent = new ChaosAgentLoop();
   const provider = agent.getProviderId();
@@ -53,12 +56,17 @@ function startSpinner(label) {
   let stopped = false;
   let currentLabel = label;
   let extraInfo = '';
+  let lastFrameLen = 0;
   const startTime = Date.now();
   const interval = setInterval(() => {
     if (stopped) return;
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     const info = extraInfo ? `, ${extraInfo}` : '';
-    process.stdout.write(`\r${chalk.dim(frames[i % frames.length] + ' ' + currentLabel + ` (${elapsed}s${info})`)}       `);
+    const frame = chalk.dim(frames[i % frames.length] + ' ' + currentLabel + ` (${elapsed}s${info})`);
+    // Clear previous frame + write new one
+    const clearPad = ' '.repeat(Math.max(0, lastFrameLen));
+    process.stdout.write(`\r${clearPad}\r${frame}`);
+    lastFrameLen = chalk.stripColor(frame).length;
     i++;
   }, 80);
   return {
@@ -70,11 +78,16 @@ function startSpinner(label) {
     },
     stop(finalText) {
       if (stopped) return;
+      // Set stopped FIRST to prevent interval from writing another frame
       stopped = true;
       clearInterval(interval);
+      // Clear the spinner line completely
+      const clearPad = ' '.repeat(Math.max(lastFrameLen + 10, 60));
+      process.stdout.write(`\r${clearPad}\r`);
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      const suffix = finalText || chalk.dim(`(${elapsed}s)`);
-      process.stdout.write(`\r${suffix}   \n`);
+      if (finalText) {
+        process.stdout.write(`${finalText}\n`);
+      }
     },
     getElapsed() {
       return ((Date.now() - startTime) / 1000).toFixed(1);
@@ -221,26 +234,32 @@ async function askPermission(toolName, description, args) {
   }
 
   return new Promise((resolve) => {
+    // Pause main rl to prevent stdin race condition
+    const mainRl = _mainReadline;
+    if (mainRl) mainRl.pause();
+
     const rlTemp = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
+      terminal: true,
     });
     rlTemp.question(
-      chalk.bold(`  Allow ${chalk.cyan(toolName)}${detail ? ' (' + detail + ')' : ''}? ${chalk.dim('[y/n/a(always)/s(save)]: ')}`),
+      chalk.bold(`  Allow ${chalk.cyan(toolName)}${detail ? ' (' + detail + ')' : ''}? ${chalk.dim('[y/n/a/s]: ')}`),
       (answer) => {
         rlTemp.close();
+        if (mainRl) mainRl.resume();
         const val = (answer || '').trim().toLowerCase();
-        if (val === 'a' || val === 'always') {
+        if (val.startsWith('a') || val === 'always') {
           sessionAllowedTools.add(toolName);
           resolve(true);
-        } else if (val === 's' || val === 'save') {
+        } else if (val.startsWith('s') || val === 'save') {
           sessionAllowedTools.add(toolName);
           // Persist to config so it survives restarts
           userConfig = saveConfig({ permissionDefaults: { [toolName]: 'allow' } });
           console.log(chalk.dim(`  Permission saved: ${toolName} = allow`));
           resolve(true);
         } else {
-          resolve(val === 'y' || val === 'yes');
+          resolve(val.startsWith('y') || val === 'yes');
         }
       }
     );
@@ -499,6 +518,7 @@ async function launchChaosTerminal() {
     historySize: 500,
     removeHistoryDuplicates: true,
   });
+  _mainReadline = rl;
 
   // Load persistent history into readline
   if (historyLines.length > 0) {
