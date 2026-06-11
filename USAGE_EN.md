@@ -128,14 +128,17 @@ node cli.js
 
 ### 4.1 Features
 *   **Autonomous Agent Loop**: Prompt the AI directly (e.g. `"Fix the failing tests in __tests__/util.test.js and commit"`). The loop processes files and executes commands automatically.
-*   **Streaming Markdown Rendering**: AI responses stream in real-time with syntax highlighting (12+ languages), table alignment, bold/italic/links, and full Markdown rendering.
-*   **Tab Completion**: Three-layer smart completion: `/` prefix matches slash commands, `/model ` matches model names, `./` `../` `~/` matches file paths.
+*   **Streaming Markdown Rendering**: AI responses stream in real-time with syntax highlighting (12+ languages) + line numbers, table alignment, bold/italic/links, and full Markdown rendering.
+*   **Tab Completion**: Three-layer smart completion: `/` prefix matches 26 slash commands, `/model ` matches model names, `./` `../` `~/` matches file paths.
 *   **Multi-line Input**: Type `"""` or ``` to enter multi-line mode. Supports unclosed bracket/quote detection. Submit with an empty line.
-*   **Dynamic Prompt**: Shows current git branch (dirty marker `*`) and active model name, e.g., `main*:gpt-4o > `.
-*   **Real-time Tool Display**: Structured box display when AI calls tools (tool name + args summary + timer). Streaming tool name detection shows spinner immediately.
+*   **Dynamic Prompt**: Shows current git branch (dirty marker in red `*`) and active model shortname, e.g., `main*:4o > `.
+*   **Structured Tool Display**: `⏺ tool_name  args` format with line-numbered `fs_read` results and auto-paging for long output.
+*   **Ctrl+C / Ctrl+D**: Ctrl+C interrupts current AI operation (stays in REPL), Ctrl+D exits gracefully with session save.
 *   **Write Approval Gates**: Any operations modifying workspace contents show a colorized diff preview and prompt for confirmation (`y/n/a/s`, `s` saves to config permanently).
 *   **Auto-compact**: Automatically compresses context when it exceeds 80k tokens, preserving original goal and recent messages.
-*   **Per-turn Summary**: Shows `── 3.2s · 1.2k tok · $0.0034 ──` after each turn (timing/tokens/cost).
+*   **Per-turn Summary**: Shows `3.2s · 1.2k tok · $0.0034` after each turn (timing/tokens/cost).
+*   **Pipe Mode**: Supports `echo "prompt" | node cli.js` and `cat file | node cli.js "fix"` pipe input.
+*   **Long Task Notifications**: Desktop notification + terminal bell when tasks exceed 30 seconds.
 *   **REPL Commands (Slash Commands)**:
 
 | Slash Command | Parameter | Function |
@@ -157,6 +160,7 @@ node cli.js
 | `/history` | `[keyword]` | Search cross-session persistent command history. |
 | `/resume` | None | List and restore previously saved sessions. |
 | `/export` | None | Export conversation to a Markdown file. |
+| `/tasks` | `[status]` | Show task list and status (AI manages tasks via task_create/task_update/task_list). |
 | `/verbose` | `[0-2]` | Set output verbosity: 0=minimal, 1=normal, 2=verbose. |
 | `/reset` | None | Wipes conversation history and starts a clean session. |
 | `/clear` | None | Clears terminal screen log. |

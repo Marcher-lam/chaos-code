@@ -27,6 +27,9 @@ Available tools:
 - test_run: Run project tests
 - git_diff, git_add, git_commit, git_push, git_checkout, git_branch, git_reset: Git operations
 - stdd_status, stdd_recommend, stdd_verify: STDD workflow tools
+- task_create: Create a tracked work item with subject, description, and optional dependencies
+- task_update: Update task status (pending/in_progress/completed/deleted), add blockers or blocked-by dependencies
+- task_list: List all tasks with status, subject, and dependency info; optionally filter by status
 
 Rules of operation:
 1. First, inspect the project environment. Use fs_glob to find relevant files, fs_grep to search code patterns, and fs_read to understand implementation.
@@ -336,6 +339,54 @@ const TOOLS_DEFINITION = [
         }
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'task_create',
+      description: 'Create a new task to track work items. Use this to break down complex goals into manageable steps.',
+      parameters: {
+        type: 'object',
+        properties: {
+          subject: { type: 'string', description: 'Short title describing the task (imperative form, e.g. "Fix auth bug in login flow")' },
+          description: { type: 'string', description: 'Detailed description of what needs to be done' },
+          activeForm: { type: 'string', description: 'Present continuous form shown during work (e.g. "Fixing auth bug")' }
+        },
+        required: ['subject', 'description']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'task_update',
+      description: 'Update a task\'s status, description, or other fields. Use to mark tasks in_progress when starting work and completed when done.',
+      parameters: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', description: 'The task ID to update' },
+          status: { type: 'string', enum: ['pending', 'in_progress', 'completed', 'deleted'], description: 'New status for the task' },
+          subject: { type: 'string', description: 'New subject title' },
+          description: { type: 'string', description: 'New description' },
+          addBlocks: { type: 'array', items: { type: 'string' }, description: 'Task IDs that this task blocks (dependents)' },
+          addBlockedBy: { type: 'array', items: { type: 'string' }, description: 'Task IDs that must complete before this task can start' }
+        },
+        required: ['id']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'task_list',
+      description: 'List all tasks and their current status. Returns a summary of each task including ID, subject, status, and dependencies.',
+      parameters: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: ['pending', 'in_progress', 'completed', 'deleted'], description: 'Filter by status (optional)' }
+        }
+      }
+    }
   }
 ];
 
@@ -375,6 +426,10 @@ class ChaosAgentLoop {
     this.totalPromptTokens = 0;
     this.totalCompletionTokens = 0;
     this.totalCost = 0;
+
+    // Task management store
+    this._tasks = [];
+    this._nextTaskId = 1;
   }
 
   async run(goal, chatHistory = [], callbacks = {}) {
@@ -905,195 +960,6 @@ class ChaosAgentLoop {
     });
   }
 
-  // ── Fallback: non-streaming (kept for tests / compatibility) ──
-  _callOpenAI(messages) {
-    return new Promise((resolve, reject) => {
-      const url = this.baseUrl ? new URL('/chat/completions', this.baseUrl.replace(/\/$/, '')) : new URL('https://api.openai.com/v1/chat/completions');
-
-      const payload = {
-        model: this.model,
-        messages: [
-          { role: 'system', content: this.systemPrompt },
-          ...messages.map(m => ({
-            role: m.role,
-            content: m.content || '',
-            ...(m.tool_calls ? { tool_calls: m.tool_calls } : {}),
-            ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
-            ...(m.name ? { name: m.name } : {})
-          }))
-        ],
-        tools: this._getLLMTools(),
-        tool_choice: 'auto',
-        temperature: this.temperature
-      };
-
-      const body = JSON.stringify(payload);
-      const req = https.request(url, {
-        method: 'POST',
-        agent: _httpAgent,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Length': Buffer.byteLength(body),
-        },
-        timeout: 120000,
-      }, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-          if (res.statusCode >= 400) return reject(new Error(`OpenAI API error (${res.statusCode}): ${data}`));
-          try {
-            const json = JSON.parse(data);
-            const choice = json.choices?.[0] || {};
-            const content = choice.message?.content || null;
-            const toolCallsRaw = choice.message?.tool_calls || [];
-
-            const toolCalls = toolCallsRaw.map(tc => {
-              let parsedArgs = {};
-              try {
-                parsedArgs = JSON.parse(tc.function.arguments);
-              } catch (_) {}
-              return {
-                id: tc.id,
-                name: tc.function.name,
-                arguments: parsedArgs
-              };
-            });
-
-            const usage = json.usage || { prompt_tokens: 0, completion_tokens: 0 };
-            resolve({ content, toolCalls, toolCallsRaw, usage });
-          } catch (err) {
-            reject(new Error(`Failed to parse LLM response: ${err.message}`));
-          }
-        });
-      });
-
-      req.on('error', reject);
-      req.write(body);
-      req.end();
-    });
-  }
-
-  _callAnthropic(messages) {
-    return new Promise((resolve, reject) => {
-      const base = (this.baseUrl && this.baseUrl.trim()) || 'https://api.anthropic.com/v1';
-      const url = new URL('/messages', base.replace(/\/$/, ''));
-
-      const anthropicTools = this._getLLMTools().map(t => ({
-        name: t.function.name,
-        description: t.function.description,
-        input_schema: t.function.parameters
-      }));
-
-      const formattedMessages = messages.map(m => {
-        if (m.role === 'tool') {
-          return {
-            role: 'user',
-            content: [
-              {
-                type: 'tool_result',
-                tool_use_id: m.tool_call_id,
-                content: m.content
-              }
-            ]
-          };
-        }
-        if (Array.isArray(m.content)) {
-          return { role: m.role, content: m.content };
-        }
-        if (m.tool_calls) {
-          return {
-            role: m.role,
-            content: [
-              { type: 'text', text: m.content || '' },
-              ...m.tool_calls.map(tc => ({
-                type: 'tool_use',
-                id: tc.id,
-                name: tc.name || tc.function?.name,
-                input: tc.input || (tc.function?.arguments ? JSON.parse(tc.function.arguments) : {})
-              }))
-            ]
-          };
-        }
-        return { role: m.role, content: m.content || '' };
-      });
-
-      const payload = {
-        model: this.model,
-        system: this.systemPrompt,
-        messages: formattedMessages,
-        tools: anthropicTools,
-        max_tokens: 4096,
-        temperature: this.temperature
-      };
-
-      const body = JSON.stringify(payload);
-      const req = https.request(url, {
-        method: 'POST',
-        agent: _httpAgent,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': this.apiKey,
-          'anthropic-version': '2023-06-01',
-          'Content-Length': Buffer.byteLength(body),
-        },
-        timeout: 120000,
-      }, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-          if (res.statusCode >= 400) return reject(new Error(`Anthropic API error (${res.statusCode}): ${data}`));
-          try {
-            const json = JSON.parse(data);
-            let content = '';
-            const toolCalls = [];
-            const toolCallsRaw = [];
-
-            if (Array.isArray(json.content)) {
-              for (const block of json.content) {
-                if (block.type === 'text') {
-                  content += block.text;
-                } else if (block.type === 'tool_use') {
-                  toolCalls.push({
-                    id: block.id,
-                    name: block.name,
-                    arguments: block.input
-                  });
-                  toolCallsRaw.push({
-                    id: block.id,
-                    type: 'function',
-                    function: {
-                      name: block.name,
-                      arguments: JSON.stringify(block.input)
-                    }
-                  });
-                }
-              }
-            }
-
-            const usage = {
-              prompt_tokens: json.usage?.input_tokens || 0,
-              completion_tokens: json.usage?.output_tokens || 0
-            };
-
-            resolve({
-              content: content || null,
-              toolCalls,
-              toolCallsRaw,
-              usage
-            });
-          } catch (err) {
-            reject(new Error(`Failed to parse Anthropic response: ${err.message}`));
-          }
-        });
-      });
-
-      req.on('error', reject);
-      req.write(body);
-      req.end();
-    });
-  }
-
   async _executeTool(name, args) {
     const kernelToolName = name.replace(/_/g, '.');
 
@@ -1110,6 +976,17 @@ class ChaosAgentLoop {
     // Custom handling for fs_write
     if (name === 'fs_write') {
       return this._executeWrite(args);
+    }
+
+    // Task management tools
+    if (name === 'task_create') {
+      return this._executeTaskCreate(args);
+    }
+    if (name === 'task_update') {
+      return this._executeTaskUpdate(args);
+    }
+    if (name === 'task_list') {
+      return this._executeTaskList(args);
     }
 
     // Custom handling for fs_patch
@@ -1459,6 +1336,95 @@ class ChaosAgentLoop {
 
     result.push(...tail);
     return result;
+  }
+
+  // ── Task Management ──
+
+  _executeTaskCreate(args) {
+    if (!args.subject) return { status: 'error', error: 'subject is required' };
+    if (!args.description) return { status: 'error', error: 'description is required' };
+
+    const id = String(this._nextTaskId++);
+    const task = {
+      id,
+      subject: args.subject,
+      description: args.description,
+      activeForm: args.activeForm || '',
+      status: 'pending',
+      blockedBy: [],
+      blocks: [],
+      createdAt: Date.now(),
+    };
+    this._tasks.push(task);
+
+    return { status: 'ok', task: { id, subject: task.subject, status: task.status } };
+  }
+
+  _executeTaskUpdate(args) {
+    if (!args.id) return { status: 'error', error: 'id is required' };
+
+    const task = this._tasks.find(t => t.id === args.id);
+    if (!task) return { status: 'error', error: `Task ${args.id} not found` };
+    if (task.status === 'deleted') return { status: 'error', error: `Task ${args.id} is deleted` };
+
+    if (args.status) {
+      const valid = ['pending', 'in_progress', 'completed', 'deleted'];
+      if (!valid.includes(args.status)) {
+        return { status: 'error', error: `Invalid status: ${args.status}. Must be one of: ${valid.join(', ')}` };
+      }
+      task.status = args.status;
+    }
+    if (args.subject) task.subject = args.subject;
+    if (args.description) task.description = args.description;
+
+    // Handle dependency links
+    if (args.addBlockedBy) {
+      for (const depId of args.addBlockedBy) {
+        const dep = this._tasks.find(t => t.id === depId);
+        if (dep && !task.blockedBy.includes(depId)) {
+          task.blockedBy.push(depId);
+        }
+        if (dep && !dep.blocks.includes(task.id)) {
+          dep.blocks.push(task.id);
+        }
+      }
+    }
+    if (args.addBlocks) {
+      for (const depId of args.addBlocks) {
+        const dep = this._tasks.find(t => t.id === depId);
+        if (dep && !task.blocks.includes(depId)) {
+          task.blocks.push(depId);
+        }
+        if (dep && !dep.blockedBy.includes(task.id)) {
+          dep.blockedBy.push(task.id);
+        }
+      }
+    }
+
+    return { status: 'ok', task: { id: task.id, subject: task.subject, status: task.status } };
+  }
+
+  _executeTaskList(args) {
+    let tasks = this._tasks.filter(t => t.status !== 'deleted');
+
+    if (args && args.status) {
+      tasks = tasks.filter(t => t.status === args.status);
+    }
+
+    const summary = tasks.map(t => ({
+      id: t.id,
+      subject: t.subject,
+      status: t.status,
+      activeForm: t.activeForm || '',
+      blockedBy: t.blockedBy,
+      blocks: t.blocks,
+    }));
+
+    return {
+      status: 'ok',
+      count: summary.length,
+      tasks: summary,
+    };
   }
 }
 

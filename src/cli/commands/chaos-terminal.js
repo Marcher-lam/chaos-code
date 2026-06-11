@@ -37,7 +37,13 @@ const toolTimers = new Map();
 const patchedFiles = [];
 
 function printBanner() {
-  console.log(chalk.dim(`\n  Chaos Code v${VERSION}  •  Type /help for commands\n`));
+  const agent = new ChaosAgentLoop();
+  const provider = agent.getProviderId();
+  const model = agent.getModel();
+  console.log('');
+  console.log(chalk.bold('  Chaos Code') + chalk.dim(` v${VERSION}`));
+  console.log(chalk.dim(`  ${provider}/${model}  •  /help for commands`));
+  console.log('');
 }
 
 // ── Enhanced spinner with stage + timer ──
@@ -45,14 +51,23 @@ function startSpinner(label) {
   const frames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
   let i = 0;
   let stopped = false;
+  let currentLabel = label;
+  let extraInfo = '';
   const startTime = Date.now();
   const interval = setInterval(() => {
     if (stopped) return;
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    process.stdout.write(`\r${chalk.dim(frames[i % frames.length] + ' ' + label + ` (${elapsed}s)`)}       `);
+    const info = extraInfo ? `, ${extraInfo}` : '';
+    process.stdout.write(`\r${chalk.dim(frames[i % frames.length] + ' ' + currentLabel + ` (${elapsed}s${info})`)}       `);
     i++;
   }, 80);
   return {
+    updateLabel(newLabel) {
+      currentLabel = newLabel;
+    },
+    setExtra(info) {
+      extraInfo = info;
+    },
     stop(finalText) {
       if (stopped) return;
       stopped = true;
@@ -95,10 +110,10 @@ function findSimilar(cmd, commands, maxDist = 2) {
 
 // ── Unclosed expression detection for multiline input ──
 function isUnclosedExpression(line) {
-  const opens = (line.match(/[({[`]/g) || []).length;
-  const closes = (line.match(/[)}\]]/g) || []).length;
+  const opens = (line.match(/[{(\[]/g) || []).length;
+  const closes = (line.match(/[})\]]/g) || []).length;
   if (opens > closes) return true;
-  // Check for unclosed backticks
+  // Check for unclosed backticks (odd number means unclosed)
   const backticks = (line.match(/`/g) || []).length;
   if (backticks % 2 !== 0) return true;
   return false;
@@ -113,15 +128,31 @@ function generatePrompt(agentLoop) {
     const branch = execSync('git branch --show-current 2>/dev/null', { encoding: 'utf8', timeout: 3000 }).trim();
     if (branch) {
       const status = execSync('git status --porcelain 2>/dev/null', { encoding: 'utf8', timeout: 3000 }).trim();
-      const dirty = status ? '*' : '';
-      parts.push(chalk.magenta(branch + dirty));
+      const dirty = status ? chalk.red('*') : '';
+      parts.push(chalk.magenta(branch) + dirty);
     }
   } catch (_) {}
 
-  // Model
+  // Model (short form)
   try {
-    const model = agentLoop.getModel();
-    if (model) parts.push(chalk.cyan(model));
+    const model = agentLoop.getModel() || '';
+    const provider = agentLoop.getProviderId() || '';
+    if (model) {
+      // Shorten model name for cleaner prompt
+      const shortModel = model
+        .replace(/claude-sonnet-4-20250514/, 'sonnet4')
+        .replace(/claude-3-5-sonnet-latest/, 'sonnet3.5')
+        .replace(/claude-3-5-haiku-latest/, 'haiku3.5')
+        .replace(/claude-opus-4-20250514/, 'opus4')
+        .replace(/gpt-4o-mini/, '4o-mini')
+        .replace(/gpt-4\.1-mini/, '4.1-mini')
+        .replace(/gpt-4\.1-nano/, '4.1-nano')
+        .replace(/gpt-4\.1$/, '4.1')
+        .replace(/gpt-4o/, '4o')
+        .replace(/deepseek-chat/, 'ds-chat')
+        .replace(/deepseek-reasoner/, 'ds-reason');
+      parts.push(chalk.cyan(shortModel));
+    }
   } catch (_) {}
 
   const prefix = parts.length > 0 ? parts.join(chalk.dim(':')) + ' ' : '';
@@ -170,24 +201,23 @@ async function askPermission(toolName, description, args) {
 
   // Show diff preview for fs_patch
   if (toolName === 'fs_patch' && args && args.diff) {
-    process.stdout.write(chalk.dim('\n  ┌─ Proposed changes ─────────────────────────\n'));
+    process.stdout.write(chalk.dim('\n    Proposed changes:\n'));
     const diffLines = String(args.diff).split('\n').slice(0, 30);
     for (const l of diffLines) {
       if (l.startsWith('+++') || l.startsWith('--- ')) {
-        process.stdout.write(chalk.bold(`  ${l}\n`));
+        process.stdout.write(chalk.bold(`    ${l}\n`));
       } else if (l.startsWith('@@')) {
-        process.stdout.write(chalk.cyan(`  ${l}\n`));
+        process.stdout.write(chalk.cyan(`    ${l}\n`));
       } else if (l.startsWith('+')) {
-        process.stdout.write(chalk.green(`  ${l}\n`));
+        process.stdout.write(chalk.green(`    ${l}\n`));
       } else if (l.startsWith('-')) {
-        process.stdout.write(chalk.red(`  ${l}\n`));
+        process.stdout.write(chalk.red(`    ${l}\n`));
       } else {
-        process.stdout.write(chalk.dim(`  ${l}\n`));
+        process.stdout.write(chalk.dim(`    ${l}\n`));
       }
     }
     const totalLines = String(args.diff).split('\n').length;
-    if (totalLines > 30) process.stdout.write(chalk.dim(`  ... (${totalLines - 30} more lines)\n`));
-    process.stdout.write(chalk.dim('  └──────────────────────────────────────────────\n'));
+    if (totalLines > 30) process.stdout.write(chalk.dim(`    ... (${totalLines - 30} more lines)\n`));
   }
 
   return new Promise((resolve) => {
@@ -217,6 +247,31 @@ async function askPermission(toolName, description, args) {
   });
 }
 
+// ── Format tool args into a readable one-line summary ──
+function formatToolArgs(name, args) {
+  if (!args || typeof args !== 'object') return '';
+  const entries = Object.entries(args);
+  if (entries.length === 0) return '';
+
+  // Tool-specific formatting
+  if (name === 'fs_read' && args.path) return args.path;
+  if (name === 'fs_write' && args.path) return `${args.path} (${(args.content || '').length} bytes)`;
+  if (name === 'fs_glob' && args.pattern) return args.pattern;
+  if (name === 'fs_grep' && args.pattern) return `/${args.pattern}/`;
+  if (name === 'shell_run' && args.command) return args.command.slice(0, 60);
+  if (name === 'test_run') return args.command || '';
+  if (name === 'git_commit' && args.message) return `"${args.message.slice(0, 40)}"`;
+  if (name === 'git_add' && args.files) return args.files.join(' ').slice(0, 50);
+  if (name === 'task_create' && args.subject) return args.subject;
+  if (name === 'task_update' && args.id) return `#${args.id} → ${args.status || 'updated'}`;
+
+  // Generic: show key=value pairs
+  return entries.slice(0, 3).map(([k, v]) => {
+    const val = typeof v === 'string' ? v.slice(0, 40) : JSON.stringify(v).slice(0, 40);
+    return `${k}: ${val}`;
+  }).join(', ');
+}
+
 function buildPermissionDetail(name, args) {
   if (!args) return '';
   if (name === 'fs_patch') {
@@ -244,20 +299,24 @@ function displayToolResult(name, res) {
     const elapsed = toolTimers.has(name) ? chalk.dim(` (${((Date.now() - toolTimers.get(name)) / 1000).toFixed(1)}s)`) : '';
     toolTimers.delete(name);
 
-    // fs_read / fs_search – show first few lines (or paged full output in verbose mode)
+    // fs_read / fs_search – show first few lines with line numbers
     if (name === 'fs_read' || name === 'fs_search') {
       const text = parsed.content || parsed.output || (Array.isArray(parsed) ? parsed.map(r => r.path || r).join('\n') : '');
       if (text) {
         const totalLines = String(text).split('\n');
         const showLines = verbosityLevel >= 2 ? 30 : 8;
         if (verbosityLevel >= 2 && totalLines.length > 30) {
-          // Verbose mode: page the full output
-          _pagedOutput(chalk.dim('  ' + totalLines.join('\n') + '\n'), null);
+          _pagedOutput(chalk.dim('    ' + totalLines.join('\n') + '\n'), null);
         } else {
-          const lines = totalLines.slice(0, showLines).join('\n');
-          process.stdout.write(chalk.dim(`  ${lines}\n`));
-          if (totalLines.length > showLines) process.stdout.write(chalk.dim(`  ... (${totalLines.length - showLines} more lines)${elapsed}\n`));
-          else if (elapsed) process.stdout.write(chalk.dim(`${elapsed}\n`));
+          const lines = totalLines.slice(0, showLines);
+          const maxNumLen = String(lines.length).length;
+          const numbered = lines.map((l, i) => {
+            const num = chalk.dim(String(i + 1).padStart(maxNumLen) + ' │ ');
+            return `    ${num}${chalk.dim(l)}`;
+          }).join('\n');
+          process.stdout.write(numbered + '\n');
+          if (totalLines.length > showLines) process.stdout.write(chalk.dim(`    ... (${totalLines.length - showLines} more lines)${elapsed}\n`));
+          else if (elapsed) process.stdout.write(chalk.dim(`    ${elapsed}\n`));
         }
       }
     }
@@ -284,8 +343,14 @@ function displayToolResult(name, res) {
         const count = parsed.resultCount || '';
         process.stdout.write(chalk.green(`  ✓ tests passed${count ? ` (${count} suite${count > 1 ? 's' : ''})` : ''}${elapsed}\n`));
       } else if (parsed.passed === false) {
-        const failLine = (parsed.stderr || parsed.stdout || '').split('\n').filter(l => l.includes('FAIL') || l.includes('Error') || l.includes('✕')).slice(0, 5).join('\n');
-        process.stdout.write(chalk.red(`  ✗ tests failed${elapsed}\n${failLine ? chalk.dim('  ' + failLine + '\n') : ''}`));
+        const failLines = (parsed.stderr || parsed.stdout || '').split('\n').filter(l => l.includes('FAIL') || l.includes('Error') || l.includes('✕'));
+        if (verbosityLevel >= 2 && failLines.length > 10) {
+          process.stdout.write(chalk.red(`  ✗ tests failed${elapsed}\n`));
+          _pagedOutput(chalk.dim('  ' + failLines.join('\n') + '\n'), null);
+        } else {
+          const shortFail = failLines.slice(0, 5).join('\n');
+          process.stdout.write(chalk.red(`  ✗ tests failed${elapsed}\n${shortFail ? chalk.dim('  ' + shortFail + '\n') : ''}`));
+        }
       }
     }
 
@@ -294,11 +359,16 @@ function displayToolResult(name, res) {
       process.stdout.write(chalk.dim(`  ${parsed.status}${elapsed}\n`));
     }
 
-    // shell_run – show output tail
+    // shell_run – show output tail (or paged in verbose mode)
     if (name === 'shell_run' && (parsed.stdout || parsed.stderr)) {
       const out = (parsed.stdout || '') + (parsed.stderr || '');
-      const tail = out.trim().split('\n').slice(-5).join('\n');
-      if (tail) process.stdout.write(chalk.dim(`  ${tail}${elapsed}\n`));
+      const allLines = out.trim().split('\n');
+      if (verbosityLevel >= 2 && allLines.length > 20) {
+        _pagedOutput(chalk.dim('  ' + allLines.join('\n') + '\n'), null);
+      } else {
+        const tail = allLines.slice(-5).join('\n');
+        if (tail) process.stdout.write(chalk.dim(`  ${tail}${elapsed}\n`));
+      }
     }
   } catch (_) { /* non-critical */ }
 }
@@ -325,27 +395,36 @@ function _pagedOutput(text, rl) {
 
 // ── Create shared callbacks factory (deduplicated) ──
 function createCallbacks(spinner, mdRenderer) {
+  let streamingTokens = 0;
   return {
     onMessage: (msg) => {
       spinner.stop('');
       process.stdout.write(msg);
     },
     onToken: (token) => {
+      streamingTokens++;
       spinner.stop('');
       mdRenderer.push(token);
+      // Update spinner extra info periodically (every 50 tokens)
+      if (streamingTokens % 50 === 0) {
+        const stats = mdRenderer._agentLoop ? mdRenderer._agentLoop.getSessionStats() : null;
+        if (stats && stats.totalTokens > 0) {
+          spinner.setExtra(`${stats.totalTokens} tok`);
+        }
+      }
     },
     onToolDetected: (name) => {
       // Lightweight indicator during streaming when tool name first arrives
-      spinner.stop('');
-      spinner.start(`Calling ${name}...`);
+      streamingTokens = 0;
+      spinner.updateLabel(`Calling ${name}...`);
+      spinner.setExtra('');
     },
     onToolStart: (name, args) => {
       spinner.stop('');
       toolTimers.set(name, Date.now());
-      const detail = Object.keys(args || {}).length > 0
-        ? ' ' + Object.entries(args).slice(0, 3).map(([k, v]) => `${k}=${JSON.stringify(v).slice(0, 40)}`).join(', ')
-        : '';
-      process.stdout.write(chalk.dim(`\n  ┌─ ${name}${detail ? ' ── ' + detail : ''}\n`));
+      // Format tool args into a readable summary
+      const argSummary = formatToolArgs(name, args);
+      process.stdout.write(`\n  ${chalk.bold.blue('⏺')} ${chalk.bold(name)}${argSummary ? chalk.dim('  ' + argSummary) : ''}\n`);
       // Track fs_patch files for /undo
       if (name === 'fs_patch' && args && args.diff) {
         const diffStr = String(args.diff);
@@ -364,7 +443,6 @@ function createCallbacks(spinner, mdRenderer) {
     },
     onToolEnd: (name, res) => {
       displayToolResult(name, res);
-      process.stdout.write(chalk.dim('  └' + '─'.repeat(50) + '\n'));
     },
     askPermission: async (name, args) => {
       spinner.stop('');
@@ -385,7 +463,7 @@ function printTurnSummary(agentLoop, turnStartTime) {
   }
   if (stats.cost > 0) parts.push(`$${stats.cost.toFixed(4)}`);
   if (parts.length > 0) {
-    process.stdout.write(chalk.dim(`  ── ${parts.join(' · ')} ──\n`));
+    process.stdout.write(chalk.dim(`  ${parts.join(' · ')}\n`));
   }
 }
 
@@ -566,6 +644,7 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
         console.log('  /export         Export conversation to file');
         console.log('  /verbose [lvl]  Set output verbosity (0-2)');
         console.log('  /config         View/edit configuration');
+        console.log('  /tasks [status] Show task list');
         console.log('  /reset          Reset conversation');
         console.log('  /history [kw]   Search command history');
         console.log('  /clear          Clear screen');
@@ -595,31 +674,31 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
         try {
           const diffRes = kernel.executeTool('git.diff', { patch: true, maxBytes: 8000 });
           if (diffRes.dirty) {
-            console.log(chalk.dim('  Modified files:'));
-            console.log(diffRes.statusShort);
+            let diffOutput = chalk.dim('  Modified files:') + '\n' + diffRes.statusShort + '\n';
             if (diffRes.diff) {
-              console.log(chalk.dim('  Diff:'));
+              diffOutput += chalk.dim('  Diff:') + '\n';
               const diffLines = diffRes.diff.split('\n');
               let currentFile = '';
               diffLines.forEach(l => {
                 if (l.startsWith('+++') || l.startsWith('---')) return;
                 if (l.startsWith('@@')) {
-                  process.stdout.write(chalk.cyan('  ' + l + '\n'));
+                  diffOutput += chalk.cyan('  ' + l) + '\n';
                   return;
                 }
                 if (l.startsWith('diff --git')) {
                   const file = l.split(' b/').pop();
                   if (file && file !== currentFile) {
                     currentFile = file;
-                    process.stdout.write(chalk.bold(`  ${file}\n`));
+                    diffOutput += chalk.bold(`  ${file}`) + '\n';
                   }
                   return;
                 }
-                if (l.startsWith('+')) process.stdout.write(chalk.green('  ' + l + '\n'));
-                else if (l.startsWith('-')) process.stdout.write(chalk.red('  ' + l + '\n'));
-                else process.stdout.write(chalk.dim('  ' + l + '\n'));
+                if (l.startsWith('+')) diffOutput += chalk.green('  ' + l) + '\n';
+                else if (l.startsWith('-')) diffOutput += chalk.red('  ' + l) + '\n';
+                else diffOutput += chalk.dim('  ' + l) + '\n';
               });
             }
+            await _pagedOutput(diffOutput, rl);
           } else {
             console.log(chalk.dim('  Working tree clean.'));
           }
@@ -993,6 +1072,26 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
         } catch (err) {
           console.log(chalk.red(`  Export failed: ${err.message}`));
         }
+        break;
+      }
+
+      // ── /tasks — Show task list status ──
+      case '/tasks': {
+        const taskResult = agentLoop._executeTaskList(parts[1] ? { status: parts[1] } : {});
+        if (taskResult.count === 0) {
+          console.log(chalk.dim('  No tasks.'));
+          break;
+        }
+        console.log('');
+        console.log(`  ${chalk.bold(`Tasks (${taskResult.count})`)}:`);
+        for (const t of taskResult.tasks) {
+          const statusIcon = t.status === 'completed' ? chalk.green('✓')
+            : t.status === 'in_progress' ? chalk.yellow('►')
+            : chalk.dim('○');
+          const depInfo = t.blockedBy.length > 0 ? chalk.dim(` blockedBy:${t.blockedBy.join(',')}`) : '';
+          console.log(`  ${statusIcon} ${chalk.dim(`#${t.id}`)} ${t.subject}${depInfo}`);
+        }
+        console.log('');
         break;
       }
 

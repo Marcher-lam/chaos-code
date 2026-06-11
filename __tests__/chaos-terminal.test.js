@@ -128,10 +128,10 @@ describe('ChaosAgentLoop', () => {
     expect(compacted[2].content).toBe('msg3');
   });
 
-  test('_callOpenAI should correctly map tool_call_id and name in the payload', async () => {
+  test('_callOpenAIStream should correctly map tool_call_id and name in the payload', async () => {
     const agent = new ChaosAgentLoop();
     let requestPayload = null;
-    
+
     https.request.mockImplementation((url, options, callback) => {
       if (typeof options === 'function') {
         callback = options;
@@ -146,9 +146,8 @@ describe('ChaosAgentLoop', () => {
             statusCode: 200,
             on: jest.fn((event, cb) => {
               if (event === 'data') {
-                cb(JSON.stringify({
-                  choices: [{ message: { content: 'test response' } }]
-                }));
+                // SSE format: data: {...}\n\n
+                cb('data: {"choices":[{"delta":{"content":"ok"}}]}\n\n');
               }
               if (event === 'end') {
                 cb();
@@ -167,7 +166,7 @@ describe('ChaosAgentLoop', () => {
       { role: 'tool', tool_call_id: 'call_123', name: 'shell_run', content: 'tool output' }
     ];
 
-    await agent._callOpenAI(messages);
+    await agent._callOpenAIStream(messages);
 
     expect(requestPayload).not.toBeNull();
     // System prompt is prepended at index 0, so messages are shifted by 1

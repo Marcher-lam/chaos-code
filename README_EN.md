@@ -14,7 +14,7 @@ Chaos Code is capable of autonomously reading files, planning modifications, run
 ## 🌟 Key Features
 
 *   **⚡ Claude-like Autonomous REPL**
-    Start a conversational session directly in your terminal. The AI agent can inspect your workspace, search for patterns, apply unified diff patches (`fs_patch`), and verify modifications through local test suites. Features streaming Markdown rendering, Tab completion (commands/model names/file paths), multi-line input, and dynamic prompt showing git branch + model.
+    Start a conversational session directly in your terminal. The AI agent can inspect your workspace, search for patterns, apply unified diff patches (`fs_patch`), and verify modifications through local test suites. Features streaming Markdown rendering (code highlighting + line numbers + tables), Tab completion (commands/model names/file paths), multi-line input (`"""` + unclosed bracket detection), dynamic prompt (git branch + model shortname), structured tool call display (`⏺` icon + arg summary + line-numbered content), Ctrl+C interrupt / Ctrl+D exit, and auto-paging for long output.
 *   **🛠️ Full Git Automation Pipeline**
     Supports AI-driven Git operations (`git.add`, `git.commit`, `git.push`, `git.checkout`, etc.) protected by user authorization gates. Allows previewing patches and staging updates via simple shell interactions. Includes `/undo` for reverting recent AI edits.
 *   **🔌 Model Context Protocol (MCP) Client**
@@ -23,8 +23,8 @@ Chaos Code is capable of autonomously reading files, planning modifications, run
     If any test runner (`test_run`) returns a failure, the AI agent automatically parses the stderr/stdout stack traces and enters a "Repair-and-Verify" loop, fixing the codebase using diff patches until all tests pass.
 *   **🧠 Multi-LLM Routing & Cost Tracking**
     Compatible with OpenAI, Anthropic, DeepSeek, OpenRouter, Groq, and Ollama. Easily switch active models via `/model` inside the REPL and track token usage, completion metrics, and session cost dynamically. Supports `--model` and `--provider` CLI flags.
-*   **🔧 18+ Built-in Tools + MCP Dynamic Extensions**
-    Includes `fs_read`, `fs_search`, `fs_glob` (file pattern matching), `fs_grep` (regex search with context lines), `fs_write` (direct file creation), `fs_patch` (diff patches), `shell_run`, `test_run`, full Git tool suite, STDD tools, and MCP dynamic tools.
+*   **🔧 21+ Built-in Tools + MCP Dynamic Extensions**
+    Includes `fs_read`, `fs_search`, `fs_glob` (file pattern matching), `fs_grep` (regex search with context lines), `fs_write` (direct file creation), `fs_patch` (diff patches), `shell_run`, `test_run`, full Git tool suite, `task_create`/`task_update`/`task_list` (task management), STDD tools, and MCP dynamic tools.
 *   **⚙️ Persistent Configuration System**
     Manage all preferences (verbosity, auto-compact threshold, temperature, max turns, per-tool permissions) via `~/.chaos/config.json`. Real-time view/edit with `/config` command.
 *   **📊 Session Persistence & Recovery**
@@ -87,7 +87,15 @@ Run the main CLI script without arguments to boot up the interactive terminal:
 node cli.js
 ```
 
-You will see a beautiful terminal banner, and the prompt `chaos > ` will wait for your instructions.
+You will see the version banner with current provider/model, and the prompt `main*:gpt-4o > ` will wait for your instructions.
+
+You can also use pipe mode for quick one-shot queries:
+
+```bash
+echo "explain this codebase" | node cli.js
+cat error.log | node cli.js "fix this error"
+git diff | node cli.js "review these changes"
+```
 
 ---
 
@@ -114,6 +122,7 @@ Within the interactive shell, you can use the following commands to manage your 
 | `/history [keyword]` | Search cross-session persistent command history |
 | `/resume` | List and restore previously saved sessions |
 | `/export` | Export conversation to a Markdown file |
+| `/tasks [status]` | Show task list and status for the current session |
 | `/verbose [0-2]` | Set output verbosity (0=minimal, 1=normal, 2=verbose) |
 | `/reset` | Clear the active conversation history context |
 | `/clear` | Clear the terminal screen |
@@ -148,7 +157,7 @@ On shell initialization, Chaos Code will spawn these subprocesses, fetch their t
 
 ```bash
 chaos-code/
-├── __tests__/           # Jest test suite (204 suites)
+├── __tests__/           # Jest test suite (207 suites)
 ├── cli.js               # CLI Entrypoint & Claw-like command router
 ├── package.json         # Package configuration and scripts
 ├── src/

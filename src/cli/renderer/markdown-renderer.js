@@ -50,15 +50,23 @@ class StreamingMarkdownRenderer {
         this.inCodeBlock = true;
         this.codeBlockLang = line.trimStart().slice(3).trim();
         this.codeBlockBuffer = '';
-        const label = this.codeBlockLang || 'code';
-        process.stdout.write(chalk.dim(`  ┌─ ${label} ─${'─'.repeat(Math.max(0, 40 - label.length))}\n`));
+        const label = this.codeBlockLang || '';
+        if (label) {
+          process.stdout.write(chalk.dim(`    ${label}\n`));
+        }
       } else {
         this.inCodeBlock = false;
         if (this.codeBlockBuffer.trim()) {
-          const highlighted = highlightCode(this.codeBlockBuffer.replace(/\n$/, ''), this.codeBlockLang || undefined);
-          process.stdout.write(highlighted + '\n');
+          const raw = this.codeBlockBuffer.replace(/\n$/, '');
+          const codeLines = raw.split('\n');
+          const maxNumLen = String(codeLines.length).length;
+          const highlighted = highlightCode(raw, this.codeBlockLang || undefined);
+          const hlLines = highlighted.split('\n');
+          for (let i = 0; i < hlLines.length; i++) {
+            const num = chalk.dim(String(i + 1).padStart(maxNumLen) + ' │ ');
+            process.stdout.write(`    ${num}${hlLines[i]}\n`);
+          }
         }
-        process.stdout.write(chalk.dim('  └' + '─'.repeat(50) + '\n'));
       }
       return;
     }
@@ -69,8 +77,28 @@ class StreamingMarkdownRenderer {
       return;
     }
 
+    // ── Table rendering ──
+    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+      this._renderTableLine(line);
+      return;
+    }
+
     // ── Normal line: render inline markdown ──
-    process.stdout.write(this._renderInline(line) + '\n');
+    process.stdout.write('  ' + this._renderInline(line) + '\n');
+  }
+
+  /**
+   * Render a markdown table line with alignment.
+   */
+  _renderTableLine(line) {
+    const cells = line.split('|').filter(c => c.trim() !== '');
+    // Separator line (---|---)
+    if (cells.every(c => /^[-:\s]+$/.test(c))) {
+      process.stdout.write(chalk.dim('  ' + cells.map(() => '────────').join('──') + '\n'));
+      return;
+    }
+    const rendered = cells.map(c => ' ' + this._renderInlineStyles(c.trim()) + ' ').join(chalk.dim('│'));
+    process.stdout.write(chalk.dim('  │') + rendered + chalk.dim('│') + '\n');
   }
 
   /**

@@ -667,13 +667,18 @@ const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID 
 
 if (isTestEnv || isHelpOrVersion) {
   program.parse();
-} else if (!process.stdin.isTTY && !filteredPositional[0]) {
+} else if (!process.stdin.isTTY) {
   // Piped stdin (no TTY) -> read from pipe and run as prompt
   let pipedInput = '';
   process.stdin.setEncoding('utf8');
   process.stdin.on('data', chunk => { pipedInput += chunk; });
   process.stdin.on('end', () => {
-    const prompt = pipedInput.trim();
+    const piped = pipedInput.trim();
+    const positional = filteredPositional.join(' ');
+    // Combine: if both stdin and positional, prepend stdin content
+    const prompt = positional
+      ? `${piped}\n\n${positional}`
+      : piped;
     if (prompt) {
       const entry = getProgress().start('pipe-prompt');
       setActive(entry);

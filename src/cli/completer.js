@@ -11,7 +11,7 @@ const SLASH_COMMANDS = [
   '/exit', '/quit', '/help', '/clear', '/connect', '/models', '/providers',
   '/diff', '/commit', '/rollback', '/undo', '/status', '/recommend', '/verify',
   '/doctor', '/model', '/compact', '/cost', '/session', '/reset',
-  '/history', '/resume', '/export', '/verbose', '/config',
+  '/history', '/resume', '/export', '/verbose', '/config', '/tasks',
 ];
 
 /**
