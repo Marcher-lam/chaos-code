@@ -1,155 +1,138 @@
 # Chaos Code 🤖
 
-> **Spec + Test Driven Next-Gen Autonomous AI Coding Agent & Interactive Terminal REPL**
+> **Spec + Test Driven Autonomous AI Coding Agent — Terminal REPL, HTTP Server, ACP & SDK**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-green.svg)](https://nodejs.org/)
 
-Chaos Code is an interactive, fully-autonomous AI coding assistant designed to run directly in your terminal. Inspired by Claude Code and Claw Code, it integrates Spec-Driven development with Test-Driven Development (TDD) pipelines while offering multi-LLM compatibility and Model Context Protocol (MCP) support. 
-
-Chaos Code is capable of autonomously reading files, planning modifications, running local tests, fixing test failures on the fly, and managing Git staging, commits, and pushes in a closed-loop fashion.
+Chaos Code is a fully-autonomous AI coding agent designed to run in your terminal. It fuses Spec-Driven development with Test-Driven Development (TDD), speaks the Model Context Protocol (MCP), and closes the loop: read code → plan → patch → run tests → self-heal → commit/push/PR — with production-grade safety (OS sandbox, permission gates, checkpoints) and STDD governance on top.
 
 ---
 
 ## 🌟 Key Features
 
-*   **⚡ Claude-like Autonomous REPL**
-    Start a conversational session directly in your terminal. The AI agent can inspect your workspace, search for patterns, apply unified diff patches (`fs_patch`), and verify modifications through local test suites. Features streaming Markdown rendering (code highlighting + line numbers + tables), Tab completion (commands/model names/file paths), multi-line input (`"""` + unclosed bracket detection), dynamic prompt (git branch + model shortname), structured tool call display (`⏺` icon + arg summary + line-numbered content), Ctrl+C interrupt / Ctrl+D exit, and auto-paging for long output.
-*   **🛠️ Full Git Automation Pipeline**
-    Supports AI-driven Git operations (`git.add`, `git.commit`, `git.push`, `git.checkout`, etc.) protected by user authorization gates. Allows previewing patches and staging updates via simple shell interactions. Includes `/undo` for reverting recent AI edits.
-*   **🔌 Model Context Protocol (MCP) Client**
-    Includes a built-in JSON-RPC 2.0 based MCP client over stdio. Seamlessly connect and execute tools from external MCP servers (e.g. SQLite database tools, Playwright browser tools) reflection-registered into the LLM prompt context.
-*   **🩺 Self-Healing Test Loops**
-    If any test runner (`test_run`) returns a failure, the AI agent automatically parses the stderr/stdout stack traces and enters a "Repair-and-Verify" loop, fixing the codebase using diff patches until all tests pass.
-*   **🧠 Multi-LLM Routing & Cost Tracking**
-    Compatible with OpenAI, Anthropic, DeepSeek, OpenRouter, Groq, and Ollama. Easily switch active models via `/model` inside the REPL and track token usage, completion metrics, and session cost dynamically. Supports `--model` and `--provider` CLI flags.
-*   **🔧 21+ Built-in Tools + MCP Dynamic Extensions**
-    Includes `fs_read`, `fs_search`, `fs_glob` (file pattern matching), `fs_grep` (regex search with context lines), `fs_write` (direct file creation), `fs_patch` (diff patches), `shell_run`, `test_run`, full Git tool suite, `task_create`/`task_update`/`task_list` (task management), STDD tools, and MCP dynamic tools.
-*   **⚙️ Persistent Configuration System**
-    Manage all preferences (verbosity, auto-compact threshold, temperature, max turns, per-tool permissions) via `~/.chaos/config.json`. Real-time view/edit with `/config` command.
-*   **📊 Session Persistence & Recovery**
-    Auto-saves chat history to `~/.chaos/sessions/`. Resume past sessions with `/resume`, export conversations to Markdown with `/export`.
-*   **📈 Ralph Loop Spec Gates**
-    Breaks down developer goals into eight distinct, rigorous phases: `inspect -> propose -> spec -> plan -> patch -> test -> verify -> summarize`, ensuring full code quality compliance.
+*   **⚡ Autonomous Interactive REPL**
+    Streaming Markdown rendering (syntax highlighting + line numbers + tables), Tab completion (slash commands / model names / skill names / file paths), multi-line input, dynamic prompt (`branch*:model`), structured tool display (`⏺`), Ctrl+C interrupt, auto-paging. Pipe mode: `git diff | node cli.js "review these changes"`.
+*   **🛡️ OS-Level Sandbox (macOS seatbelt / Linux bubblewrap)**
+    `shell_run` / `test_run` execute inside a real OS sandbox: writes to system and credential dirs (`~/.ssh`, `~/.aws`, `~/.gnupg`) are kernel-denied while the workspace and `/dev/null` redirects keep working (verified on a real Mac). The toggle is operator-only (`sandbox: 'auto'|'off'` or `CHAOS_SANDBOX`); `CHAOS_SANDBOX=on` fails CLOSED when no sandbox tool exists.
+*   **👥 Parallel & Resident Subagents (`task_dispatch`)**
+    Up to 5 tasks per dispatch (3 concurrent), each in an isolated context. Read-only tools by default; explicitly granted write tools still go through the same y/n/a/s permission gate. `background: true` keeps tasks RESIDENT across REPL turns with completion notices and `task_status` polling; pipe/SDK runs drain automatically. Named agent personas from `.chaos/agents.json` (`{reviewer: {prompt, tools, model}}`).
+*   **🌲 Multi-Workspace via Git Worktrees**
+    `git_worktree` (list/add/remove under `.worktrees/<name>`) + `task_dispatch {cwd}` gives a subagent its own kernel and rebuilt system prompt inside an isolated worktree — conflict-free parallel edits.
+*   **🌗 Plan Mode**
+    `/plan` enforces read-only at the kernel level: write tools are refused and the model is steered toward presenting an implementation plan (files / steps / risks). `/plan off` releases execution. Applies to subagents too.
+*   **🧭 Symbol Navigation (LSP + heuristics)**
+    The `symbols` tool drives a REAL LSP client when you configure `.chaos/lsp.json` (Content-Length framing, initialize/didOpen/documentSymbol, timeouts); with zero config it falls back to dependency-free heuristic extraction for js/ts/py/go/rs/java/php — functions/classes/methods/types with line numbers, jump with `fs_read startLine`.
+*   **👁 Multimodal Image Input (`fs_read_image`)**
+    Reads png/jpg/gif/webp (≤5MB) as base64 and delivers it provider-natively: OpenAI wire → `image_url` vision block; Anthropic wire → `image` block inside `tool_result`.
+*   **🔌 SDK / HTTP Server / ACP**
+    - SDK: `require('@marcher-lam/chaos-code/src/sdk')` → `runPrompt({prompt, cwd, maxTurns, onToken})`
+    - `chaos serve`: HTTP API (`POST /v1/agent/run`, `/v1/skills`, `/v1/agents`, `/v1/health`) with optional `CHAOS_SERVER_TOKEN` bearer auth and single-flight run guard
+    - `chaos acp`: minimal Agent Client Protocol over stdio (initialize / session new / streaming prompt chunks / cancel) for editor integration
+*   **🧩 Five Extension Layers**
+    Skills (53 STDD skills + 86 command templates, dual-hosted: usable in this REPL AND installable into Cursor, Copilot and 20+ other popular AI coding agents), Hooks (async spawn, timeout SIGKILL, preToolUse veto, plugin hooks behind a `trustedPlugins` trust gate), Subagents, Plugins (`.chaos/plugins/<name>/`), MCP (per-request timeout, 120s startup grace, leak-proof).
+*   **🪝 Lifecycle Hooks**
+    `~/.chaos/config.json` → `hooks: {preToolUse: [...], postToolUse: [...]}`. Hooks receive a JSON payload on stdin; non-zero exit blocks the tool call. Execution is ASYNC — a slow hook never freezes streaming or parallel subagents.
+*   **🧠 Context Management**
+    LLM-summarized compaction (structural-truncation fallback, original goal always preserved), Anthropic prompt caching with cache_control breakpoints (cloned per request — never accumulates), real usage via `stream_options.include_usage`, `maxTokens` configurable, CLAUDE.md/AGENTS.md/CHAOS.md project memory injection. Thinking models (qwen3/GLM/DeepSeek-R1): `reasoning_content` captured; empty-answer turns are nudged once instead of silently ending.
+*   **⏪ Checkpoints & Undo**
+    Every turn that writes files auto-saves a whole-workspace checkpoint (`/checkpoint`, `/rewind <id>`, last 10 kept); per-file `/undo` chains pre-write snapshots → git restore → delete-agent-created-files.
+*   **🛠️ Full Git Automation**
+    add/commit/push (current-branch default)/pull/log/stash/checkout/branch/reset + `git_pr` (gh CLI, timeout-aware duplicate-PR protection) + `git_worktree`. Argument-injection hardened.
+*   **📖 Big-File & Secret Safety**
+    Windowed `fs_read` (2000-line pages, UTF-8 byte budget, 16MB hard cap, `totalLines/truncated` metadata); secret-shaped files (`.env`, `*.pem`, `id_rsa*`, `credentials`) are refused from auto-read.
+*   **⚙️ Configuration**
+    `~/.chaos/config.json`: verbosity, thresholds, `maxTurns`, `temperature`, `maxTokens`, `promptCaching`, `mcpTimeout`, `sandbox`, `hooks`, `trustedPlugins`, per-tool permission defaults. Live view/edit via `/config`.
+*   **📊 Sessions & History**
+    Auto-saved sessions (`/resume`, `/export`), cross-session command history (`/history`), token/cost tracking per turn.
+*   **📈 Ralph Loop STDD Governance**
+    Eight rigorous phases — `inspect -> propose -> spec -> plan -> patch -> test -> verify -> summarize` — with TDD red/green/refactor state gates, a 9-article constitution checker, mutation-testing evidence ledgers and DAG orchestration. The moat.
 
 ---
 
 ## 🚀 Quick Start
 
 ### 1. Requirements
+*   **Node.js** `>= 20.0.0` · **Git** installed (workspace `git init`-ed with an `origin` remote for push/PR tools)
 
-*   **Node.js**: `>= 20.0.0` (LTS versions such as Node 20 or higher recommended)
-*   **Git**: Git command line tools installed. The local project workspace must be initialized (`git init`) and linked to an `origin` remote repository.
+### 2. Install
 
-### 2. Detailed Installation Steps
-
-#### Step 1: Clone the Repository
-Clone the Chaos Code repository into your local machine directory:
 ```bash
 git clone https://github.com/Marcher-lam/chaos-code.git
 cd chaos-code
-```
-
-#### Step 2: Install Project Dependencies
-Run the install command inside the cloned `chaos-code` directory to load all required Node.js packages:
-```bash
 npm install
+npm link   # optional: exposes `chaos` / `stdd` / `ace` globally
 ```
 
-#### Step 3: Link the CLI Command Globally (Recommended)
-To run the `chaos` or `stdd` commands directly from **any other project workspace** on your computer, create a global symlink:
-```bash
-# Link the local binaries to your global PATH (prepend sudo if permission errors occur on Mac/Linux)
-npm link
-```
-*   **Verification**: Check if it's successfully linked by opening a new shell and running `chaos --version`.
-*   **Alternative Exec Option**: If you prefer not to install the symlink globally, you can invoke the CLI directly using its relative or absolute path, e.g., `node /path/to/chaos-code/cli.js [command]`.
-
-
-### 3. API Key Setup
-
-Set the credentials for your desired AI provider in your terminal session:
+### 3. API Key
 
 ```bash
-# For OpenAI models (defaults to gpt-4o-mini)
-export OPENAI_API_KEY="your-openai-api-key"
-export STDD_LLM_BASE_URL="https://api.openai.com/v1" # Optional custom API endpoint
-
-# For Anthropic models (defaults to claude-3-5-sonnet-latest)
-export ANTHROPIC_API_KEY="your-anthropic-api-key"
+export OPENAI_API_KEY="sk-..."                        # OpenAI-compatible (default gpt-4o-mini)
+export ANTHROPIC_API_KEY="sk-ant-..."                 # Anthropic (default claude-3-5-sonnet-latest)
+# Any OpenAI-compatible endpoint (GLM / DeepSeek / Ollama / LM Studio) — http:// and
+# arbitrary path prefixes (e.g. /api/paas/v4) are handled correctly:
+export STDD_LLM_API_KEY="..." STDD_LLM_BASE_URL="https://open.bigmodel.cn/api/paas/v4" STDD_LLM_MODEL="glm-4.7"
 ```
 
-### 4. Launching the Interactive REPL
+Or configure interactively inside the REPL with `/connect`.
 
-Run the main CLI script without arguments to boot up the interactive terminal:
-
-```bash
-node cli.js
-```
-
-You will see the version banner with current provider/model, and the prompt `main*:gpt-4o > ` will wait for your instructions.
-
-You can also use pipe mode for quick one-shot queries:
+### 4. Run
 
 ```bash
-echo "explain this codebase" | node cli.js
-cat error.log | node cli.js "fix this error"
-git diff | node cli.js "review these changes"
+node cli.js                    # interactive REPL
+echo "explain this codebase" | node cli.js      # pipe mode
+node cli.js serve --port 8787  # HTTP API server
+node cli.js acp                # ACP agent over stdio
 ```
 
 ---
 
 ## 📚 REPL Slash Commands
 
-Within the interactive shell, you can use the following commands to manage your session and git state:
-
 | Command | Description |
 | :--- | :--- |
-| `/help` | List all available slash commands and guides |
-| `/status` | View active STDD changes and current TDD pipeline phase |
-| `/diff` | Display git working tree status and patch previews |
-| `/commit` | Stage and commit all local modifications interactively |
-| `/rollback` | Hard rollback (`git reset --hard`) and discard all uncommitted edits |
-| `/undo [file]` | Revert recently patched files (supports `/undo all`) |
-| `/model [name]` | Inspect current model or switch active model (e.g., `/model gpt-4o`) |
-| `/models` | List all available models from the current provider |
-| `/providers` | List all configured providers and their status |
-| `/connect` | Interactive provider setup (API key, base URL, model) |
-| `/cost` | Display cumulative token usage (Prompt/Completion) and estimated session cost |
-| `/session` | Inspect active provider, model name, message counts, and stats |
-| `/config [key] [value]` | View/edit persistent configuration (verbosity, thresholds, per-tool permissions) |
-| `/compact` | Compact chat history context to fit limits and save tokens |
-| `/history [keyword]` | Search cross-session persistent command history |
-| `/resume` | List and restore previously saved sessions |
-| `/export` | Export conversation to a Markdown file |
-| `/tasks [status]` | Show task list and status for the current session |
-| `/verbose [0-2]` | Set output verbosity (0=minimal, 1=normal, 2=verbose) |
-| `/reset` | Clear the active conversation history context |
-| `/clear` | Clear the terminal screen |
-| `/exit` or `/quit` | Exit the Chaos Code terminal shell |
+| `/help` | List all commands |
+| `/status` · `/recommend` · `/verify` · `/doctor` | STDD state / next step / verification / health checks |
+| `/diff` · `/commit` · `/rollback` · `/undo [file\|all]` | Git inspect & revert (undo chains snapshot → git → delete) |
+| `/model [name]` · `/models` · `/providers` · `/connect` | Model & provider management |
+| `/cost` · `/session` · `/config [k] [v]` · `/verbose [0-2]` · `/compact` | Stats, config, compaction |
+| `/history [kw]` · `/resume` · `/export` · `/reset` · `/clear` | Sessions & history |
+| `/tasks [status]` | Task list (AI-managed via task_* tools) |
+| `/skills [kw]` · `/skill <name> [args]` | 53 STDD skills catalog / load & run (`$ARGUMENTS` substitution) |
+| `/cmds [kw]` · `/cmd <name> [args]` | 86 command templates catalog / load & run |
+| `/hooks` | Configured lifecycle hooks |
+| `/plan [on\|off]` | Plan mode (read-only until approved) |
+| `/agents` · `/plugins` | Named agent configs / installed plugin packs |
+| `/checkpoint [label\|list]` · `/rewind <id>` | Whole-workspace checkpoints |
+| `/exit` · `/quit` | Exit (drains resident background tasks, kills MCP servers) |
 
 ---
 
-## 🔧 Model Context Protocol (MCP) Integration
+## 🔧 MCP Integration
 
-To hook up external MCP tools, create a config file at `stdd/mcp-servers.json` in your project root:
+Create `stdd/mcp-servers.json`:
 
 ```json
 {
   "mcpServers": {
-    "sqlite": {
-      "command": "uvx",
-      "args": ["mcp-server-sqlite", "--db-path", "./data.db"]
-    },
-    "webbrowser": {
-      "command": "node",
-      "args": ["/path/to/mcp-server-playwright/dist/index.js"]
-    }
+    "sqlite": { "command": "uvx", "args": ["mcp-server-sqlite", "--db-path", "./data.db"] }
   }
 }
 ```
 
-On shell initialization, Chaos Code will spawn these subprocesses, fetch their tool catalogs, and dynamically register prefixed actions like `sqlite_query` or `webbrowser_navigate` for the AI model to call.
+Chaos Code spawns the servers, speaks stdio JSON-RPC, and reflects their tools into the model as prefixed functions (`sqlite_query`, …). Per-request timeouts are configurable (`mcpTimeout`); hung servers can't stall the loop and never leak.
+
+---
+
+## 🧩 Workspace Extension Points (`.chaos/`)
+
+| Path | Purpose |
+| :--- | :--- |
+| `.chaos/agents.json` | Named subagent personas (`prompt`/`tools`/`model`) referenced by `task_dispatch {agent}` |
+| `.chaos/plugins/<name>/` | Plugin pack: `plugin.json` + `skills/` + `commands/` + `hooks.json` (hooks execute only after `trustedPlugins` allowlisting) |
+| `.chaos/lsp.json` | LSP servers (`{"typescript":{"command":["typescript-language-server","--stdio"]}}`) enabling LSP-backed `symbols` |
+
+User-level state lives under `~/.chaos/`: `config.json`, `agents.json`, `providers.json`, `backups/` (pre-write snapshots), `checkpoints/` (session checkpoints), `sessions/`.
 
 ---
 
@@ -157,49 +140,40 @@ On shell initialization, Chaos Code will spawn these subprocesses, fetch their t
 
 ```bash
 chaos-code/
-├── __tests__/           # Jest test suite (207 suites)
-├── cli.js               # CLI Entrypoint & Claw-like command router
-├── package.json         # Package configuration and scripts
+├── __tests__/            # Jest suite (221 suites / 4500+ tests, incl. docs-consistency)
+├── cli.js                # Entrypoint & four-way routing (REPL / pipe / subcommands / serve / acp)
 ├── src/
-│   ├── cli/
-│   │   ├── commands/    # CLI command modules (including chaos-terminal.js)
-│   │   ├── completer.js # Tab completion engine (commands/models/file paths)
-│   │   ├── history.js   # Command history persistence (JSONL)
-│   │   ├── session-store.js # Session persistence manager
-│   │   ├── config.js    # User config manager (~/.chaos/config.json)
-│   │   ├── notifications.js # Notification system (desktop + terminal bell)
-│   │   ├── pager.js     # Output pager
-│   │   ├── renderer/    # Terminal rendering engines
-│   │   │   ├── markdown-renderer.js # Streaming Markdown renderer
-│   │   │   └── code-highlighter.js  # Syntax highlighting
-│   │   └── registry/    # Command loader and registries
-│   └── runtime/
-│       └── agent-kernel/# Core AI Agent Kernel
-│           ├── chaos-agent-loop.js # Claude-like loop & self-healing runner
-│           ├── provider-config.js  # Multi-provider config management
-│           ├── git-tool.js          # Git write automation utilities
-│           ├── mcp-client.js        # stdio JSON-RPC MCP client
-│           ├── tool-registry.js     # Tool registration and schemas
-│           └── index.js             # Kernel main class & route mappings
-└── test-support/        # Mock helpers and benchmark scripts
+│   ├── cli/              # commands/, server.js (HTTP), acp.js, checkpoints.js, file-backups.js,
+│   │                     # completer, history, session-store, config, notifications, pager, renderer/, registry/
+│   ├── sdk/              # Programmatic SDK (runPrompt)
+│   ├── runtime/agent-kernel/  # chaos-agent-loop (permission gates/plan mode/multimodal/thinking nudge),
+│   │                          # subagent (pool/resident/named/cwd isolation), hooks (async spawn + trust gate),
+│   │                          # lsp (client + heuristics), git-tool (full suite + worktree + gh PR),
+│   │                          # mcp-client, tool-registry, patch/test/shell/read-only tools
+│   └── utils/            # skills-loader, plugins-loader, agents-config, os-sandbox, security, ...
+└── test-support/         # e2e smokes: real-model suite + local full-stack fake provider (real TLS/SSE)
 ```
 
 ---
 
 ## 🧪 Verification & Testing
 
-Verify that everything is set up correctly by running the test suite:
-
 ```bash
-# Run all automated tests
-npm run test:all
+npm run test:all          # full Jest suite
 
-# Run specific integration tests for the Git, MCP, and REPL enhancements
-npx jest __tests__/git-mcp-enhancements.test.js __tests__/chaos-terminal.test.js
+# Real-LLM end-to-end smoke (needs any API key, or a local Ollama/LM Studio server)
+OPENAI_API_KEY=sk-... bash test-support/e2e-llm-smoke.sh
+STDD_LLM_API_KEY=local STDD_LLM_BASE_URL=http://127.0.0.1:1234/v1 \
+  STDD_LLM_MODEL=qwen3.5-9b-mlx bash test-support/e2e-llm-smoke.sh
+
+# Keyless full-stack smoke: local HTTPS fake provider (real TLS + real SSE + real tool execution)
+bash test-support/e2e-local-smoke.sh
 ```
+
+Three verification tiers ship with the repo: unit/integration Jest (4500+), a keyless full-stack local e2e, and a real-model e2e.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT](LICENSE)

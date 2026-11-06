@@ -1,13 +1,11 @@
 const readline = require('readline');
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 const chalk = require('chalk');
 const { ChaosAgentLoop } = require('../../runtime/agent-kernel/chaos-agent-loop');
-const { AgentKernel } = require('../../runtime/agent-kernel/index');
 const {
   BUILTIN_PROVIDERS,
   listProviders,
   addProvider,
-  removeProvider,
   setActive,
   getActive,
 } = require('../../runtime/agent-kernel/provider-config');
@@ -15,9 +13,14 @@ const { createCompleter, SLASH_COMMANDS } = require('../completer');
 const { appendHistory, getRecentInputs, searchHistory } = require('../history');
 const { StreamingMarkdownRenderer } = require('../renderer/markdown-renderer');
 const { createSessionId, saveSession, loadSession, listSessions } = require('../session-store');
-const { taskComplete, terminalBell } = require('../notifications');
+const { taskComplete } = require('../notifications');
 const { SimplePager } = require('../pager');
 const { loadConfig, saveConfig, getToolPermission, resetConfig, CONFIG_FILE } = require('../config');
+const { listSkills, renderSkillPrompt, listCommands, renderCommandPrompt } = require('../../utils/skills-loader');
+const { backupFile, restoreFromBackup, pruneOldBackups } = require('../file-backups');
+const { createCheckpoint, listCheckpoints, restoreCheckpoint } = require('../checkpoints');
+const { listAgentConfigs } = require('../../utils/agents-config');
+const { listPlugins } = require('../../utils/plugins-loader');
 
 const VERSION = require('../../../package.json').version;
 
@@ -33,16 +36,31 @@ const sessionAllowedTools = new Set();
 // ── Tool call timers for structured display ──
 const toolTimers = new Map();
 
-// ── Track patched files for /undo ──
+// ── Track patched files for /undo (with pre-write backups) ──
 const patchedFiles = [];
+const _backupSessionId = `${Date.now().toString(36)}-${process.pid}`;
 
 // ── Reference to main readline instance (set in launchChaosTerminal) ──
 let _mainReadline = null;
 
 function printBanner() {
-  const agent = new ChaosAgentLoop();
-  const provider = agent.getProviderId();
-  const model = agent.getModel();
+  // Read provider info WITHOUT constructing a ChaosAgentLoop — the loop's
+  // AgentKernel eagerly spawns every configured MCP server, so a throwaway
+  // instance here would leak duplicate child processes for the whole session.
+  let provider = 'openai';
+  let model = process.env.STDD_LLM_MODEL || 'gpt-4o-mini';
+  try {
+    const active = getActive();
+    if (active) {
+      provider = active.id || active.providerType || provider;
+      model = active.model || model;
+    } else {
+      if (process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY && !process.env.STDD_LLM_BASE_URL) {
+        provider = 'anthropic';
+        model = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest';
+      }
+    }
+  } catch (_) { /* defaults are fine */ }
   console.log('');
   console.log(chalk.bold('  Chaos Code') + chalk.dim(` v${VERSION}`));
   console.log(chalk.dim(`  ${provider}/${model}  •  /help for commands`));
@@ -51,6 +69,12 @@ function printBanner() {
 
 // ── Enhanced spinner with stage + timer ──
 function startSpinner(label) {
+  // Non-interactive stdout (pipe mode / one-shot): animated frames would
+  // pollute the piped output and keep a timer handle alive — go inert.
+  if (!process.stdout.isTTY) {
+    const noop = () => {};
+    return { updateLabel: noop, setExtra: noop, stop: noop, getElapsed: () => '0.0', getStartTime: () => Date.now() };
+  }
   const frames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
   let i = 0;
   let stopped = false;
@@ -84,7 +108,6 @@ function startSpinner(label) {
       // Clear the spinner line completely
       const clearPad = ' '.repeat(Math.max(lastFrameLen + 10, 60));
       process.stdout.write(`\r${clearPad}\r`);
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       if (finalText) {
         process.stdout.write(`${finalText}\n`);
       }
@@ -149,7 +172,6 @@ function generatePrompt(agentLoop) {
   // Model (short form)
   try {
     const model = agentLoop.getModel() || '';
-    const provider = agentLoop.getProviderId() || '';
     if (model) {
       // Shorten model name for cleaner prompt
       const shortModel = model
@@ -211,6 +233,15 @@ async function askPermission(toolName, description, args) {
   if (permDefault === 'deny') { console.log(chalk.red(`  ✗ ${toolName} is denied by config (${CONFIG_FILE})`)); return false; }
 
   const detail = buildPermissionDetail(toolName, args);
+
+  // Non-interactive contexts (pipe mode / one-shot prompt): there is no TTY to
+  // answer a prompt on — asking would hang forever on an exhausted stdin.
+  // The user already described the work in the prompt, so auto-allow tools
+  // whose config says 'ask' (config 'deny' still blocks above) and note it.
+  if (!process.stdin.isTTY) {
+    process.stdout.write(chalk.dim(`  ⚠ non-interactive: auto-allowing ${toolName}${detail ? ` (${detail})` : ''}\n`));
+    return true;
+  }
 
   // Show diff preview for fs_patch
   if (toolName === 'fs_patch' && args && args.diff) {
@@ -281,8 +312,18 @@ function formatToolArgs(name, args) {
   if (name === 'test_run') return args.command || '';
   if (name === 'git_commit' && args.message) return `"${args.message.slice(0, 40)}"`;
   if (name === 'git_add' && args.files) return args.files.join(' ').slice(0, 50);
+  if (name === 'git_pull') return `${args.remote || 'origin'}${args.branch ? '/' + args.branch : ''}`;
+  if (name === 'git_log') return `${args.count || 20} commits${args.file ? ` (${args.file})` : ''}`;
+  if (name === 'git_stash') return args.action || 'push';
+  if (name === 'git_pr') return `"${String(args.title || '').slice(0, 40)}"${args.draft ? ' (draft)' : ''}`;
+  if (name === 'git_worktree') return args.action || 'list';
   if (name === 'task_create' && args.subject) return args.subject;
   if (name === 'task_update' && args.id) return `#${args.id} → ${args.status || 'updated'}`;
+  if (name === 'task_dispatch') {
+    const tasks = Array.isArray(args.tasks) ? args.tasks : (args.prompt ? [args] : []);
+    return tasks.length > 1 ? `⧉ ${tasks.length} subagents` : (tasks[0] && tasks[0].prompt ? String(tasks[0].prompt).slice(0, 50) : '');
+  }
+  if (name === 'skill' && args.name) return args.name;
 
   // Generic: show key=value pairs
   return entries.slice(0, 3).map(([k, v]) => {
@@ -303,7 +344,11 @@ function buildPermissionDetail(name, args) {
   if (name === 'shell_run') return `run: "${(args.command || '').slice(0, 80)}"`;
   if (name === 'test_run') return 'run tests';
   if (name === 'git_commit') return `"${(args.message || '').slice(0, 50)}"`;
-  if (name === 'git_push') return `${args.remote || 'origin'}/${args.branch || 'main'}`;
+  if (name === 'git_push') return `${args.remote || 'origin'}/${args.branch || 'current'}`;
+  if (name === 'git_pull') return `pull ${args.remote || 'origin'}${args.branch ? '/' + args.branch : ''}`;
+  if (name === 'git_stash') return `stash ${args.action || 'push'}`;
+  if (name === 'git_pr') return `create PR "${(args.title || '').slice(0, 50)}"${args.draft ? ' (draft)' : ''}`;
+  if (name === 'git_worktree') return `worktree ${args.action || 'list'}${args.name ? ` ${args.name}` : ''}`;
   if (name === 'git_checkout') return args.branch || '';
   if (name === 'git_branch') return args.name || '';
   if (name === 'git_reset') return `hard: ${!!args.hard}`;
@@ -376,6 +421,69 @@ function displayToolResult(name, res) {
     // git_* – show status
     if (name.startsWith('git_') && parsed.status) {
       process.stdout.write(chalk.dim(`  ${parsed.status}${elapsed}\n`));
+      // git_log – show recent commits
+      if (name === 'git_log' && Array.isArray(parsed.commits) && parsed.commits.length > 0) {
+        const show = verbosityLevel >= 2 ? parsed.commits.slice(0, 20) : parsed.commits.slice(0, 5);
+        for (const c of show) {
+          process.stdout.write(chalk.dim(`    ${String(c).slice(0, 90)}\n`));
+        }
+        if (parsed.commits.length > show.length) {
+          process.stdout.write(chalk.dim(`    ... (${parsed.commits.length - show.length} more commits)\n`));
+        }
+      }
+    }
+
+    // git_pr – show created PR url
+    if (name === 'git_pr' && parsed.url) {
+      process.stdout.write(chalk.green(`  ✓ PR created: ${parsed.url.slice(0, 90)}${elapsed}\n`));
+    } else if (name === 'git_pr' && parsed.status === 'unavailable') {
+      process.stdout.write(chalk.yellow(`  ⚠ ${parsed.reason}${elapsed}\n`));
+    }
+
+    // git_worktree – show the result
+    if (name === 'git_worktree') {
+      if (Array.isArray(parsed.worktrees)) {
+        process.stdout.write(chalk.dim(`  ${parsed.worktrees.length} worktree(s)${elapsed}\n`));
+        for (const w of parsed.worktrees.slice(0, 8)) {
+          process.stdout.write(chalk.dim(`    ${w.branch || (w.detached ? '(detached)' : '-')}  ${w.path}\n`));
+        }
+      } else if (parsed.status === 'ok' && parsed.path) {
+        process.stdout.write(chalk.green(`  ✓ worktree ${parsed.action}: ${parsed.path}${elapsed}\n`));
+      } else if (parsed.status === 'fail') {
+        process.stdout.write(chalk.red(`  ✗ worktree ${parsed.action} failed${elapsed}\n`));
+      }
+    }
+
+    // task_dispatch – show subagent results
+    if (name === 'task_dispatch' && Array.isArray(parsed.results)) {
+      const okCount = parsed.results.filter(r => r.ok).length;
+      process.stdout.write(chalk.dim(`  ⧉ ${okCount}/${parsed.results.length} subagent(s) completed${elapsed}\n`));
+      for (const r of parsed.results) {
+        const marker = r.ok ? chalk.green('✓') : chalk.red('✗');
+        const subject = (r.prompt || '').slice(0, 50);
+        const summary = String(r.summary || '').split('\n')[0].slice(0, 80);
+        process.stdout.write(`  ${marker} ${chalk.dim(subject)}\n`);
+        if (summary) process.stdout.write(chalk.dim(`    ${summary}\n`));
+      }
+    }
+
+    // skill – show loaded skill name
+    if (name === 'skill' && parsed.status === 'ok' && parsed.skill) {
+      process.stdout.write(chalk.dim(`  loaded skill "${parsed.skill}"${elapsed}\n`));
+    }
+
+    // fs_read_image – show image metadata
+    if (name === 'fs_read_image' && parsed.path) {
+      const kb = parsed.bytes ? ` (${Math.max(1, Math.round(parsed.bytes / 1024))} KB, ${parsed.mimeType})` : '';
+      process.stdout.write(chalk.dim(`  🖼 ${parsed.path}${kb}${elapsed}\n`));
+    }
+
+    // task_status – show background subagent tasks
+    if (name === 'task_status' && Array.isArray(parsed.tasks)) {
+      for (const t of parsed.tasks) {
+        const marker = t.status === 'running' ? chalk.yellow('◌') : (t.ok === false ? chalk.red('✗') : chalk.green('✓'));
+        process.stdout.write(`  ${marker} ${chalk.dim(`${t.id} [${t.status}] ${String(t.prompt || '').slice(0, 50)}`)}\n`);
+      }
     }
 
     // shell_run – show output tail (or paged in verbose mode)
@@ -444,20 +552,22 @@ function createCallbacks(spinner, mdRenderer) {
       // Format tool args into a readable summary
       const argSummary = formatToolArgs(name, args);
       process.stdout.write(`\n  ${chalk.bold.blue('⏺')} ${chalk.bold(name)}${argSummary ? chalk.dim('  ' + argSummary) : ''}\n`);
-      // Track fs_patch files for /undo
+      // Track fs_patch files for /undo — snapshot BEFORE the write lands
       if (name === 'fs_patch' && args && args.diff) {
         const diffStr = String(args.diff);
         const fileMatches = diffStr.match(/^\+\+\+ [ab]\/(.+)$/gm);
         if (fileMatches) {
           for (const fm of fileMatches) {
             const filePath = fm.replace(/^\+\+\+ [ab]\//, '');
-            patchedFiles.push({ file: filePath, ts: Date.now() });
+            const entry = backupFile(process.cwd(), filePath, _backupSessionId) || {};
+            patchedFiles.push({ file: filePath, ts: Date.now(), ...entry });
           }
         }
       }
       // Track fs_write files for /undo
       if (name === 'fs_write' && args && args.path) {
-        patchedFiles.push({ file: args.path, ts: Date.now() });
+        const entry = backupFile(process.cwd(), args.path, _backupSessionId) || {};
+        patchedFiles.push({ file: args.path, ts: Date.now(), ...entry });
       }
     },
     onToolEnd: (name, res) => {
@@ -486,13 +596,62 @@ function printTurnSummary(agentLoop, turnStartTime) {
   }
 }
 
+// ── Kill spawned MCP server processes on exit ──
+function _shutdownMcp(agentLoop) {
+  try {
+    const mgr = agentLoop && agentLoop.kernel && agentLoop.kernel.mcpClientManager;
+    if (mgr && typeof mgr.stopAll === 'function') mgr.stopAll();
+  } catch (_) { /* best-effort cleanup */ }
+}
+
+// ── Dim notice for background subagent tasks that finished since last look ──
+const _reportedBgTasks = new Set();
+function _reportFinishedBackground(agentLoop) {
+  try {
+    const map = agentLoop && agentLoop._backgroundTasks;
+    if (!map) return;
+    for (const e of map.values()) {
+      if (e.status !== 'running' && !_reportedBgTasks.has(e.id)) {
+        _reportedBgTasks.add(e.id);
+        const marker = e.result && e.result.ok ? chalk.green('✓') : chalk.red('✗');
+        const note = e.result && e.result.ok
+          ? String(e.result.summary || '').split('\n')[0].slice(0, 70)
+          : String((e.result && e.result.error) || 'failed').slice(0, 70);
+        process.stdout.write(chalk.dim(`  ${marker} bg ${e.id} finished — ${note}\n`));
+      }
+    }
+  } catch (_) { /* best-effort */ }
+}
+
+// ── On exit: give resident background tasks a bounded chance to finish ──
+async function _drainBackground(agentLoop, budgetMs = 15000) {
+  try {
+    const map = agentLoop && agentLoop._backgroundTasks;
+    const running = map ? [...map.values()].filter(e => e.status === 'running' && e.promise) : [];
+    if (running.length === 0) return;
+    process.stdout.write(chalk.dim(`  draining ${running.length} background task(s)…\n`));
+    await Promise.race([
+      Promise.allSettled(running.map(e => e.promise)),
+      new Promise(r => setTimeout(r, budgetMs)),
+    ]);
+    _reportFinishedBackground(agentLoop);
+  } catch (_) { /* best-effort */ }
+}
+
 async function launchChaosTerminal() {
   printBanner();
+  pruneOldBackups(); // best-effort: drop backup sessions older than 7 days
 
   const agentLoop = new ChaosAgentLoop();
   agentLoop.maxTurns = userConfig.maxTurns;
   agentLoop.temperature = userConfig.temperature;
-  const kernel = new AgentKernel({ cwd: process.cwd() });
+  if (userConfig.maxTokens) agentLoop.maxTokens = userConfig.maxTokens;
+  if (userConfig.promptCaching !== undefined) agentLoop.promptCaching = userConfig.promptCaching;
+  // REPL keeps background subagents resident across turns; one-shot runs drain.
+  agentLoop.awaitBackgroundOnExit = false;
+  // Reuse the agent's kernel for slash-command tool execution — a second
+  // AgentKernel would eagerly spawn ANOTHER copy of every MCP server.
+  const kernel = agentLoop.kernel;
   let chatHistory = [];
   let currentAbortController = null;
 
@@ -534,7 +693,6 @@ async function launchChaosTerminal() {
 
   // Handle Ctrl+C gracefully: cancel current operation
   let isProcessing = false;
-  const originalListeners = process.listeners('SIGINT');
   process.removeAllListeners('SIGINT');
   process.on('SIGINT', () => {
     if (inMultiline) {
@@ -555,9 +713,17 @@ async function launchChaosTerminal() {
     } else {
       // Save session on exit
       _saveSessionOnExit(sessionId, chatHistory, agentLoop);
-      console.log(chalk.dim('\n  Goodbye.'));
-      process.exit(0);
+      _drainBackground(agentLoop).finally(() => {
+        _shutdownMcp(agentLoop);
+        console.log(chalk.dim('\n  Goodbye.'));
+        process.exit(0);
+      });
     }
+  });
+
+  // Ctrl+D / EOF exit path — kill spawned MCP servers as well
+  rl.on('close', () => {
+    _shutdownMcp(agentLoop);
   });
 
   rl.prompt();
@@ -637,6 +803,8 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
       case '/exit':
       case '/quit':
         _saveSessionOnExit(sessionId, getHistory(), agentLoop);
+        await _drainBackground(agentLoop);
+        _shutdownMcp(agentLoop);
         console.log(chalk.dim('  Goodbye.'));
         rl.close();
         process.exit(0);
@@ -667,6 +835,16 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
         console.log('  /tasks [status] Show task list');
         console.log('  /reset          Reset conversation');
         console.log('  /history [kw]   Search command history');
+        console.log('  /skills [kw]    List STDD skills (catalog)');
+        console.log('  /skill <name>   Load & run a STDD skill with the agent');
+        console.log('  /cmds [kw]      List command templates');
+        console.log('  /cmd <name>     Load & run a command template');
+        console.log('  /hooks          Show configured lifecycle hooks');
+        console.log('  /plan [on|off]  Toggle plan mode (read-only until approved)');
+        console.log('  /agents         List named agent configs (.chaos/agents.json)');
+        console.log('  /plugins        List installed workspace plugins');
+        console.log('  /checkpoint     Save/list whole-workspace checkpoints');
+        console.log('  /rewind <id>    Restore a checkpoint');
         console.log('  /clear          Clear screen');
         console.log('  /exit           Exit\n');
         break;
@@ -677,8 +855,201 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
 
       // ── /connect — Interactive provider setup ──
       case '/connect':
-        await handleConnect(rl);
+        await handleConnect(rl, agentLoop);
         break;
+
+      // ── /plan — Toggle plan mode (read-only enforcement until approved) ──
+      case '/plan': {
+        const arg = (parts[1] || '').toLowerCase();
+        let next;
+        if (arg === 'on') next = true;
+        else if (arg === 'off') next = false;
+        else next = !agentLoop.planMode;
+        agentLoop.planMode = next;
+        if (next) {
+          console.log(chalk.yellow('  ◷ Plan mode ON — write tools disabled. The agent will explore read-only and present an implementation plan.'));
+          console.log(chalk.dim('    Approve execution with: /plan off'));
+        } else {
+          console.log(chalk.green('  ▶ Plan mode OFF — execution enabled. Ask the agent to proceed with its plan.'));
+        }
+        break;
+      }
+
+      // ── /agents — List named agent configurations ──
+      case '/agents': {
+        const agents = listAgentConfigs(process.cwd());
+        if (agents.length === 0) {
+          console.log(chalk.dim('  No named agents configured.'));
+          console.log(chalk.dim('  Define them in .chaos/agents.json:  { "agents": { "reviewer": { "description": "...", "prompt": "...", "tools": ["fs_read"], "model": "..." } } }'));
+          console.log(chalk.dim('  Then dispatch with task_dispatch({ tasks: [{ agent: "reviewer", prompt: "..." }] })'));
+          break;
+        }
+        console.log('');
+        for (const a of agents) {
+          const meta = [a.model, a.tools ? `tools: ${a.tools.length}` : null].filter(Boolean).join(' · ');
+          console.log(`  ${chalk.bold(a.name.padEnd(16))} ${meta ? chalk.dim(`[${meta}] `) : ''}${chalk.dim((a.description || '').slice(0, 60))}`);
+        }
+        console.log(chalk.dim(`\n  ${agents.length} agent(s). Use via task_dispatch tasks[].agent\n`));
+        break;
+      }
+
+      // ── /plugins — List installed workspace plugins ──
+      case '/plugins': {
+        const plugins = listPlugins(process.cwd());
+        if (plugins.length === 0) {
+          console.log(chalk.dim('  No plugins found.'));
+          console.log(chalk.dim('  Install one at .chaos/plugins/<name>/ with plugin.json + skills/ or commands/ or hooks.json'));
+          break;
+        }
+        console.log('');
+        for (const p of plugins) {
+          const parts = [
+            p.skillCount ? `${p.skillCount} skill(s)` : null,
+            p.commandCount ? `${p.commandCount} command(s)` : null,
+            p.hookCount ? `${p.hookCount} hook(s)` : null,
+          ].filter(Boolean).join(', ');
+          console.log(`  ${chalk.bold(p.name.padEnd(18))} ${parts ? chalk.dim(`[${parts}] `) : ''}${chalk.dim((p.description || '').slice(0, 55))}`);
+        }
+        console.log('');
+        break;
+      }
+
+      // ── /checkpoint — Whole-workspace restore points ──
+      case '/checkpoint': {
+        const sub = (parts[1] || '').toLowerCase();
+        const cps = listCheckpoints(sessionId);
+        if (sub === 'list' || (!sub && cps.length > 0 && !parts[1])) {
+          if (cps.length === 0) {
+            console.log(chalk.dim('  No checkpoints yet. One is saved automatically after any turn that writes files; /checkpoint <label> saves manually.'));
+            break;
+          }
+          console.log('');
+          for (const c of cps) {
+            console.log(`  ${chalk.bold('#' + c.id)} ${chalk.dim(new Date(c.ts).toLocaleTimeString())}  ${c.label}  (${c.fileCount} files)`);
+          }
+          console.log(chalk.dim(`\n  Restore with: /rewind <id>\n`));
+          break;
+        }
+        const label = parts.slice(1).join('-') || 'manual';
+        try {
+          const cp = createCheckpoint(sessionId, process.cwd(), patchedFiles, label);
+          console.log(chalk.green(`  ⧗ Checkpoint #${cp.id} saved (${cp.fileCount} files). Restore with /rewind ${cp.id}`));
+        } catch (err) {
+          console.log(chalk.red(`  Checkpoint failed: ${err.message}`));
+        }
+        break;
+      }
+
+      // ── /rewind — Restore a whole-workspace checkpoint ──
+      case '/rewind': {
+        const target = parts[1];
+        if (!target) {
+          const cps = listCheckpoints(sessionId);
+          if (cps.length === 0) { console.log(chalk.dim('  No checkpoints. Use /checkpoint first.')); break; }
+          console.log(chalk.dim('  Usage: /rewind <id>  — available:'));
+          for (const c of cps) console.log(chalk.dim(`    #${c.id} ${c.label} (${c.fileCount} files)`));
+          break;
+        }
+        const confirmed = await askPermission('rewind', `restore checkpoint ${target} (all touched files return to that point)`, {});
+        if (!confirmed) { console.log(chalk.dim('  Cancelled.')); break; }
+        const res = restoreCheckpoint(sessionId, process.cwd(), target);
+        if (res.ok) {
+          console.log(chalk.green(`  ⏪ Rewound to #${res.id} "${res.label}" — ${res.restored} file(s) restored, ${res.deleted} agent-created file(s) removed.`));
+          if (res.skipped.length > 0) console.log(chalk.dim(`    skipped: ${res.skipped.join(', ')}`));
+        } else {
+          console.log(chalk.red(`  ${res.error}`));
+        }
+        break;
+      }
+
+      // ── /hooks — Show configured lifecycle hooks ──
+      case '/hooks': {
+        const desc = agentLoop.hooks ? agentLoop.hooks.describe() : [];
+        const withCmds = desc.filter(d => d.commands.length > 0);
+        if (withCmds.length === 0) {
+          console.log(chalk.dim('  No hooks configured.'));
+          console.log(chalk.dim('  Add them in ~/.chaos/config.json:  hooks: { preToolUse: [{ command: "..." }], postToolUse: [...] }'));
+          break;
+        }
+        console.log('');
+        for (const d of withCmds) {
+          console.log(`  ${chalk.bold(d.event)}`);
+          for (const c of d.commands) console.log(chalk.dim(`    $ ${c}`));
+        }
+        console.log('');
+        break;
+      }
+
+      // ── /skills — List STDD skills ──
+      case '/skills': {
+        const filter = parts.slice(1).join(' ').toLowerCase();
+        let skills = listSkills(process.cwd());
+        if (filter) skills = skills.filter(s => s.name.includes(filter) || (s.description || '').toLowerCase().includes(filter));
+        if (skills.length === 0) {
+          console.log(chalk.dim('  No skills found.'));
+          break;
+        }
+        console.log('');
+        for (const s of skills) {
+          const meta = [s.phase, s.riskLevel ? `risk:${s.riskLevel}` : null, s.source === 'workspace' ? 'workspace' : null].filter(Boolean).join(' · ');
+          console.log(`  ${chalk.bold(s.name.padEnd(16))} ${meta ? chalk.dim(`[${meta}] `) : ''}${chalk.dim((s.description || '').slice(0, 70))}`);
+        }
+        console.log(chalk.dim(`\n  ${skills.length} skill(s). Load one with: /skill <name> [args]\n`));
+        break;
+      }
+
+      // ── /skill — Load & run a STDD skill with the agent ──
+      case '/skill': {
+        const skillName = parts[1];
+        if (!skillName) {
+          console.log(chalk.dim('  Usage: /skill <name> [args]  — use /skills to list available skills.'));
+          break;
+        }
+        const argsStr = parts.slice(2).join(' ');
+        const rendered = renderSkillPrompt(skillName, argsStr, process.cwd());
+        if (!rendered) {
+          console.log(chalk.red(`  Skill "${skillName}" not found. Use /skills to list available skills.`));
+          break;
+        }
+        console.log(chalk.dim(`  Loaded skill "${skillName}", dispatching to agent...`));
+        await _processInput(rendered, rl, agentLoop, kernel, getHistory, setHistory, getProcessing, setProcessing, getAbort, setAbort, sessionId);
+        break;
+      }
+
+      // ── /cmds — List command templates ──
+      case '/cmds': {
+        const filter = parts.slice(1).join(' ').toLowerCase();
+        let cmds = listCommands(process.cwd());
+        if (filter) cmds = cmds.filter(c => c.name.includes(filter) || (c.description || '').toLowerCase().includes(filter));
+        if (cmds.length === 0) {
+          console.log(chalk.dim('  No command templates found.'));
+          break;
+        }
+        console.log('');
+        for (const c of cmds) {
+          console.log(`  ${chalk.bold(c.name.padEnd(20))} ${chalk.dim((c.description || '').slice(0, 66))}`);
+        }
+        console.log(chalk.dim(`\n  ${cmds.length} command template(s). Load one with: /cmd <name> [args]\n`));
+        break;
+      }
+
+      // ── /cmd — Load & run a command template ──
+      case '/cmd': {
+        const cmdName = parts[1];
+        if (!cmdName) {
+          console.log(chalk.dim('  Usage: /cmd <name> [args]  — use /cmds to list available templates.'));
+          break;
+        }
+        const argsStr = parts.slice(2).join(' ');
+        const rendered = renderCommandPrompt(cmdName, argsStr, process.cwd());
+        if (!rendered) {
+          console.log(chalk.red(`  Command template "${cmdName}" not found. Use /cmds to list available templates.`));
+          break;
+        }
+        console.log(chalk.dim(`  Loaded command "${cmdName}", dispatching to agent...`));
+        await _processInput(rendered, rl, agentLoop, kernel, getHistory, setHistory, getProcessing, setProcessing, getAbort, setAbort, sessionId);
+        break;
+      }
 
       // ── /models — List & switch models interactively ──
       case '/models':
@@ -800,24 +1171,38 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
         const undoAll = parts[1] === 'all';
         const undoFile = parts[1] && !undoAll ? parts[1] : null;
 
+        // Restore chain per file: pre-write backup snapshot FIRST (preserves
+        // the user's own uncommitted pre-agent edits — git restore would wipe
+        // them) → git restore → delete agent-created files. Paths come from
+        // model-controlled tool args recorded before validation, so shell
+        // injection via execSync templates is off the table: arg-array only.
+        const revertOne = (f) => {
+          const entries = patchedFiles.filter(p => p.file === f);
+          // Oldest usable snapshot = state before the agent's FIRST write
+          const entry = entries.find(p => p.existed && p.backup) || entries[0];
+          if (entry) {
+            const res = restoreFromBackup(process.cwd(), f, entry);
+            if (res.restored) return { ok: true, note: res.method };
+          }
+          try {
+            execFileSync('git', ['restore', '--', f], { stdio: 'pipe' });
+            return { ok: true, note: 'git' };
+          } catch (_) { /* not tracked / no git state */ }
+          return { ok: false, note: entry ? 'no restorable snapshot' : 'not tracked in this session' };
+        };
+
         if (undoFile) {
           // Undo specific file
-          try {
-            execSync(`git restore ${undoFile}`, { stdio: 'pipe' });
-            console.log(chalk.green(`  Reverted: ${undoFile}`));
-          } catch (err) {
-            console.log(chalk.red(`  Failed to revert ${undoFile}: ${err.message}`));
-          }
+          const res = revertOne(undoFile);
+          if (res.ok) console.log(chalk.green(`  Reverted: ${undoFile} (${res.note})`));
+          else console.log(chalk.red(`  Failed to revert ${undoFile}: ${res.note}`));
         } else if (undoAll || uniqueFiles.length <= 5) {
           // Undo all patched files
           const confirmed = await askPermission('undo', `revert ${uniqueFiles.length} patched file(s)?`, {});
           if (confirmed) {
             let reverted = 0;
             for (const f of uniqueFiles) {
-              try {
-                execSync(`git restore ${f}`, { stdio: 'pipe' });
-                reverted++;
-              } catch (_) {}
+              if (revertOne(f).ok) reverted++;
             }
             patchedFiles.length = 0;
             console.log(chalk.green(`  Reverted ${reverted}/${uniqueFiles.length} files.`));
@@ -910,7 +1295,7 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
 
       case '/compact': {
         const oldLen = getHistory().length;
-        setHistory(agentLoop.compactHistory(getHistory()));
+        setHistory(await agentLoop.compactHistory(getHistory()));
         const newLen = getHistory().length;
         const estTok = estimateTokens(getHistory());
         console.log(chalk.dim(`  Compacted ${oldLen} -> ${newLen} messages (~${estTok} tokens).`));
@@ -1152,14 +1537,25 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
   const mdRenderer = new StreamingMarkdownRenderer();
 
   // ── Auto-compact if context is getting large ──
-  const estTokensBefore = estimateTokens(getHistory());
+  // Use the LAST request's usage (each request contains the whole history, so
+  // it approximates CURRENT context size). Session totals are cumulative and
+  // would trigger compaction on every prompt after a few turns.
+  const _stats = agentLoop.getSessionStats();
+  const estFromUsage = _stats.lastPromptTokens > 0
+    ? _stats.lastPromptTokens + Math.floor(_stats.lastCompletionTokens / 2)
+    : 0;
+  const estTokensBefore = estFromUsage || estimateTokens(getHistory());
   if (estTokensBefore > userConfig.autoCompact) {
     const oldLen = getHistory().length;
-    setHistory(agentLoop.compactHistory(getHistory()));
+    setHistory(await agentLoop.compactHistory(getHistory()));
     console.log(chalk.dim(`  Auto-compacted ${oldLen} -> ${getHistory().length} messages (context was ~${estTokensBefore} tokens)\n`));
   }
 
   const callbacks = { ...createCallbacks(spinner, mdRenderer), signal: abortCtrl.signal };
+
+  // Session-touched file count before the turn — if the agent writes during
+  // this turn, snapshot a whole-workspace checkpoint afterwards (/rewind-able)
+  const patchedBefore = patchedFiles.length;
 
   try {
     setHistory(await agentLoop.run(trimmed, getHistory(), callbacks));
@@ -1169,6 +1565,15 @@ async function _processInput(trimmed, rl, agentLoop, kernel, getHistory, setHist
     // ── Per-turn cost summary ──
     printTurnSummary(agentLoop, turnStartTime);
     process.stdout.write('\n');
+    // ── Auto checkpoint when this turn changed files ──
+    if (patchedFiles.length > patchedBefore) {
+      try {
+        const cp = createCheckpoint(sessionId, process.cwd(), patchedFiles, 'auto');
+        process.stdout.write(chalk.dim(`  ⧗ checkpoint #${cp.id} saved (${cp.fileCount} files) — /rewind ${cp.id} to restore\n`));
+      } catch (_) { /* checkpointing is best-effort */ }
+    }
+    // ── Newly-finished background tasks notice ──
+    _reportFinishedBackground(agentLoop);
   } catch (err) {
     mdRenderer.flush();
     spinner.stop('');
@@ -1194,6 +1599,8 @@ async function runChaosAgentPrompt(prompt, opts = {}) {
   const agentLoop = new ChaosAgentLoop();
   agentLoop.maxTurns = userConfig.maxTurns;
   agentLoop.temperature = userConfig.temperature;
+  if (userConfig.maxTokens) agentLoop.maxTokens = userConfig.maxTokens;
+  if (userConfig.promptCaching !== undefined) agentLoop.promptCaching = userConfig.promptCaching;
 
   const turnStartTime = Date.now();
   const spinner = startSpinner('Thinking...');
@@ -1210,13 +1617,15 @@ async function runChaosAgentPrompt(prompt, opts = {}) {
     taskComplete(elapsed, stats.cost, stats.totalTokens);
   } catch (err) {
     mdRenderer.flush();
-    spinner.stop('');
     console.log(chalk.red(`\n  Error: ${err.message}\n`));
+  } finally {
+    spinner.stop('');
+    _shutdownMcp(agentLoop);
   }
 }
 
 // ── Interactive /connect command handler ──
-async function handleConnect(rl) {
+async function handleConnect(rl, agentLoop) {
   console.log('');
   const ids = Object.keys(BUILTIN_PROVIDERS);
   ids.forEach((id, i) => {
@@ -1294,8 +1703,10 @@ async function handleConnect(rl) {
     setActive(selectedId);
 
     // Sync the agentLoop instance with new provider config
-    agentLoop.switchProvider(selectedId);
-    safeSetPrompt(rl, agentLoop);
+    if (agentLoop && typeof agentLoop.switchProvider === 'function') {
+      agentLoop.switchProvider(selectedId);
+      safeSetPrompt(rl, agentLoop);
+    }
 
     console.log(chalk.green(`  Provider "${builtin.name}" configured and activated.`));
   } finally {

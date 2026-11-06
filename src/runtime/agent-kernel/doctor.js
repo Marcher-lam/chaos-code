@@ -2,12 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-function checkStatus(value) {
-  if (value === true) return 'pass';
-  if (value === false) return 'fail';
-  return 'warn';
-}
-
 class AgentDoctor {
   constructor(cwd = process.cwd()) {
     this.cwd = cwd;

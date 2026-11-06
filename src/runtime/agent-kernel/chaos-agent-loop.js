@@ -1,23 +1,53 @@
-const fs = require('fs');
-const path = require('path');
 const https = require('https');
+const http = require('http');
 const { AgentKernel } = require('./index');
-const { initFromEnv, getActive, setActive, listProviders, addProvider, BUILTIN_PROVIDERS } = require('./provider-config');
+const { AgentHooks } = require('./hooks');
+const { initFromEnv, getActive, setActive } = require('./provider-config');
 const chalk = require('chalk');
 
-// ── Shared HTTPS agent for connection reuse ──
-const _httpAgent = new https.Agent({
-  keepAlive: true,
-  keepAliveMsecs: 30000,
-  maxSockets: 4,
-  maxFreeSockets: 2,
-});
+// ── Shared keep-alive agents for connection reuse ──
+const AGENT_OPTS = { keepAlive: true, keepAliveMsecs: 30000, maxSockets: 4, maxFreeSockets: 2 };
+const _agents = {
+  'http:': new http.Agent(AGENT_OPTS),
+  'https:': new https.Agent(AGENT_OPTS),
+};
+
+/**
+ * Local model servers (Ollama, LM Studio, llama.cpp, vLLM dev servers) speak
+ * plain http:// on localhost — dispatch the request module and keep-alive
+ * agent by URL protocol instead of hardcoding https.
+ */
+function _transportFor(url) {
+  if (url.protocol === 'http:') {
+    const host = url.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1') {
+      // Plaintext to a non-loopback host sends the API key in cleartext
+      console.warn(chalk.yellow(`Warning: sending API key over plaintext http to ${host}`));
+    }
+    return { mod: http, agent: _agents['http:'] };
+  }
+  return { mod: https, agent: _agents['https:'] };
+}
+
+// Parse streamed tool-call arguments defensively: malformed JSON must never
+// crash a turn — degrade to empty args and let the model retry.
+function safeParseToolArgs(raw) {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (_) {
+    return {};
+  }
+}
 
 const SYSTEM_PROMPT_BASE = `You are the Chaos Ace Agent, a self-contained AI coding assistant similar to Claude Code.
 Your goal is to help the user implement features, refactor code, and fix bugs in their workspace.
 
 Available tools:
-- fs_read: Read a file's contents
+- fs_read: Read a file's contents (large files return a line window with totalLines/truncated — paginate with startLine/lineCount)
+- fs_read_image: Read an image (png/jpg/gif/webp) for visual analysis — it arrives as a native vision block you can see
+- symbols: Symbol-level navigation (functions/classes/methods with line numbers; LSP when configured, heuristics otherwise) — combine with fs_read startLine to jump to definitions
 - fs_search: Basic text search across files
 - fs_glob: Find files by glob pattern (e.g., "**/*.js", "src/**/*.ts") — use this to locate files
 - fs_grep: Regex search with context lines, glob filter, and output modes (content/files/count) — use this for code exploration
@@ -25,11 +55,16 @@ Available tools:
 - fs_patch: Apply modifications via unified diff (for targeted edits to existing files)
 - shell_run: Execute shell commands
 - test_run: Run project tests
-- git_diff, git_add, git_commit, git_push, git_checkout, git_branch, git_reset: Git operations
+- git_diff, git_add, git_commit, git_push, git_pull, git_log, git_stash, git_checkout, git_branch, git_reset: Git operations
+- git_pr: Create a GitHub pull request via the gh CLI (pushes current branch first)
+- git_worktree: List/add/remove git worktrees for isolated parallel workspaces — combine with task_dispatch cwd to run subagents in separate worktrees
 - stdd_status, stdd_recommend, stdd_verify: STDD workflow tools
 - task_create: Create a tracked work item with subject, description, and optional dependencies
 - task_update: Update task status (pending/in_progress/completed/deleted), add blockers or blocked-by dependencies
 - task_list: List all tasks with status, subject, and dependency info; optionally filter by status
+- task_dispatch: Dispatch subagent tasks with isolated contexts. Subagents do NOT see this conversation — write fully self-contained prompts (include file paths, goals, expected output). Ideal for parallel exploration/research. Default read-only tools; granted write tools still require user approval. Set background:true to run detached, then poll with task_status.
+- task_status: List background subagent tasks (id/prompt/status/summary) or fetch one by id.
+- skill: Load a STDD skill's instructions by name before following its workflow (catalog via /skills)
 
 Rules of operation:
 1. First, inspect the project environment. Use fs_glob to find relevant files, fs_grep to search code patterns, and fs_read to understand implementation.
@@ -79,6 +114,26 @@ function buildSystemPrompt(cwd) {
     if (contextParts.length > 0) {
       parts.push('\n\nProject context:\n' + contextParts.map(l => `- ${l}`).join('\n'));
     }
+
+    // Project memory: persistent instructions the user keeps in the workspace.
+    // Same convention as Claude Code (CLAUDE.md) and OpenCode (AGENTS.md).
+    const MEMORY_FILES = ['CHAOS.md', 'CLAUDE.md', 'AGENTS.md'];
+    const MEMORY_CAP = 16 * 1024;
+    for (const name of MEMORY_FILES) {
+      const memPath = path.join(cwd, name);
+      if (fs.existsSync(memPath)) {
+        let text = fs.readFileSync(memPath, 'utf8');
+        let truncatedNote = '';
+        if (text.length > MEMORY_CAP) {
+          text = text.slice(0, MEMORY_CAP);
+          truncatedNote = '\n[... truncated]';
+        }
+        if (text.trim()) {
+          parts.push(`\n\nProject instructions (from ${name}):\n${text.trim()}${truncatedNote}`);
+        }
+        break; // first match wins — avoids conflicting duplicates
+      }
+    }
   } catch (_) {}
 
   return parts.join('');
@@ -89,11 +144,44 @@ const TOOLS_DEFINITION = [
     type: 'function',
     function: {
       name: 'fs_read',
-      description: 'Read a file from the workspace. Path must be relative to the workspace root.',
+      description: 'Read a file from the workspace. Path must be relative to the workspace root. Large files are returned as a line window (see totalLines/truncated in the result) — paginate with startLine/lineCount instead of re-reading the whole file.',
       parameters: {
         type: 'object',
         properties: {
-          path: { type: 'string', description: 'Relative path of the file to read' }
+          path: { type: 'string', description: 'Relative path of the file to read' },
+          startLine: { type: 'integer', description: 'First line to read (1-based), for windowed reads of large files' },
+          lineCount: { type: 'integer', description: 'Number of lines to read per window (max 2000)' }
+        },
+        required: ['path']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'fs_read_image',
+      description: 'Read an image file (png/jpg/jpeg/gif/webp, max 5MB) for visual analysis. The image is delivered to you as a native vision block — describe/analyze it directly.',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: 'Relative path of the image file' },
+          detail: { type: 'string', enum: ['low', 'high', 'auto'], description: 'OpenAI vision detail level, default auto' }
+        },
+        required: ['path']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'symbols',
+      description: 'Symbol-level navigation for a source file: list functions/classes/methods/types with line numbers (LSP server when configured in .chaos/lsp.json, heuristic extraction otherwise). Jump to a symbol with fs_read startLine.',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: 'Relative path of the source file' },
+          name: { type: 'string', description: 'Optional substring filter by symbol name' },
+          kind: { type: 'string', description: 'Optional kind filter: function | class | method | type | interface | impl' }
         },
         required: ['path']
       }
@@ -268,6 +356,68 @@ const TOOLS_DEFINITION = [
   {
     type: 'function',
     function: {
+      name: 'git_pull',
+      description: 'Pull commits from the remote repository and merge into the current branch.',
+      parameters: {
+        type: 'object',
+        properties: {
+          remote: { type: 'string', description: 'The remote name, defaults to origin' },
+          branch: { type: 'string', description: 'Optional branch to pull; defaults to current branch' }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'git_log',
+      description: 'Read commit history. Read-only.',
+      parameters: {
+        type: 'object',
+        properties: {
+          count: { type: 'integer', description: 'Number of commits to show (1-200, default 20)' },
+          file: { type: 'string', description: 'Optional file path to show commits for' },
+          format: { type: 'string', description: 'git pretty format, default "%h %ad %an %s"' }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'git_stash',
+      description: 'Stash operations: temporarily save (push), restore (pop), list, or drop stashed changes.',
+      parameters: {
+        type: 'object',
+        properties: {
+          action: { type: 'string', enum: ['push', 'pop', 'list', 'drop'], description: 'Stash action, defaults to push' },
+          message: { type: 'string', description: 'Message for stash push (optional)' },
+          index: { type: 'integer', description: 'Stash index for pop/drop (optional)' }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'git_pr',
+      description: 'Create a GitHub pull request for the current branch via the gh CLI (pushes the branch first).',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: 'PR title (usually a Conventional Commit summary)' },
+          body: { type: 'string', description: 'PR description (what/why/evidence)' },
+          base: { type: 'string', description: 'Target branch, optional (repo default otherwise)' },
+          draft: { type: 'boolean', description: 'Create as draft PR' },
+          skipPush: { type: 'boolean', description: 'Skip pushing before creating the PR' }
+        },
+        required: ['title']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'git_checkout',
       description: 'Switch branch or restore working tree files.',
       parameters: {
@@ -387,13 +537,98 @@ const TOOLS_DEFINITION = [
         }
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'task_dispatch',
+      description: 'Dispatch one or more subagent tasks, each with an isolated fresh context. Subagents do NOT see this conversation — every prompt must be fully self-contained. Best for parallel exploration, research, or independent multi-file investigation. By default subagents only have read-only tools; you may grant write tools explicitly (granted write tools still require user approval).',
+      parameters: {
+        type: 'object',
+        properties: {
+          tasks: {
+            type: 'array',
+            description: 'Tasks to run (1-5). Runs in parallel where possible.',
+            items: {
+              type: 'object',
+              properties: {
+                prompt: { type: 'string', description: 'Self-contained instruction for the subagent, including any file paths or context it needs' },
+                agent: { type: 'string', description: 'Optional named agent from .chaos/agents.json (role prompt + tool whitelist + model); see /agents' },
+                background: { type: 'boolean', description: 'Run detached — dispatch returns a task id immediately; poll results with task_status' },
+                cwd: { type: 'string', description: 'Optional relative working directory for workspace isolation (e.g. ".worktrees/feat-x" created via git_worktree). No ".." allowed.' },
+                tools: { type: 'array', items: { type: 'string' }, description: 'Tool names the subagent may use. Default read-only set: fs_read, fs_read_image, fs_search, fs_glob, fs_grep, git_diff, git_log, task_list, skill' },
+                model: { type: 'string', description: 'Optional model override for this subagent' },
+                maxTurns: { type: 'integer', description: 'Optional turn cap, 1-20 (default 10)' }
+              },
+              required: ['prompt']
+            }
+          }
+        },
+        required: ['tasks']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'git_worktree',
+      description: 'Manage git worktrees for isolated parallel workspaces. add creates .worktrees/<name> with its own branch; dispatch subagents with cwd pointing into the worktree for conflict-free parallel changes.',
+      parameters: {
+        type: 'object',
+        properties: {
+          action: { type: 'string', enum: ['list', 'add', 'remove'], description: 'Defaults to list' },
+          name: { type: 'string', description: 'Worktree name (add/remove) — no path separators' },
+          branch: { type: 'string', description: 'Branch name for add (defaults to the worktree name)' },
+          force: { type: 'boolean', description: 'Force remove even with uncommitted changes' }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'task_status',
+      description: 'Check background subagent tasks: list all running/completed tasks with summaries, or fetch a single result by id.',
+      parameters: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', description: 'Optional background task id (e.g. "bg-1") — omit to list all' }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'skill',
+      description: 'Load a STDD skill\'s full instructions by name (e.g. "commit", "verify", "plan"). Load the skill BEFORE executing its workflow, then follow the instructions for the rest of the session.',
+      parameters: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Skill name, e.g. "commit" (see the /skills command for the catalog)' }
+        },
+        required: ['name']
+      }
+    }
   }
 ];
 
 class ChaosAgentLoop {
-  constructor(cwd = process.cwd()) {
+  constructor(cwd = process.cwd(), options = {}) {
     this.cwd = cwd;
-    this.kernel = new AgentKernel({ cwd });
+    // A parent loop may inject its own kernel so subagents share tool
+    // executors and already-running MCP servers instead of respawning them.
+    this.kernel = options.kernel || new AgentKernel({ cwd });
+    // When set (a Set of tool names), restricts both the LLM tool catalog
+    // and tool execution to those tools. Used by subagents.
+    this.allowedTools = null;
+    // Lifecycle hooks from ~/.chaos/config.json (preToolUse / postToolUse).
+    // Applied to subagents too — each loop reads the same user config.
+    this.hooks = new AgentHooks(cwd);
+    // Plan mode: when active, write tools are refused so the model explores
+    // read-only and presents an implementation plan for user approval
+    // (Claude Code / OpenCode "plan" mode equivalent). Toggle via /plan.
+    this.planMode = false;
     this.systemPrompt = buildSystemPrompt(cwd);
 
     // Initialize provider config from ~/.chaos/providers.json + env vars
@@ -423,13 +658,23 @@ class ChaosAgentLoop {
     // Token tracking
     this.maxTurns = 20;
     this.temperature = 0.2;
+    this.maxTokens = 4096;        // Anthropic max_tokens (configurable via ~/.chaos/config.json)
+    this.promptCaching = true;    // Anthropic prompt caching via cache_control breakpoints
     this.totalPromptTokens = 0;
     this.totalCompletionTokens = 0;
+    this.lastPromptTokens = 0;
+    this.lastCompletionTokens = 0;
     this.totalCost = 0;
 
     // Task management store
     this._tasks = [];
     this._nextTaskId = 1;
+    // Background subagent registry (task_dispatch background:true)
+    this._backgroundTasks = new Map();
+    this._bgSeq = 1;
+    // One-shot/pipe callers set this so run() drains background tasks before
+    // the process exits (REPL keeps them resident across turns instead).
+    this.awaitBackgroundOnExit = false;
   }
 
   async run(goal, chatHistory = [], callbacks = {}) {
@@ -451,13 +696,17 @@ class ChaosAgentLoop {
 
     const defaultCallbacks = {
       onMessage: (msg) => console.log(msg),
-      onToolDetected: (name) => {},
-      onToolStart: (name, args) => console.log(chalk.dim(`  [${name}]`)),
-      onToolEnd: (name, res) => {},
-      askPermission: async (name, args) => true,
+      onToolDetected: () => {},
+      onToolStart: (name) => console.log(chalk.dim(`  [${name}]`)),
+      onToolEnd: () => {},
+      askPermission: async () => true,
     };
     const cb = { ...defaultCallbacks, ...callbacks };
     const signal = callbacks.signal || null;
+    // Expose the active callbacks/signal so nested executors (task_dispatch
+    // subagents) can forward permission prompts to the same UI.
+    this._currentCallbacks = cb;
+    this._currentSignal = signal;
 
     if (!this.apiKey) {
       cb.onMessage(chalk.red('Error: No API key detected.'));
@@ -471,6 +720,7 @@ class ChaosAgentLoop {
 
     let running = true;
     let turnCount = 0;
+    let emptyAnswerNudged = false;
     const maxTurns = this.maxTurns || 20;
 
     while (running && turnCount < maxTurns) {
@@ -498,6 +748,10 @@ class ChaosAgentLoop {
         const cTokens = response.usage.completion_tokens || 0;
         this.totalPromptTokens += pTokens;
         this.totalCompletionTokens += cTokens;
+        // Last-request usage approximates CURRENT context size (each request
+        // contains the whole history) — used by usage-driven auto-compaction.
+        this.lastPromptTokens = pTokens;
+        this.lastCompletionTokens = cTokens;
         const turnCost = this._calculateCost(this.provider, this.model, pTokens, cTokens);
         this.totalCost += turnCost;
       }
@@ -515,50 +769,98 @@ class ChaosAgentLoop {
           messages[messages.length - 1].tool_calls = response.toolCallsRaw;
         }
 
+        // Image vision messages must NOT interleave between the tool messages
+        // of one batch (OpenAI requires tool messages to directly follow the
+        // assistant tool_calls message) — collect and append after the loop.
+        const pendingImageMessages = [];
+
         for (const toolCall of response.toolCalls) {
           cb.onToolStart(toolCall.name, toolCall.arguments);
 
           let toolResult;
           let allowed = true;
+          let hookBlocked = false;
+          let planBlocked = false;
+
+          // preToolUse hook can veto the call before permission checks run
+          if (this.hooks && this.hooks.enabled) {
+            const verdict = await this.hooks.preToolUse({ tool: toolCall.name, args: toolCall.arguments, cwd: this.cwd });
+            if (verdict.blocked) {
+              hookBlocked = true;
+              toolResult = { error: `Blocked by preToolUse hook: ${verdict.reason}` };
+              cb.onToolEnd(toolCall.name, toolResult);
+            }
+          }
 
           // Guarded / write tools require permission check
-          const isGuarded = ['fs_patch', 'fs_write', 'shell_run', 'test_run', 'stdd_verify', 'git_add', 'git_commit', 'git_push', 'git_checkout', 'git_branch', 'git_reset'].includes(toolCall.name);
-          if (isGuarded) {
+          const isGuarded = ['fs_patch', 'fs_write', 'shell_run', 'test_run', 'stdd_verify', 'git_add', 'git_commit', 'git_push', 'git_pull', 'git_stash', 'git_pr', 'git_worktree', 'git_checkout', 'git_branch', 'git_reset'].includes(toolCall.name);
+          if (allowed && !hookBlocked && this.planMode && isGuarded) {
+            // Plan mode: refuse writes and steer the model toward planning
+            allowed = false;
+            planBlocked = true;
+            toolResult = {
+              error: 'Plan mode is active: write tools are disabled. Explore with read-only tools, then present a concise implementation plan (files to change, steps, risks) and ask the user to approve execution with /plan off.',
+            };
+            cb.onToolEnd(toolCall.name, toolResult);
+          } else if (allowed && !hookBlocked && isGuarded) {
             allowed = await cb.askPermission(toolCall.name, toolCall.arguments);
           }
 
-          if (allowed) {
+          if (allowed && !hookBlocked) {
             try {
               toolResult = await this._executeTool(toolCall.name, toolCall.arguments);
               cb.onToolEnd(toolCall.name, toolResult);
+              // postToolUse fires only when the tool actually ran
+              if (this.hooks && this.hooks.enabled) {
+                await this.hooks.postToolUse({ tool: toolCall.name, args: toolCall.arguments, result: toolResult, cwd: this.cwd });
+              }
             } catch (err) {
               toolResult = { error: err.message };
               cb.onToolEnd(toolCall.name, toolResult);
             }
-          } else {
+          } else if (!hookBlocked && !planBlocked) {
             toolResult = { error: 'User rejected permission to run this tool.' };
             cb.onToolEnd(toolCall.name, toolResult);
           }
 
-          // Append tool result message
+          // Append tool result message — multimodal results (fs_read_image)
+          // carry an _image payload that maps to the provider-native block.
+          const img = (toolResult && typeof toolResult === 'object' && toolResult._image) ? toolResult._image : null;
+          const resultText = typeof toolResult === 'string'
+            ? toolResult
+            : JSON.stringify(toolResult, (k, v) => (k === '_image' ? undefined : v), 2);
+
           if (this.provider === 'anthropic') {
+            // Anthropic: image blocks live INSIDE the tool_result content array
+            const blocks = [{ type: 'text', text: resultText }];
+            if (img) {
+              blocks.push({
+                type: 'image',
+                source: { type: 'base64', media_type: img.mimeType, data: img.data },
+              });
+            }
             messages.push({
               role: 'user',
-              content: [
-                {
-                  type: 'tool_result',
-                  tool_use_id: toolCall.id,
-                  content: typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult, null, 2)
-                }
-              ]
+              content: [{ type: 'tool_result', tool_use_id: toolCall.id, content: blocks }]
             });
           } else {
+            // OpenAI-compatible: tool message carries text; the image follows
+            // as a user message with an image_url vision block.
             messages.push({
               role: 'tool',
               tool_call_id: toolCall.id,
               name: toolCall.name,
-              content: typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult, null, 2)
+              content: resultText + (img ? '\n[The image is attached in the next message as a vision block.]' : ''),
             });
+            if (img) {
+              pendingImageMessages.push({
+                role: 'user',
+                content: [
+                  { type: 'image_url', image_url: { url: `data:${img.mimeType};base64,${img.data}`, detail: img.detail || 'auto' } },
+                  { type: 'text', text: `[Image from fs_read_image: ${toolResult.path}]` },
+                ],
+              });
+            }
           }
 
           // Self-healing nudge: if tests fail, guide the model to fix them
@@ -574,9 +876,32 @@ class ChaosAgentLoop {
             } catch (_) {}
           }
         }
+
+        // Flush deferred image vision messages AFTER all tool messages of the
+        // batch (interleaving would violate the tool-message ordering rule).
+        messages.push(...pendingImageMessages);
       } else {
+        // No tool calls: normally finish — but a thinking model (qwen3/glm/
+        // deepseek-r1) can burn the whole turn on reasoning_content and emit
+        // NO visible answer, which used to end the run silently. Nudge once.
+        if (!response.content && response.reasoning && !emptyAnswerNudged && turnCount < maxTurns) {
+          emptyAnswerNudged = true;
+          messages.push({ role: 'user', content: 'Your previous turn produced only internal reasoning with no visible answer. Reply now with a concise final answer to the user.' });
+          continue;
+        }
         // No tool calls, finish the conversation cycle
         running = false;
+      }
+    }
+
+    // Background subagents stay RESIDENT across turns in the REPL (the next
+    // prompt can poll task_status; finished tasks are announced by the
+    // terminal). One-shot/pipe mode opts into draining here because the
+    // process exits right after run().
+    if (this.awaitBackgroundOnExit) {
+      const stillRunning = [...this._backgroundTasks.values()].filter(e => e.status === 'running' && e.promise);
+      if (stillRunning.length > 0) {
+        await Promise.allSettled(stillRunning.map(e => e.promise));
       }
     }
 
@@ -585,7 +910,7 @@ class ChaosAgentLoop {
   }
 
   _getLLMTools() {
-    const list = [...TOOLS_DEFINITION];
+    let list = [...TOOLS_DEFINITION];
     if (this.kernel && this.kernel.tools) {
       const allTools = this.kernel.tools.list();
       for (const tool of allTools) {
@@ -600,6 +925,9 @@ class ChaosAgentLoop {
           });
         }
       }
+    }
+    if (this.allowedTools) {
+      list = list.filter(t => this.allowedTools.has(t.function.name));
     }
     return list;
   }
@@ -660,7 +988,7 @@ class ChaosAgentLoop {
   // ── Streaming OpenAI (SSE) ──
   _callOpenAIStream(messages, callbacks, signal) {
     return new Promise((resolve, reject) => {
-      const url = this.baseUrl ? new URL('/chat/completions', this.baseUrl.replace(/\/$/, '')) : new URL('https://api.openai.com/v1/chat/completions');
+      const url = new URL(((this.baseUrl && this.baseUrl.trim()) || 'https://api.openai.com/v1').replace(/\/+$/, '') + '/chat/completions');
 
       const payload = {
         model: this.model,
@@ -678,12 +1006,16 @@ class ChaosAgentLoop {
         tool_choice: 'auto',
         temperature: this.temperature,
         stream: true,
+        // Standard OpenAI field; compatible servers that don't know it ignore
+        // it, and ones that do report real usage in the final chunk.
+        stream_options: { include_usage: true },
       };
 
       const body = JSON.stringify(payload);
+      const _t = _transportFor(url);
       const reqOptions = {
         method: 'POST',
-        agent: _httpAgent,
+        agent: _t.agent,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.apiKey}`,
@@ -692,7 +1024,7 @@ class ChaosAgentLoop {
         timeout: 120000,
       };
       if (signal) reqOptions.signal = signal;
-      const req = https.request(url, reqOptions, (res) => {
+      const req = _t.mod.request(url, reqOptions, (res) => {
         if (res.statusCode >= 400) {
           let data = '';
           res.on('data', chunk => data += chunk);
@@ -701,6 +1033,7 @@ class ChaosAgentLoop {
         }
 
         let content = '';
+        let reasoning = '';
         const toolCallsMap = {};
         let promptTokens = 0;
         let completionTokens = 0;
@@ -719,8 +1052,24 @@ class ChaosAgentLoop {
 
             try {
               const json = JSON.parse(trimmed.slice(6));
+
+              // Usage-only final chunk (stream_options.include_usage) carries
+              // an EMPTY choices array — capture usage BEFORE the delta guard
+              // below skips that chunk entirely.
+              if (json.usage) {
+                promptTokens = json.usage.prompt_tokens || 0;
+                completionTokens = json.usage.completion_tokens || 0;
+              }
+
               const delta = json.choices?.[0]?.delta;
               if (!delta) continue;
+
+              // Thinking models (qwen3 / glm / deepseek-r1) put CoT in
+              // reasoning_content — capture it so an empty-content turn is
+              // detectable instead of silently ending the loop.
+              if (delta.reasoning_content) {
+                reasoning += delta.reasoning_content;
+              }
 
               // Stream text content
               if (delta.content) {
@@ -750,12 +1099,6 @@ class ChaosAgentLoop {
                   if (tc.function?.arguments) toolCallsMap[idx].arguments += tc.function.arguments;
                 }
               }
-
-              // Usage from final chunk
-              if (json.usage) {
-                promptTokens = json.usage.prompt_tokens || 0;
-                completionTokens = json.usage.completion_tokens || 0;
-              }
             } catch (_) { /* skip malformed SSE */ }
           }
         });
@@ -777,6 +1120,7 @@ class ChaosAgentLoop {
 
           resolve({
             content: content || null,
+            reasoning: reasoning ? reasoning.slice(0, 4000) : null,
             toolCalls,
             toolCallsRaw,
             usage: { prompt_tokens: promptTokens, completion_tokens: completionTokens },
@@ -794,7 +1138,7 @@ class ChaosAgentLoop {
   _callAnthropicStream(messages, callbacks, signal) {
     return new Promise((resolve, reject) => {
       const base = (this.baseUrl && this.baseUrl.trim()) || 'https://api.anthropic.com/v1';
-      const url = new URL('/messages', base.replace(/\/$/, ''));
+      const url = new URL(base.replace(/\/+$/, '') + '/messages');
 
       const anthropicTools = this._getLLMTools().map(t => ({
         name: t.function.name,
@@ -816,7 +1160,20 @@ class ChaosAgentLoop {
           };
         }
         if (Array.isArray(m.content)) {
-          return { role: m.role, content: m.content };
+          // Clone blocks and strip stale cache_control so per-request
+          // breakpoints never mutate/accumulate in the persistent history
+          // (Anthropic caps cache_control at 4 blocks per request).
+          return {
+            role: m.role,
+            content: m.content.map(b => {
+              if (b && typeof b === 'object') {
+                const clone = { ...b };
+                delete clone.cache_control;
+                return clone;
+              }
+              return b;
+            }),
+          };
         }
         if (m.tool_calls) {
           return {
@@ -827,7 +1184,9 @@ class ChaosAgentLoop {
                 type: 'tool_use',
                 id: tc.id,
                 name: tc.name || tc.function?.name,
-                input: tc.input || (tc.function?.arguments ? JSON.parse(tc.function.arguments) : {})
+                // Streamed tool args can occasionally be malformed — a bare
+                // JSON.parse here would crash the whole turn.
+                input: tc.input || safeParseToolArgs(tc.function?.arguments)
               }))
             ]
           };
@@ -835,20 +1194,40 @@ class ChaosAgentLoop {
         return { role: m.role, content: m.content || '' };
       });
 
+      // Prompt caching: mark stable prefixes (system prompt + tool definitions) and the
+      // last conversational message with ephemeral cache_control breakpoints so the
+      // Anthropic API can reuse the cached prefix across turns.
+      const useCaching = this.promptCaching !== false;
+      const systemBlocks = useCaching
+        ? [{ type: 'text', text: this.systemPrompt, cache_control: { type: 'ephemeral' } }]
+        : this.systemPrompt;
+      if (useCaching && anthropicTools.length > 0) {
+        anthropicTools[anthropicTools.length - 1].cache_control = { type: 'ephemeral' };
+      }
+      if (useCaching && formattedMessages.length > 0) {
+        const lastMsg = formattedMessages[formattedMessages.length - 1];
+        if (Array.isArray(lastMsg.content)) {
+          lastMsg.content[lastMsg.content.length - 1].cache_control = { type: 'ephemeral' };
+        } else if (typeof lastMsg.content === 'string' && lastMsg.content) {
+          lastMsg.content = [{ type: 'text', text: lastMsg.content, cache_control: { type: 'ephemeral' } }];
+        }
+      }
+
       const payload = {
         model: this.model,
-        system: this.systemPrompt,
+        system: systemBlocks,
         messages: formattedMessages,
         tools: anthropicTools,
-        max_tokens: 4096,
+        max_tokens: this.maxTokens || 4096,
         temperature: this.temperature,
         stream: true,
       };
 
       const body = JSON.stringify(payload);
+      const _t = _transportFor(url);
       const reqOptions = {
         method: 'POST',
-        agent: _httpAgent,
+        agent: _t.agent,
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': this.apiKey,
@@ -858,7 +1237,7 @@ class ChaosAgentLoop {
         timeout: 120000,
       };
       if (signal) reqOptions.signal = signal;
-      const req = https.request(url, reqOptions, (res) => {
+      const req = _t.mod.request(url, reqOptions, (res) => {
         if (res.statusCode >= 400) {
           let data = '';
           res.on('data', chunk => data += chunk);
@@ -962,6 +1341,42 @@ class ChaosAgentLoop {
 
   async _executeTool(name, args) {
     const kernelToolName = name.replace(/_/g, '.');
+
+    // Subagent tool whitelist: the model never sees filtered tools, but
+    // enforce here too in case a tool call slips through.
+    if (this.allowedTools && !this.allowedTools.has(name)) {
+      return { error: `Tool "${name}" is not available to this agent. Allowed tools: ${[...this.allowedTools].join(', ')}` };
+    }
+
+    // Dispatch subagent tasks (lazy require avoids a load-time cycle with ./subagent)
+    if (name === 'task_dispatch') {
+      return this._executeTaskDispatch(args);
+    }
+
+    // Background subagent status polling
+    if (name === 'task_status') {
+      return this._executeTaskStatus(args);
+    }
+
+    // Multimodal image read (dot-mapping would corrupt the name — explicit)
+    if (name === 'fs_read_image') {
+      return this.kernel.executeTool('fs.read_image', args);
+    }
+
+    // Symbol-level navigation (LSP with heuristic fallback)
+    if (name === 'symbols') {
+      const { getSymbols } = require('./lsp');
+      try {
+        return await getSymbols(this.cwd, args || {});
+      } catch (err) {
+        return { status: 'error', error: err.message };
+      }
+    }
+
+    // Load a STDD skill's instructions on demand
+    if (name === 'skill') {
+      return this._executeSkillLoad(args);
+    }
 
     // Custom handling for fs_glob
     if (name === 'fs_glob') {
@@ -1281,11 +1696,13 @@ class ChaosAgentLoop {
       promptTokens: this.totalPromptTokens,
       completionTokens: this.totalCompletionTokens,
       totalTokens: this.totalPromptTokens + this.totalCompletionTokens,
+      lastPromptTokens: this.lastPromptTokens,
+      lastCompletionTokens: this.lastCompletionTokens,
       cost: this.totalCost
     };
   }
 
-  compactHistory(chatHistory) {
+  async compactHistory(chatHistory) {
     if (chatHistory.length <= 6) return chatHistory;
 
     // Keep the first user message (original goal) always
@@ -1318,7 +1735,16 @@ class ChaosAgentLoop {
     summaryParts.push(`${userMsgCount} user messages`);
     if (toolCallCount > 0) summaryParts.push(`${toolCallCount} tool calls`);
 
-    const summary = `[Context compacted: ${summaryParts.join(', ')} omitted. Original goal preserved below.]\n\n`;
+    // Try an LLM summary of the discarded segment first; fall back to the
+    // structural placeholder if no key is set or the call fails.
+    let llmSummary = null;
+    try {
+      llmSummary = await this._summarizeSegment(discarded);
+    } catch (_) { /* fall back below */ }
+
+    const summary = llmSummary
+      ? `[Context compacted: ${summaryParts.join(', ')} summarized below.]\n\n${llmSummary.trim()}\n\n[Original goal preserved below.]\n\n`
+      : `[Context compacted: ${summaryParts.join(', ')} omitted. Original goal preserved below.]\n\n`;
 
     // Return: first user message + compact summary + tail
     const result = [];
@@ -1336,6 +1762,113 @@ class ChaosAgentLoop {
 
     result.push(...tail);
     return result;
+  }
+
+  /**
+   * Summarize a discarded history segment with a single non-streaming LLM call.
+   * Resolves null (never throws) when no key is set or the call fails, so
+   * compactHistory can fall back to structural truncation.
+   */
+  _summarizeSegment(messages) {
+    if (!this.apiKey) return Promise.resolve(null);
+
+    // Render the segment into bounded plain text
+    const lines = [];
+    for (const m of messages) {
+      if (m.role === 'user') {
+        const text = typeof m.content === 'string'
+          ? m.content
+          : (Array.isArray(m.content)
+            ? m.content.map(c => {
+                if (typeof c === 'string') return c;
+                if (c.text) return c.text;
+                // Anthropic tool_result blocks nest their content — flatten
+                // instead of stringifying to "[object Object]"
+                if (Array.isArray(c.content)) return c.content.map(b => b.text || '').join(' ');
+                return '';
+              }).join(' ')
+            : '');
+        if (text && text.trim()) lines.push(`USER: ${text.slice(0, 400)}`);
+      } else if (m.role === 'assistant') {
+        if (m.content && typeof m.content === 'string' && m.content.trim()) {
+          lines.push(`ASSISTANT: ${m.content.slice(0, 400)}`);
+        }
+        if (m.tool_calls) {
+          for (const tc of m.tool_calls) {
+            const fn = tc.function || {};
+            const args = String(fn.arguments || '').slice(0, 150);
+            lines.push(`TOOL_CALL ${fn.name || tc.name} ${args}`);
+          }
+        }
+      } else if (m.role === 'tool') {
+        const text = typeof m.content === 'string' ? m.content : JSON.stringify(m.content || '');
+        lines.push(`TOOL_RESULT ${m.name || ''}: ${text.slice(0, 300)}`);
+      }
+    }
+    const rendered = lines.join('\n').slice(0, 12000);
+    if (!rendered.trim()) return Promise.resolve(null);
+
+    const systemPrompt = 'You are a context compactor for an AI coding agent session. Produce a dense, factual summary of the conversation segment. Preserve: user goals and decisions, file paths touched, commands run and their outcomes, errors encountered, unresolved questions, and current task state. Use terse bullet points. No preamble.';
+    const userPrompt = `Summarize this conversation segment for continued work:\n\n${rendered}`;
+
+    return new Promise((resolve) => {
+      let url, payload, headers;
+      if (this.provider === 'anthropic') {
+        const base = (this.baseUrl && this.baseUrl.trim()) || 'https://api.anthropic.com/v1';
+        url = new URL(base.replace(/\/+$/, '') + '/messages');
+        payload = {
+          model: this.model,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }],
+          max_tokens: 400,
+          temperature: 0,
+        };
+        headers = {
+          'Content-Type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': '2023-06-01',
+        };
+      } else {
+        url = new URL(((this.baseUrl && this.baseUrl.trim()) || 'https://api.openai.com/v1').replace(/\/+$/, '') + '/chat/completions');
+        payload = {
+          model: this.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          max_tokens: 400,
+          temperature: 0,
+        };
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        };
+      }
+
+      const body = JSON.stringify(payload);
+      const _t = _transportFor(url);
+      const reqOptions = { method: 'POST', agent: _t.agent, headers, timeout: 30000 };
+      const req = _t.mod.request(url, reqOptions, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            if (res.statusCode >= 400) return resolve(null);
+            const json = JSON.parse(data);
+            const text = this.provider === 'anthropic'
+              ? (json.content || []).map(b => b.text || '').join('').trim()
+              : (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content || '').trim();
+            resolve(text || null);
+          } catch (_) {
+            resolve(null);
+          }
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+      req.write(body);
+      req.end();
+    });
   }
 
   // ── Task Management ──
@@ -1426,6 +1959,116 @@ class ChaosAgentLoop {
       tasks: summary,
     };
   }
+
+  // ── Subagent dispatch ──
+
+  async _executeTaskDispatch(args) {
+    const { dispatchSubagents } = require('./subagent');
+    let tasks = Array.isArray(args && args.tasks) ? args.tasks : [];
+    // Convenience form: task_dispatch({ prompt, tools, model, maxTurns }) for a single task
+    if (tasks.length === 0 && args && args.prompt) {
+      tasks = [{ prompt: args.prompt, tools: args.tools, model: args.model, maxTurns: args.maxTurns }];
+    }
+    if (tasks.length === 0) {
+      return { status: 'error', error: 'Provide a tasks array with at least one {prompt} entry.' };
+    }
+    const cb = this._currentCallbacks || {};
+
+    const fg = [];
+    const bg = [];
+    for (const t of tasks) (t && t.background ? bg : fg).push(t);
+
+    let fgResult = null;
+    if (fg.length > 0) {
+      try {
+        fgResult = await dispatchSubagents({
+          parentLoop: this,
+          tasks: fg,
+          askPermission: cb.askPermission,
+          signal: this._currentSignal || null,
+        });
+      } catch (err) {
+        fgResult = { status: 'error', error: err.message };
+      }
+    }
+
+    const background = [];
+    const MAX_BACKGROUND = 3;
+    for (const t of bg) {
+      const running = [...this._backgroundTasks.values()].filter(e => e.status === 'running').length;
+      if (running >= MAX_BACKGROUND) {
+        background.push({ prompt: t.prompt, ok: false, error: `Background capacity reached (${MAX_BACKGROUND} running). Dispatch this task as foreground instead.` });
+        continue;
+      }
+      const id = `bg-${this._bgSeq++}`;
+      const entry = { id, prompt: t.prompt, status: 'running', startedAt: Date.now(), result: null };
+      this._backgroundTasks.set(id, entry);
+      // Prune old completed entries beyond 20
+      if (this._backgroundTasks.size > 20) {
+        for (const [k, e] of this._backgroundTasks) {
+          if (this._backgroundTasks.size <= 20) break;
+          if (e.status !== 'running') this._backgroundTasks.delete(k);
+        }
+      }
+      entry.promise = dispatchSubagents({
+        parentLoop: this,
+        tasks: [t],
+        askPermission: cb.askPermission,
+        signal: this._currentSignal || null,
+      })
+        .then(res => { entry.status = 'completed'; entry.result = res.results[0]; })
+        .catch(err => { entry.status = 'failed'; entry.result = { ok: false, summary: '', error: err.message }; });
+      background.push({ id, prompt: t.prompt, status: 'running', note: 'Poll with task_status' });
+    }
+
+    if (bg.length === 0) return fgResult;
+    if (fg.length === 0) return { status: 'ok', count: bg.length, background };
+    return { ...fgResult, background };
+  }
+
+  // ── Background subagent status ──
+
+  _executeTaskStatus(args) {
+    const map = this._backgroundTasks;
+    if (!map || map.size === 0) {
+      return { status: 'ok', count: 0, tasks: [], note: 'No background tasks. Dispatch with task_dispatch({ tasks: [{ prompt, background: true }] }).' };
+    }
+    const fmt = (e) => ({
+      id: e.id,
+      prompt: e.prompt,
+      status: e.status,
+      elapsedSec: Math.round((Date.now() - e.startedAt) / 1000),
+      ...(e.result
+        ? { ok: e.result.ok, summary: e.result.summary, ...(e.result.error ? { error: e.result.error } : {}) }
+        : {}),
+    });
+    if (args && args.id) {
+      const e = map.get(args.id);
+      if (!e) return { status: 'error', error: `Unknown background task "${args.id}". List all with task_status().` };
+      return { status: 'ok', task: fmt(e) };
+    }
+    return { status: 'ok', count: map.size, tasks: [...map.values()].map(fmt) };
+  }
+
+  // ── On-demand STDD skill loading ──
+
+  _executeSkillLoad(args) {
+    const { loadSkill } = require('../../utils/skills-loader');
+    if (!args || !args.name) return { status: 'error', error: 'name is required.' };
+    // Trust boundary: skill names come from the model — reject traversal
+    if (/[\\/]|\.\./.test(args.name)) {
+      return { status: 'error', error: 'Invalid skill name.' };
+    }
+    try {
+      const skill = loadSkill(args.name, this.cwd);
+      if (!skill) {
+        return { status: 'error', error: `Skill "${args.name}" not found. Available skills can be listed with the /skills command.` };
+      }
+      return { status: 'ok', skill: skill.name, description: skill.description, instructions: skill.body };
+    } catch (err) {
+      return { status: 'error', error: err.message };
+    }
+  }
 }
 
-module.exports = { ChaosAgentLoop };
+module.exports = { ChaosAgentLoop, buildSystemPrompt };

@@ -1,10 +1,9 @@
 const readline = require('readline');
-const chalk = require('chalk');
+
 const https = require('https');
 const { EventEmitter } = require('events');
 const { ChaosAgentLoop } = require('../src/runtime/agent-kernel/chaos-agent-loop');
 const { launchChaosTerminal, runChaosAgentPrompt } = require('../src/cli/commands/chaos-terminal');
-const { AgentKernel } = require('../src/runtime/agent-kernel/index');
 
 jest.mock('https');
 jest.mock('../src/runtime/agent-kernel/index');
@@ -103,8 +102,10 @@ describe('ChaosAgentLoop', () => {
     expect(stats.cost).toBe(0.005);
   });
 
-  test('should compact chat history correctly', () => {
+  test('should compact chat history correctly', async () => {
     const agent = new ChaosAgentLoop();
+    // Force the structural fallback path (no LLM summary call)
+    jest.spyOn(agent, '_summarizeSegment').mockResolvedValue(null);
     const history = [
       { role: 'user', content: 'msg1' },
       { role: 'assistant', content: 'msg2' },
@@ -115,7 +116,7 @@ describe('ChaosAgentLoop', () => {
       { role: 'user', content: 'msg7' },
       { role: 'assistant', content: 'msg8' },
     ];
-    const compacted = agent.compactHistory(history);
+    const compacted = await agent.compactHistory(history);
     // Smart compact: first user msg + summary + tail (6) = 8
     expect(compacted.length).toBe(8);
     // First message preserves original goal
@@ -211,8 +212,10 @@ describe('Chaos Terminal CLI routing and REPL commands', () => {
 
   test('/exit slash command should terminate the shell', async () => {
     launchChaosTerminal();
-    
+
     mockRl.emit('line', '/exit');
+    // /exit awaits the background-task drain (async) before exiting
+    await new Promise(resolve => setImmediate(resolve));
     expect(mockRl.close).toHaveBeenCalled();
     expect(process.exit).toHaveBeenCalledWith(0);
   });
@@ -268,6 +271,8 @@ describe('Chaos Terminal CLI routing and REPL commands', () => {
     launchChaosTerminal();
 
     mockRl.emit('line', '/compact');
+    // compactHistory is async (LLM summary attempt) — let the handler settle
+    await new Promise(resolve => setImmediate(resolve));
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Compacted'));
     logSpy.mockRestore();
   });
@@ -282,4 +287,43 @@ describe('Chaos Terminal CLI routing and REPL commands', () => {
     expect(mockRl.pause).toHaveBeenCalled();
     expect(mockRun).toHaveBeenCalledWith('hello agent', [], expect.any(Object));
   });
+});
+
+describe('pipe mode (non-interactive) permission handling', () => {
+  let originalEnv;
+
+  beforeEach(() => {
+    originalEnv = { ...process.env };
+    process.env.STDD_LLM_API_KEY = 'test-key';
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+    jest.restoreAllMocks();
+  });
+
+  test('guarded tools are auto-allowed without hanging on exhausted stdin', async () => {
+    const writeSpy = jest.spyOn(ChaosAgentLoop.prototype, '_executeWrite')
+      .mockResolvedValue({ status: 'ok', path: 'pipe.txt' });
+    let call = 0;
+    jest.spyOn(ChaosAgentLoop.prototype, '_callLLM').mockImplementation(async () => {
+      call++;
+      if (call === 1) {
+        return {
+          content: null,
+          toolCalls: [{ id: 'c1', name: 'fs_write', arguments: { path: 'pipe.txt', content: 'x' } }],
+          toolCallsRaw: [{ id: 'c1', type: 'function', function: { name: 'fs_write', arguments: '{}' } }],
+          usage: {},
+        };
+      }
+      return { content: 'written', toolCalls: [], usage: {} };
+    });
+
+    // jest's default timeout is the no-hang assertion: before the fix this
+    // awaited a readline question on an exhausted stdin forever.
+    await runChaosAgentPrompt('create pipe.txt');
+
+    expect(writeSpy).toHaveBeenCalledWith({ path: 'pipe.txt', content: 'x' });
+  }, 8000);
 });

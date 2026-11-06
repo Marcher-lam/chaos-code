@@ -17,6 +17,11 @@ const DEFAULT_CONFIG = {
   autoCompact: 80000,      // estimated tokens before auto-compact
   maxTurns: 20,            // max agent turns per prompt
   temperature: 0.2,
+  maxTokens: 4096,         // Anthropic max_tokens per request
+  promptCaching: true,     // Anthropic prompt caching (cache_control breakpoints)
+  mcpTimeout: 30000,       // per-request MCP timeout in ms
+  sandbox: 'auto',         // OS sandbox for shell/test: 'auto' (use when available) | 'off'
+  hooks: {},               // lifecycle hooks: { preToolUse: [{command, timeout?}], postToolUse: [...] }
   permissionDefaults: {
     fs_patch: 'ask',       // ask | allow | deny
     shell_run: 'ask',
@@ -24,6 +29,10 @@ const DEFAULT_CONFIG = {
     git_add: 'ask',
     git_commit: 'ask',
     git_push: 'deny',
+    git_pull: 'ask',
+    git_stash: 'ask',
+    git_pr: 'ask',
+    git_worktree: 'ask',
     git_checkout: 'ask',
     git_branch: 'ask',
     git_reset: 'deny',

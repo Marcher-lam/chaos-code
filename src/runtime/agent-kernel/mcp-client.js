@@ -1,11 +1,29 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+
+// Resolve per-request timeout: explicit option > CHAOS_MCP_TIMEOUT env > ~/.chaos/config.json mcpTimeout > 30s
+// (env intentionally wins over the config file — conventional 12-factor override)
+function _resolveTimeoutMs(explicit) {
+  if (explicit && explicit > 0) return explicit;
+  const envVal = Number(process.env.CHAOS_MCP_TIMEOUT);
+  if (envVal > 0) return envVal;
+  try {
+    const cfgPath = path.join(os.homedir(), '.chaos', 'config.json');
+    if (fs.existsSync(cfgPath)) {
+      const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+      if (cfg.mcpTimeout > 0) return cfg.mcpTimeout;
+    }
+  } catch (_) { /* fall through to default */ }
+  return 30000;
+}
 
 class McpClient {
-  constructor(name, config) {
+  constructor(name, config, options = {}) {
     this.name = name;
     this.config = config;
+    this.timeoutMs = _resolveTimeoutMs(options.timeoutMs);
     this.process = null;
     this.requestId = 1;
     this.pendingRequests = new Map();
@@ -17,7 +35,7 @@ class McpClient {
   async start() {
     return new Promise((resolve, reject) => {
       const { command, args = [], env = {} } = this.config;
-      
+
       const spawnEnv = { ...process.env, ...env };
       this.process = spawn(command, args, {
         cwd: process.cwd(),
@@ -25,25 +43,7 @@ class McpClient {
         stdio: ['pipe', 'pipe', 'pipe']
       });
 
-      this.process.stderr.on('data', (data) => {
-        // Keep logs quiet but allow stderr handling
-      });
-
-      this.process.stdout.on('data', (data) => {
-        this.buffer += data.toString();
-        this.processBuffer();
-      });
-
-      this.process.on('close', (code) => {
-        for (const [id, { reject }] of this.pendingRequests.entries()) {
-          reject(new Error(`MCP server ${this.name} exited with code ${code}`));
-        }
-        this.pendingRequests.clear();
-      });
-
-      this.process.on('error', (err) => {
-        reject(err);
-      });
+      this._attachProcessHandlers((err) => reject(err));
 
       // Give it a short delay to spawn, then send initialize request
       this.spawnTimeout = setTimeout(async () => {
@@ -53,9 +53,40 @@ class McpClient {
           this.tools = tools;
           resolve(this);
         } catch (err) {
+          // Startup failed (timeout/hang) — kill the child so it doesn't
+          // leak for the lifetime of the host process.
+          this.stop();
           reject(err);
         }
       }, 500);
+    });
+  }
+
+  /**
+   * Wire stdout buffering and exit/error handling onto this.process.
+   * Split out of start() so tests (and manual process injection) can attach
+   * the same behavior without spawning.
+   */
+  _attachProcessHandlers(onError) {
+    this.process.stderr.on('data', () => {
+      // Keep logs quiet but allow stderr handling
+    });
+
+    this.process.stdout.on('data', (data) => {
+      this.buffer += data.toString();
+      this.processBuffer();
+    });
+
+    this.process.on('close', (code) => {
+      for (const [, { reject, timer }] of this.pendingRequests.entries()) {
+        if (timer) clearTimeout(timer);
+        reject(new Error(`MCP server ${this.name} exited with code ${code}`));
+      }
+      this.pendingRequests.clear();
+    });
+
+    this.process.on('error', (err) => {
+      if (onError) onError(err);
     });
   }
 
@@ -74,7 +105,8 @@ class McpClient {
     try {
       const msg = JSON.parse(line);
       if (msg.id !== undefined && this.pendingRequests.has(msg.id)) {
-        const { resolve, reject } = this.pendingRequests.get(msg.id);
+        const { resolve, reject, timer } = this.pendingRequests.get(msg.id);
+        if (timer) clearTimeout(timer);
         this.pendingRequests.delete(msg.id);
         if (msg.error) {
           reject(new Error(msg.error.message || JSON.stringify(msg.error)));
@@ -99,7 +131,14 @@ class McpClient {
         method,
         params
       };
-      this.pendingRequests.set(id, { resolve, reject });
+      // Per-request timeout: a hung server must not stall the agent loop
+      const timer = setTimeout(() => {
+        if (this.pendingRequests.has(id)) {
+          this.pendingRequests.delete(id);
+          reject(new Error(`MCP request ${method} to ${this.name} timed out after ${this.timeoutMs}ms`));
+        }
+      }, this.timeoutMs);
+      this.pendingRequests.set(id, { resolve, reject, timer });
       this.process.stdin.write(JSON.stringify(req) + '\n');
     });
   }
@@ -114,15 +153,26 @@ class McpClient {
     this.process.stdin.write(JSON.stringify(req) + '\n');
   }
 
+  /**
+   * Initialize with a GENEROUS startup budget: MCP servers launched via npx
+   * can take well over 30s on a cold cache. Post-init tool calls keep the
+   * normal (shorter) per-request timeout.
+   */
   async initialize() {
-    const res = await this.sendRequest('initialize', {
-      protocolVersion: '2024-11-05',
-      capabilities: {},
-      clientInfo: { name: 'chaos-mcp-client', version: '2.0.0' }
-    });
-    this.sendNotification('notifications/initialized');
-    this.initialized = true;
-    return res;
+    const savedTimeout = this.timeoutMs;
+    this.timeoutMs = Math.max(this.timeoutMs, 120000);
+    try {
+      const res = await this.sendRequest('initialize', {
+        protocolVersion: '2024-11-05',
+        capabilities: {},
+        clientInfo: { name: 'chaos-mcp-client', version: '2.0.0' }
+      });
+      this.sendNotification('notifications/initialized');
+      this.initialized = true;
+      return res;
+    } finally {
+      this.timeoutMs = savedTimeout;
+    }
   }
 
   async listTools() {
@@ -151,8 +201,9 @@ class McpClient {
 }
 
 class McpClientManager {
-  constructor(cwd = process.cwd()) {
+  constructor(cwd = process.cwd(), options = {}) {
     this.cwd = cwd;
+    this.timeoutMs = _resolveTimeoutMs(options.timeoutMs);
     this.clients = new Map();
     this.startingClients = new Set();
   }
@@ -175,13 +226,13 @@ class McpClientManager {
     const startPromises = [];
     
     for (const [name, srvConfig] of Object.entries(servers)) {
-      const client = new McpClient(name, srvConfig);
+      const client = new McpClient(name, srvConfig, { timeoutMs: this.timeoutMs });
       this.startingClients.add(client);
       const promise = client.start()
         .then(() => {
           this.clients.set(name, client);
         })
-        .catch(err => {
+        .catch(() => {
           // Quietly handle errors in loading individual MCP servers
         })
         .finally(() => {
@@ -236,4 +287,4 @@ class McpClientManager {
   }
 }
 
-module.exports = { McpClientManager };
+module.exports = { McpClient, McpClientManager };

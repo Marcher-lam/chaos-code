@@ -14,7 +14,8 @@
     "node_modules/",
     "stdd/graph/cache/",
     "stdd/templates/starters/",
-    "stdd/runtime/generated/"
+    "stdd/runtime/generated/",
+    "**/*.sh"
   ],
   "rules": {
     "no-control-regex": "off",

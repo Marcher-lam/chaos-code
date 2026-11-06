@@ -63,3 +63,6 @@ docker-compose.override.yml
 # OS generated files
 **/.DS_Store
 ._*
+
+# ZCode session workspace
+.zcode/

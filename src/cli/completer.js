@@ -12,6 +12,8 @@ const SLASH_COMMANDS = [
   '/diff', '/commit', '/rollback', '/undo', '/status', '/recommend', '/verify',
   '/doctor', '/model', '/compact', '/cost', '/session', '/reset',
   '/history', '/resume', '/export', '/verbose', '/config', '/tasks',
+  '/skills', '/skill', '/cmds', '/cmd', '/hooks', '/plan', '/agents', '/plugins',
+  '/checkpoint', '/rewind',
 ];
 
 /**
@@ -40,6 +42,25 @@ function createCompleter(opts = {}) {
       return [full.length ? full : models.map(m => '/model ' + m), line];
     }
 
+    // ── Layer 2b: Skill/command-template name completion ──
+    const templateMatch = line.match(/^(\/(?:skill|cmd))\s+(.*)$/);
+    if (templateMatch) {
+      const base = templateMatch[1];
+      const partial = templateMatch[2].toLowerCase();
+      let names = [];
+      try {
+        // Names-only fast path: readdir per root (TTL-cached), no file reads
+        // or YAML parsing on every Tab press.
+        const loader = require('../utils/skills-loader');
+        names = base === '/skill'
+          ? loader.skillNames()
+          : loader.commandNames();
+      } catch (_) { names = []; }
+      const hits = names.filter(n => n.toLowerCase().startsWith(partial));
+      const full = (hits.length ? hits : names).map(n => `${base} ${n}`);
+      return [full, line];
+    }
+
     // ── Layer 3: File path completion ──
     const pathHit = tryPathCompletion(line);
     if (pathHit) return pathHit;
@@ -59,14 +80,12 @@ function tryPathCompletion(line) {
   const lastWord = words[words.length - 1];
   if (!lastWord) return null;
 
-  let dirPath, prefix;
+  let dirPath;
 
   if (lastWord.startsWith('~/')) {
     dirPath = path.join(os.homedir(), lastWord.slice(2));
-    prefix = lastWord;
   } else if (lastWord.startsWith('./') || lastWord.startsWith('../') || lastWord.startsWith('/')) {
     dirPath = path.resolve(lastWord);
-    prefix = lastWord;
   } else {
     return null;
   }

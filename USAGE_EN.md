@@ -13,6 +13,9 @@ This manual provides a detailed guide on the core concepts, workflow phases, CLI
 6. [Self-Healing Test-and-Repair Loop](#6-self-healing-test-and-repair-loop)
 7. [Diagnostics & Configuration Customization](#7-diagnostics--configuration-customization)
 8. [Advanced Multi-Agent & Parallel Workflows](#8-advanced-multi-agent--parallel-workflows)
+9. [Workspace Extension Points & Agent Capabilities](#9-workspace-extension-points--agent-capabilities)
+10. [Security Model](#10-security-model)
+11. [SDK / HTTP Server / ACP](#11-sdk--http-server--acp)
 
 ---
 
@@ -161,6 +164,16 @@ node cli.js
 | `/resume` | None | List and restore previously saved sessions. |
 | `/export` | None | Export conversation to a Markdown file. |
 | `/tasks` | `[status]` | Show task list and status (AI manages tasks via task_create/task_update/task_list). |
+| `/skills` | `[keyword]` | List the 53 built-in STDD skills (filterable). Workspace `stdd/skills/<name>/SKILL.md` overrides built-ins. |
+| `/skill` | `<name> [args]` | Load a STDD skill's full instructions and hand them to the AI (`$ARGUMENTS` substituted). The AI can also self-load via the `skill` tool. |
+| `/cmds` | `[keyword]` | List the 86 command templates. |
+| `/cmd` | `<name> [args]` | Load a command template and hand it to the AI. |
+| `/hooks` | None | Show configured lifecycle hooks (user hooks in `~/.chaos/config.json`; plugin hooks require the `trustedPlugins` allowlist). |
+| `/plan` | `[on\|off]` | Toggle Plan Mode: write tools are refused at the kernel level until the model presents an implementation plan. |
+| `/agents` | None | List named subagent personas from `.chaos/agents.json` (referenced via `task_dispatch {agent}`). |
+| `/plugins` | None | List installed workspace plugin packs (skills/commands/hooks contribution counts). |
+| `/checkpoint` | `[label\|list]` | Save/list whole-workspace checkpoints (auto-saved after any file-writing turn; 10 kept). |
+| `/rewind` | `<id\|label>` | Restore all touched files to a checkpoint in time (agent-created files are deleted; asks for confirmation). |
 | `/verbose` | `[0-2]` | Set output verbosity: 0=minimal, 1=normal, 2=verbose. |
 | `/reset` | None | Wipes conversation history and starts a clean session. |
 | `/clear` | None | Clears terminal screen log. |
@@ -263,7 +276,94 @@ This isolates complex responsibilities, keeping token usage under control.
 
 ---
 
-## 9. Appendix: Common Command Examples
+## 9. Workspace Extension Points & Agent Capabilities
+
+### 9.1 The `.chaos/` directory
+
+| Path | Purpose | Example |
+| :--- | :--- | :--- |
+| `.chaos/agents.json` | Named subagent personas (prompt/tools/model; overrides global `~/.chaos/agents.json` per name) | `{"agents":{"reviewer":{"prompt":"Review strictly…","tools":["fs_read","fs_grep"],"model":"gpt-4o"}}}` |
+| `.chaos/plugins/<name>/` | Plugin pack: `plugin.json` (metadata) + `skills/` + `commands/` + `hooks.json` in any combination | inspect with `/plugins` |
+| `.chaos/lsp.json` | LSP server map enabling LSP-backed `symbols` | `{"typescript":{"command":["typescript-language-server","--stdio"]}}` |
+| `stdd/skills/`, `stdd/commands/` | Workspace skills/command templates (win over built-ins and plugins on name clash) | run with `/skill <name>` |
+
+### 9.2 Plugin hook trust gate (important)
+
+Plugin `hooks.json` files are shell commands shipped with the workspace — executing them blindly would be supply-chain RCE. Chaos Code only runs hooks from plugins you explicitly allowlisted in `~/.chaos/config.json`:
+
+```json
+{ "trustedPlugins": ["acme"] }
+```
+
+Untrusted plugin hooks are skipped with a prominent startup warning. Plugin skills/commands are passive text and always available.
+
+### 9.3 Symbol navigation (`symbols`)
+
+Configure `.chaos/lsp.json` to use the real LSP client (Content-Length framing, initialize/didOpen/documentSymbol, timeouts); with no config a zero-dependency heuristic extracts functions/classes/methods/types (js/ts/py/go/rs/java/php) with line numbers. Output looks like `line\tkind\tContainer.name` — jump with `fs_read {path, startLine}`.
+
+### 9.4 Checkpoints & rewind
+
+*   Any turn that writes files auto-saves a whole-workspace checkpoint (`~/.chaos/checkpoints/<session>/`, 10 kept).
+*   `/checkpoint [label]` manual save · `/checkpoint list` · `/rewind <id|label>` restore (agent-created files deleted, confirmation required).
+*   Complements per-file `/undo`: undo restores single-file pre-write state; rewind restores the whole timeline.
+
+### 9.5 Plan Mode & multimodal input
+
+*   `/plan on` refuses write tools at the kernel level and steers the model to present an implementation plan (files/steps/risks); `/plan off` releases execution. Subagents are bound too.
+*   `fs_read_image`: png/jpg/gif/webp (≤5MB) → OpenAI `image_url` vision block / Anthropic `image` block inside `tool_result`.
+
+### 9.6 Parallel & resident subagents (`task_dispatch`)
+
+`tasks: [{prompt, agent?, tools?, model?, maxTurns?, cwd?, background?}]` — max 5 per dispatch, 3 concurrent, isolated contexts, read-only whitelist by default (incl. `fs_read`/`fs_read_image`/`symbols`), granted write tools still pass the y/n/a/s gate. `background: true` keeps them resident across REPL turns (completion notices + `task_status` polling; 15s bounded drain on exit; pipe/SDK runs drain automatically). `git_worktree` + `task_dispatch {cwd: ".worktrees/<name>"}` gives a subagent its own kernel inside an isolated worktree.
+
+---
+
+## 10. Security Model
+
+| Layer | Mechanism |
+| :--- | :--- |
+| Tool permissions | Every write-class tool (fs_patch/fs_write/shell_run/test_run/git writes/git_pr/git_worktree) requires y/n/a/s confirmation; `permissionDefaults` ask/allow/deny (`git_push`/`git_reset` default deny); non-interactive runs auto-allow 'ask' tools (deny still blocks) with a printed notice |
+| OS sandbox | `shell_run`/`test_run` run under seatbelt (macOS) / bwrap (Linux: credential dirs read-only, unshare-pid, die-with-parent); operator-only toggle (`sandbox` / `CHAOS_SANDBOX`); `CHAOS_SANDBOX=on` refuses to run unsandboxed when no tool exists (fail-closed) |
+| Hook trust | preToolUse hooks can veto any tool call; plugin hooks require the `trustedPlugins` allowlist |
+| Path safety | Workspace confinement (isPathSafe) across patch/backup/checkpoint/skill names/agent names/git args; traversal and option-injection rejected |
+| Secret exfiltration | Secret-shaped files (`.env`, `.env.*`, `*.pem`, `id_rsa*`, `credentials`, `.npmrc`, `.netrc`) refused from auto-read; plaintext http to non-loopback hosts warns about the API key |
+| Rollback | Pre-write snapshots (`~/.chaos/backups`, 7 days) + session checkpoints (`~/.chaos/checkpoints`, 10 kept) |
+
+---
+
+## 11. SDK / HTTP Server / ACP
+
+### 11.1 SDK (programmatic)
+
+```js
+const { runPrompt } = require('@marcher-lam/chaos-code/src/sdk');
+const { reply, stats } = await runPrompt({
+  prompt: 'fix the failing tests and commit',
+  cwd: '/path/to/repo',
+  maxTurns: 20,
+  onToken: (t) => process.stdout.write(t),
+});
+```
+
+### 11.2 `chaos serve` (HTTP API)
+
+```bash
+CHAOS_SERVER_TOKEN=sekret node cli.js serve --port 8787
+curl -s http://127.0.0.1:8787/v1/agent/run \
+  -H 'Authorization: Bearer sekret' -H 'Content-Type: application/json' \
+  -d '{"prompt":"explain this repo","maxTurns":10}'
+# Also: GET /v1/health · GET /v1/skills · GET /v1/agents
+```
+
+Single-flight (409 while a run is in progress); no auth when the token is unset (localhost-only listener).
+
+### 11.3 `chaos acp` (editor integration)
+
+Minimal Agent Client Protocol over stdio (newline-delimited JSON-RPC): `initialize` → `session/new` → `session/prompt` (streams `session/update agent_message_chunk`, ends with `stopReason: end_of_turn`) → `session/cancel`.
+
+---
+
+## 12. Appendix: Common Command Examples
 
 Here are some common command examples for quick reference and test mapping:
 

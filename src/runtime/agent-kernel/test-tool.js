@@ -1,6 +1,7 @@
 const path = require('path');
 
 const { runCommand } = require('../../utils/command-runner');
+const { wrapForSandbox } = require('../../utils/os-sandbox');
 const { getConfigTestCommand, resolveTestCommands } = require('../../utils/test-command-resolver');
 
 function tail(value, max = 4000) {
@@ -37,11 +38,18 @@ class TestTool {
     const results = [];
     for (const testCommand of commands) {
       const startedAt = Date.now();
-      const result = runCommand(testCommand.command, {
-        cwd: testCommand.cwd,
-        stdio: 'pipe',
-        timeout: Number(args.timeout || this.timeout),
-      });
+      let result;
+      try {
+        result = runCommand(testCommand.command, {
+          cwd: testCommand.cwd,
+          stdio: 'pipe',
+          timeout: Number(args.timeout || this.timeout),
+          // Operator-controlled sandbox only (config/env), never per-call opts
+          sandboxWrap: wrapForSandbox,
+        });
+      } catch (err) {
+        result = { status: null, stdout: '', stderr: err.message, error: err };
+      }
       results.push({
         workspaceName: testCommand.workspaceName,
         source: testCommand.source,

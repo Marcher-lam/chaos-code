@@ -609,6 +609,25 @@ Examples:
   }));
 
 
+// ─── Inline: serve (HTTP SDK server) & acp (Agent Client Protocol) ───
+program.command('serve')
+  .description('Expose the agent over HTTP (POST /v1/agent/run; set CHAOS_SERVER_TOKEN for auth)')
+  .option('--port <n>', 'Listen port', '8787')
+  .option('--cwd <dir>', 'Workspace root to serve')
+  .action(safeAction(async (options) => {
+    const { startServeCommand } = require('./src/cli/server');
+    await startServeCommand({ port: options.port, cwd: options.cwd });
+    // keep the process alive serving
+  }));
+
+program.command('acp')
+  .description('Run as an ACP (Agent Client Protocol) agent over stdio for editor integration')
+  .action(safeAction(async () => {
+    const { runAcpStdio } = require('./src/cli/acp');
+    runAcpStdio(process.cwd());
+  }));
+
+
 // ─── Parse with progress tracking ───
 const { progress: getProgress, installSignals, active, setActive, clearActive } = require('./src/utils/session-progress');
 const { launchChaosTerminal, runChaosAgentPrompt } = require('./src/cli/commands/chaos-terminal');
@@ -642,11 +661,9 @@ process.on('exit', () => {
 // Claw Code-like routing: default to interactive agent REPL, or run prompt directly
 const args = process.argv.slice(2);
 const positionalArgs = args.filter(arg => !arg.startsWith('-'));
-const firstPositional = positionalArgs[0];
 
 // Extract --model and --provider flags for prompt mode
 const cliFlags = {};
-const flagIdx = {};
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--model' && args[i + 1]) { cliFlags.model = args[++i]; }
   else if (args[i] === '--provider' && args[i + 1]) { cliFlags.provider = args[++i]; }
@@ -666,6 +683,11 @@ if (args.includes('--no-color')) {
 const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined;
 
 if (isTestEnv || isHelpOrVersion) {
+  program.parse();
+} else if (!process.stdin.isTTY && isKnownCommand) {
+  // Non-interactive stdin BUT the user asked for a real subcommand (serve,
+  // acp, doctor, init…) — delegate to commander so scripted/CI usage and
+  // stdio protocols (ACP) work instead of being swallowed as a prompt.
   program.parse();
 } else if (!process.stdin.isTTY) {
   // Piped stdin (no TTY) -> read from pipe and run as prompt

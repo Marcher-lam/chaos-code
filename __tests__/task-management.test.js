@@ -1,5 +1,4 @@
 const { ChaosAgentLoop } = require('../src/runtime/agent-kernel/chaos-agent-loop');
-const { AgentKernel } = require('../src/runtime/agent-kernel/index');
 
 jest.mock('../src/runtime/agent-kernel/index');
 

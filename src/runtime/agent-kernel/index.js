@@ -111,7 +111,7 @@ class AgentKernel {
     if (tool && tool.category === 'mcp') {
       return this.mcpClientManager.callTool(name, args);
     }
-    if (name === 'fs.read' || name === 'fs.search') {
+    if (name === 'fs.read' || name === 'fs.read_image' || name === 'fs.search') {
       return this.readOnlyTools.execute(name, args);
     }
     if (name === 'fs.patch') {
@@ -132,6 +132,21 @@ class AgentKernel {
     }
     if (name === 'git.push') {
       return this.gitTool.push(args);
+    }
+    if (name === 'git.pull') {
+      return this.gitTool.pull(args);
+    }
+    if (name === 'git.log') {
+      return this.gitTool.log(args);
+    }
+    if (name === 'git.stash') {
+      return this.gitTool.stash(args);
+    }
+    if (name === 'git.pr') {
+      return this.gitTool.pr(args);
+    }
+    if (name === 'git.worktree') {
+      return this.gitTool.worktree(args);
     }
     if (name === 'git.checkout') {
       return this.gitTool.checkout(args);

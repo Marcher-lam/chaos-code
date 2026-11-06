@@ -1,6 +1,4 @@
 const { ChaosAgentLoop } = require('../src/runtime/agent-kernel/chaos-agent-loop');
-const { AgentKernel } = require('../src/runtime/agent-kernel/index');
-const https = require('https');
 
 jest.mock('../src/runtime/agent-kernel/index');
 

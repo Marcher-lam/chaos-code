@@ -1,7 +1,6 @@
 const { runCommand, validateCommand } = require('../../utils/command-runner');
-const { createLogger } = require('../../utils/logger');
+const { wrapForSandbox } = require('../../utils/os-sandbox');
 
-const logger = createLogger('shell-tool');
 
 const DEFAULT_TIMEOUT = 30000;
 
@@ -31,11 +30,29 @@ class ShellTool {
     }
 
     const timeout = Number(args.timeout || DEFAULT_TIMEOUT);
-    const result = runCommand(command, {
-      cwd: args.cwd || this.cwd,
-      timeout,
-      stdio: 'pipe',
-    });
+    // Sandbox application is OPERATOR-controlled only (config/env) — a
+    // model-supplied `sandbox: false` must never disable it.
+    let result;
+    try {
+      result = runCommand(command, {
+        cwd: args.cwd || this.cwd,
+        timeout,
+        stdio: 'pipe',
+        sandboxWrap: wrapForSandbox,
+      });
+    } catch (err) {
+      // e.g. CHAOS_SANDBOX=on with no sandbox tool available (fail-closed)
+      return {
+        tool: 'shell.run',
+        status: 'rejected',
+        command,
+        passed: false,
+        exitCode: null,
+        reason: err.message,
+        stdout: '',
+        stderr: err.message,
+      };
+    }
 
     const passed = result.status === 0;
     const output = {

@@ -7,6 +7,17 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 
+// Date.now() alone collides when two records are created in the same
+// millisecond (e.g. scripted test setup) — add a monotonic counter suffix.
+let _idSeq = 0;
+function _uniqueStamp() {
+  _idSeq = (_idSeq + 1) % 46656; // 36^3
+  return Date.now().toString(36).toUpperCase()
+    + '-'
+    + _idSeq.toString(36).toUpperCase().padStart(3, '0')
+    + Math.random().toString(36).slice(2, 5).toUpperCase();
+}
+
 class StoryCommand {
   constructor(cwd = process.cwd()) {
     this.cwd = cwd;
@@ -60,7 +71,7 @@ class StoryCommand {
     if (!name) throw new Error('Story name required. Usage: stdd story create <name>');
     this._ensureDir();
 
-    const id = 'STORY-' + Date.now().toString(36).toUpperCase();
+    const id = 'STORY-' + _uniqueStamp();
     const story = {
       id,
       name,
@@ -160,7 +171,7 @@ class StoryCommand {
     const results = [];
 
     for (let i = 0; i < parts; i++) {
-      const newId = 'STORY-' + Date.now().toString(36).toUpperCase() + '-' + (i + 1);
+      const newId = 'STORY-' + _uniqueStamp() + '-' + (i + 1);
       const split = {
         ...original,
         id: newId,
@@ -218,7 +229,7 @@ class StoryCommand {
     }
 
     // Create epic
-    const id = 'EPIC-' + Date.now().toString(36).toUpperCase();
+    const id = 'EPIC-' + _uniqueStamp();
     const epic = {
       id, name,
       description: options.description || '',
@@ -256,7 +267,7 @@ class StoryCommand {
       return sprints;
     }
 
-    const id = 'SPRINT-' + Date.now().toString(36).toUpperCase();
+    const id = 'SPRINT-' + _uniqueStamp();
     const stories = options.stories ? String(options.stories).split(',').map(s => s.trim()) : [];
 
     const sprint = {

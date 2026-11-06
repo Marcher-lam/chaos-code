@@ -72,7 +72,11 @@ function runCommand(command, options = {}) {
   // P0-3 Fix: Validate command before execution
   validateCommand(input, options);
 
-  const { bin, args } = parseCommandLocal(command);
+  let { bin, args } = parseCommandLocal(command);
+  if (options.sandboxWrap) {
+    // Agent shell/test tools opt into OS-level sandboxing (see utils/os-sandbox)
+    ({ bin, args } = options.sandboxWrap(bin, args, { cwd: options.cwd }));
+  }
   return spawnSync(bin, args, {
     cwd: options.cwd,
     stdio: options.stdio || 'pipe',
