@@ -64,17 +64,21 @@ npm install
 npm link   # optional: exposes `chaos` / `stdd` / `ace` globally
 ```
 
-### 3. API Key
+### 3. API Key (multi-vendor / custom endpoints)
 
 ```bash
 export OPENAI_API_KEY="sk-..."                        # OpenAI-compatible (default gpt-4o-mini)
 export ANTHROPIC_API_KEY="sk-ant-..."                 # Anthropic (default claude-3-5-sonnet-latest)
-# Any OpenAI-compatible endpoint (GLM / DeepSeek / Ollama / LM Studio) — http:// and
-# arbitrary path prefixes (e.g. /api/paas/v4) are handled correctly:
+# Any OpenAI-compatible endpoint — http:// and arbitrary path prefixes (e.g. /api/paas/v4) work:
 export STDD_LLM_API_KEY="..." STDD_LLM_BASE_URL="https://open.bigmodel.cn/api/paas/v4" STDD_LLM_MODEL="glm-4.7"
+#   GLM:       https://open.bigmodel.cn/api/paas/v4           + glm-4.7
+#   Kimi:      https://api.moonshot.cn/v1                     + moonshot-v1-128k
+#   Qwen:      https://dashscope.aliyuncs.com/compatible-mode/v1 + qwen-max
+#   LM Studio: http://127.0.0.1:1234/v1                       + a loaded model name
+#   Ollama:    http://127.0.0.1:11434/v1                      + qwen3:8b etc.
 ```
 
-Or configure interactively inside the REPL with `/connect`.
+Multiple providers coexist: `/connect` (persisted to `~/.chaos/providers.json`), `/providers` to list, `/model <name>` to hot-switch mid-session.
 
 ### 4. Run
 

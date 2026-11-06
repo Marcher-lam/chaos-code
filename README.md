@@ -98,7 +98,7 @@ npm install
 ```
 
 #### 第三步：全局链接 CLI 命令行工具 (推荐)
-为了在您电脑上的**任何其它项目目录**中直接运行 `chaos` 或 `stdd` 命令，建议使用 `npm link` 将本地命令行挂载到全局系统路径中：
+为了在您电脑上的**任何其它项目目录**中直接运行 `chaos`（别名 `stdd` / `ace`）命令，建议使用 `npm link` 将本地命令行挂载到全局系统路径中：
 ```bash
 # 执行链接命令 (Mac/Linux 下若遇到权限问题，请在前面加 sudo)
 npm link
@@ -107,18 +107,28 @@ npm link
 *   **不使用链接的备选方案**：若不想使用全局链接，您也可以在执行时使用相对或绝对路径来直接拉起，如：`node /path/to/chaos-code/cli.js [command]`。
 
 
-### 3. 配置 API Key
+### 3. 配置 API Key（多厂商 / 自定义端点）
 
-Chaos Code 支持 OpenAI 和 Anthropic 系列模型。请在终端环境变量中进行配置：
+Chaos Code 内置 7 个厂商预设（OpenAI / Anthropic / DeepSeek / OpenRouter / Groq / Ollama / 自定义），并支持**任意 OpenAI 兼容端点**——`http://` 本地服务与带路径前缀的网关（如 `/api/paas/v4`）均可正确对接，REPL 内 `/model` 热切换、`task_dispatch` 每任务可指定不同模型：
 
 ```bash
 # OpenAI 或兼容提供商（默认使用 gpt-4o-mini）
 export OPENAI_API_KEY="your-openai-api-key"
-export STDD_LLM_BASE_URL="https://api.openai.com/v1" # 可选，自定义中转端点
 
-# 或使用 Anthropic 提供商（默认使用 claude-3-5-sonnet-latest）
+# 或 Anthropic（默认 claude-3-5-sonnet-latest）
 export ANTHROPIC_API_KEY="your-anthropic-api-key"
+
+# 或任意 OpenAI 兼容厂商/本地服务——三件套即可：
+export STDD_LLM_API_KEY="your-key"
+export STDD_LLM_BASE_URL="https://open.bigmodel.cn/api/paas/v4"   # GLM 示例
+export STDD_LLM_MODEL="glm-4.7"
+#   Kimi:      https://api.moonshot.cn/v1            + moonshot-v1-128k
+#   通义千问:   https://dashscope.aliyuncs.com/compatible-mode/v1 + qwen-max
+#   LM Studio: http://127.0.0.1:1234/v1              + 本地已加载模型名
+#   Ollama:    http://127.0.0.1:11434/v1             + qwen3:8b 等
 ```
+
+也可在 REPL 内 `/connect` 交互式配置（持久化到 `~/.chaos/providers.json`，多厂商并存、`/providers` 查看、`/model` 即时切换）。
 
 ### 4. 运行终端 REPL
 

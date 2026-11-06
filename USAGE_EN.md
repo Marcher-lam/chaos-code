@@ -63,12 +63,13 @@ npm link
 This maps the following commands globally:
 *   `chaos` -> points to `cli.js`
 *   `stdd` -> points to `cli.js` (compatibility alias)
+*   `ace` -> points to `cli.js` (compatibility alias)
 
 After establishing the link, open any new shell and type `chaos --help` or simply run `chaos` to start the interactive REPL.
 
-### 2.2 Environment Variables
+### 2.2 Environment Variables (multi-vendor / custom endpoints)
 
-Chaos Code reads credentials and API routing details from your environment variables:
+Chaos Code ships seven built-in provider presets and accepts **any OpenAI-compatible endpoint** — plain `http://` local servers and path-prefixed gateways both work:
 
 ```bash
 # OpenAI Configuration
@@ -80,10 +81,19 @@ export OPENAI_MODEL="gpt-4o-mini"                   # Default model choice
 export ANTHROPIC_API_KEY="sk-ant-..."
 export ANTHROPIC_MODEL="claude-3-5-sonnet-latest"    # Default model choice
 
-# Override Key & Model (Highest Priority)
+# Override Key & Model (Highest Priority) — direct connection to any compatible vendor:
 export STDD_LLM_API_KEY="your-api-key"
+export STDD_LLM_BASE_URL="https://open.bigmodel.cn/api/paas/v4"
 export STDD_LLM_MODEL="your-model-name"
+#   GLM:       https://open.bigmodel.cn/api/paas/v4           + glm-4.7
+#   Kimi:      https://api.moonshot.cn/v1                     + moonshot-v1-128k
+#   Qwen:      https://dashscope.aliyuncs.com/compatible-mode/v1 + qwen-max
+#   DeepSeek:  https://api.deepseek.com/v1                    + deepseek-chat
+#   LM Studio: http://127.0.0.1:1234/v1                       + a loaded model name
+#   Ollama:    http://127.0.0.1:11434/v1                      + qwen3:8b etc.
 ```
+
+Multiple providers coexist: add them interactively via `/connect` in the REPL (persisted to `~/.chaos/providers.json`), list with `/providers`, hot-switch with `/model <name>`; every `task_dispatch` task and named agent (`.chaos/agents.json` `model` field) can pin its own model.
 
 ### 2.2 Project Initialization
 Run the initialization wizard in your project root:

@@ -63,12 +63,13 @@ npm link
 链接建立后，系统将自动创建如下的全局软链：
 *   `chaos` -> 指向 `cli.js` 主运行脚本
 *   `stdd` -> 指向 `cli.js` 主运行脚本 (兼容别名)
+*   `ace` -> 指向 `cli.js` 主运行脚本 (兼容别名)
 
 您可以在任何其它项目目录下，直接调用 `chaos --help` 调出命令行助手，或者直接键入 `chaos` 进入交互终端。
 
-### 2.2 环境变量配置
+### 2.2 环境变量配置（多厂商 / 自定义端点）
 
-Chaos Code 根据环境变量来获取 LLM 密钥和配置网络接入：
+Chaos Code 内置 7 个厂商预设，并支持任意 OpenAI 兼容端点（`http://` 本地服务与带路径前缀的网关均正确对接）：
 
 ```bash
 # OpenAI 兼容 API 配置
@@ -80,10 +81,19 @@ export OPENAI_MODEL="gpt-4o-mini"                   # 默认模型
 export ANTHROPIC_API_KEY="sk-ant-..."
 export ANTHROPIC_MODEL="claude-3-5-sonnet-latest"    # 默认模型
 
-# 统一 LLM 覆盖变量 (高优先级)
+# 统一 LLM 覆盖变量 (高优先级) —— 任意兼容厂商三件套直连：
 export STDD_LLM_API_KEY="your-api-key"
+export STDD_LLM_BASE_URL="https://open.bigmodel.cn/api/paas/v4"
 export STDD_LLM_MODEL="your-chosen-model"
+#   GLM:       https://open.bigmodel.cn/api/paas/v4          + glm-4.7
+#   Kimi:      https://api.moonshot.cn/v1                    + moonshot-v1-128k
+#   通义千问:   https://dashscope.aliyuncs.com/compatible-mode/v1 + qwen-max
+#   DeepSeek:  https://api.deepseek.com/v1                   + deepseek-chat
+#   LM Studio: http://127.0.0.1:1234/v1                      + 本地已加载模型名
+#   Ollama:    http://127.0.0.1:11434/v1                     + qwen3:8b 等
 ```
+
+多厂商并存：REPL 内 `/connect` 交互式添加（持久化 `~/.chaos/providers.json`），`/providers` 查看全部，`/model <name>` 会话内热切换；`task_dispatch` 每个任务与具名 agent（`.chaos/agents.json` 的 `model` 字段）可指定独立模型。
 
 ### 2.2 项目初始化
 在需要接入 Chaos Code 的项目根目录中执行：
